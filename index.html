@@ -20,9 +20,14 @@
   <header class="bg-blue-600 text-white p-4 shadow-md rounded-b-2xl mb-4 flex justify-between items-center sticky top-0 z-50">
     <div>
       <h1 class="text-lg font-bold">🏠 Household Hub</h1>
-      <p class="text-[10px] text-blue-100">Lite App Launcher</p>
+      <div class="flex items-center gap-1 text-[11px] text-blue-100 mt-0.5">
+        <span>Active User:</span>
+        <select id="activeUserSelect" onchange="setCurrentUser(this.value)" class="bg-blue-700 text-white px-2 py-0.5 rounded font-bold outline-none border border-blue-400">
+          <option value="">Set Profile...</option>
+        </select>
+      </div>
     </div>
-    <button onclick="showHome()" id="homeBtn" class="bg-blue-700 hover:bg-blue-800 text-white px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 hidden">
+    <button onclick="showHome()" id="homeBtn" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 hidden">
       ⬅️ Menu
     </button>
   </header>
@@ -37,7 +42,7 @@
 
   <main class="px-4 flex-1">
 
-    <!-- LITE MODE MAIN DASHBOARD (BOXES / TILES MENU) -->
+    <!-- LITE MODE DASHBOARD MENU -->
     <section id="view-dashboard" class="grid grid-cols-2 gap-3">
       <button onclick="openTab('expenses')" class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-blue-50 transition active:scale-95">
         <span class="text-3xl mb-2">💰</span>
@@ -75,19 +80,19 @@
         <span class="text-[10px] text-gray-400 mt-0.5">Reimbursements</span>
       </button>
 
-      <button onclick="openTab('directory')" class="col-span-2 bg-gradient-to-r from-teal-500 to-emerald-600 text-white p-4 rounded-2xl shadow-md flex items-center justify-between hover:opacity-95 transition active:scale-95">
+      <button onclick="openTab('directory')" class="col-span-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white p-4 rounded-2xl shadow-md flex items-center justify-between hover:opacity-95 transition active:scale-95">
         <div class="flex items-center gap-3">
           <span class="text-3xl">🎴</span>
           <div class="text-left">
-            <span class="font-bold text-sm block">Family Profiles & Emergency Info</span>
-            <span class="text-[10px] text-teal-100 block">Contacts, Health info, & Meds</span>
+            <span class="font-bold text-sm block">Accounts & Family Directory</span>
+            <span class="text-[10px] text-teal-100 block">Phones, Emails, Health & Emergency info</span>
           </div>
         </div>
         <span class="text-lg">➡️</span>
       </button>
     </section>
 
-    <!-- MODULE 1: EXPENSES TAB -->
+    <!-- MODULE 1: EXPENSES -->
     <section id="tab-expenses" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">💰 Log Expense / Bill</h2>
@@ -128,7 +133,7 @@
       </div>
     </section>
 
-    <!-- MODULE 2: GROCERY CHECKLIST TAB -->
+    <!-- MODULE 2: GROCERY -->
     <section id="tab-grocery" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🛒 Add Needed Item</h2>
@@ -159,14 +164,14 @@
       </div>
     </section>
 
-    <!-- MODULE 3: PARCELS TAB -->
+    <!-- MODULE 3: PARCELS -->
     <section id="tab-parcels" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📦 Log Delivery / Parcel</h2>
         <form id="parcelForm" class="space-y-3">
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-xs font-semibold text-gray-500">For Whom (Recipient)</label>
+              <label class="text-xs font-semibold text-gray-500">For Whom</label>
               <select id="parcFor" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
             </div>
             <div>
@@ -203,7 +208,7 @@
       </div>
     </section>
 
-    <!-- MODULE 4: SUB-METER TAB -->
+    <!-- MODULE 4: SUB-METER -->
     <section id="tab-meter" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">⚡ Sub-Meter Reading Log</h2>
@@ -240,7 +245,7 @@
       </div>
     </section>
 
-    <!-- MODULE 5: RECURRING BILLS TAB -->
+    <!-- MODULE 5: RECURRING BILLS -->
     <section id="tab-recurring" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📅 Add Monthly Bill / Due</h2>
@@ -281,7 +286,7 @@
       </div>
     </section>
 
-    <!-- MODULE 6: CLAIMS TAB -->
+    <!-- MODULE 6: CLAIMS -->
     <section id="tab-reimburse" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">💸 File Claim / Abono</h2>
@@ -312,10 +317,10 @@
       </div>
     </section>
 
-    <!-- MODULE 7: FAMILY PROFILES & EMERGENCY INFO -->
+    <!-- MODULE 7: USER ACCOUNTS & MULTI-FIELD PHONE DIRECTORY -->
     <section id="tab-directory" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">👤 Add / Save Family Profile</h2>
+        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">👤 Add Account / Contact Card</h2>
         <form id="profileForm" class="space-y-3">
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -327,16 +332,31 @@
               <input type="text" id="profRole" placeholder="e.g. Sister, Me, Dad" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
           </div>
+
+          <!-- Multi Phone Inputs -->
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-xs font-semibold text-gray-500">Phone Number</label>
-              <input type="text" id="profPhone" placeholder="09XX-XXX-XXXX" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+              <label class="text-xs font-semibold text-gray-500">Primary Phone</label>
+              <input type="text" id="profPhone1" placeholder="09XX-XXX-XXXX" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
             <div>
-              <label class="text-xs font-semibold text-gray-500">Email Address</label>
-              <input type="email" id="profEmail" placeholder="name@email.com" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+              <label class="text-xs font-semibold text-gray-500">Secondary / Travel Phone</label>
+              <input type="text" id="profPhone2" placeholder="Optional extra SIM" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
           </div>
+
+          <!-- Multi Email Inputs -->
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Primary Email</label>
+              <input type="email" id="profEmail1" placeholder="primary@email.com" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Secondary Email</label>
+              <input type="email" id="profEmail2" placeholder="work/alt@email.com" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            </div>
+          </div>
+
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-xs font-semibold text-gray-500">Blood Type</label>
@@ -347,18 +367,20 @@
               <input type="text" id="profHW" placeholder="e.g. 5'7 / 65kg" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
           </div>
+
           <div>
-            <label class="text-xs font-semibold text-gray-500">Meds / Allergies</label>
+            <label class="text-xs font-semibold text-gray-500">Maintenance Meds / Allergies</label>
             <input type="text" id="profMeds" placeholder="e.g. Biogesic, Maintenance, Peanut allergy" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
-          <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">Save Profile Info</button>
+
+          <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">Save Account Info</button>
         </form>
       </div>
 
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Family Members Directory</h3>
+        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Family & Contacts Directory</h3>
         <div id="familyList" class="space-y-3 text-sm">
-          <p class="text-gray-400 text-center">Loading profiles...</p>
+          <p class="text-gray-400 text-center">Loading directory...</p>
         </div>
       </div>
     </section>
@@ -369,6 +391,7 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     let chartInstance = null;
     let cachedProfiles = [];
+    let currentUser = localStorage.getItem("household_hub_user") || "";
 
     function showHome() {
       document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden'));
@@ -381,6 +404,12 @@
       document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden'));
       document.getElementById(`tab-${tabName}`).classList.remove('hidden');
       document.getElementById('homeBtn').classList.remove('hidden');
+    }
+
+    function setCurrentUser(val) {
+      currentUser = val;
+      localStorage.setItem("household_hub_user", val);
+      document.querySelectorAll('.profile-select').forEach(s => s.value = val);
     }
 
     async function fetchAllData() {
@@ -405,12 +434,20 @@
     }
 
     function populateProfileDropdowns(profiles) {
+      const activeSelect = document.getElementById('activeUserSelect');
       const selects = document.querySelectorAll('.profile-select');
+
       const options = profiles.length 
-        ? profiles.map(p => `<option value="${p.name}">${p.name} (${p.rolerelation || 'Member'})</option>`).join('')
-        : `<option value="Other">Default User</option>`;
+        ? profiles.map(p => `<option value="${p.name}">${p.name} (${p.role || 'Member'})</option>`).join('')
+        : `<option value="Default User">Default User</option>`;
       
+      activeSelect.innerHTML = `<option value="">Set Profile...</option>` + options;
       selects.forEach(s => s.innerHTML = options);
+
+      if (currentUser) {
+        activeSelect.value = currentUser;
+        selects.forEach(s => s.value = currentUser);
+      }
     }
 
     function renderExpensesChart(data) {
@@ -541,23 +578,40 @@
 
     function renderProfiles(data) {
       const container = document.getElementById('familyList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No profiles saved yet.</p>'; return; }
+      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No account profiles saved yet.</p>'; return; }
       container.innerHTML = data.map(p => `
-        <div class="p-3.5 bg-teal-50/60 rounded-xl border border-teal-100 space-y-2">
+        <div class="p-4 bg-white rounded-2xl border border-teal-100 shadow-sm space-y-3">
           <div class="flex justify-between items-start">
             <div>
               <span class="font-bold text-teal-900 text-base">${p.name}</span>
-              <span class="text-xs bg-teal-200 text-teal-800 px-2 py-0.5 rounded-md font-semibold ml-2">${p.rolerelation || 'Family'}</span>
+              <span class="text-xs bg-teal-100 text-teal-800 px-2 py-0.5 rounded-md font-semibold ml-2">${p.role || 'Member'}</span>
             </div>
-            ${p.phone ? `<a href="tel:${p.phone}" class="bg-teal-600 text-white text-xs px-2.5 py-1 rounded-lg font-bold">📞 Call</a>` : ''}
           </div>
-          <div class="text-xs text-gray-600 grid grid-cols-2 gap-1 border-t border-teal-100 pt-2">
-            <div>📞 ${p.phone || 'N/A'}</div>
-            <div>✉️ ${p.email || 'N/A'}</div>
-            <div>🩸 Blood: <span class="font-bold text-red-600">${p.bloodtype || 'N/A'}</span></div>
-            <div>📏 Ht/Wt: ${p.heightweight || 'N/A'}</div>
+
+          <!-- Multi Phone Buttons -->
+          <div class="space-y-1.5 text-xs">
+            <div class="font-semibold text-gray-500 text-[10px] uppercase">Phone Numbers</div>
+            <div class="flex flex-wrap gap-2">
+              ${p.phone1 ? `<a href="tel:${p.phone1}" class="bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 px-2.5 py-1 rounded-xl font-bold flex items-center gap-1">📞 Main: ${p.phone1}</a>` : ''}
+              ${p.phone2 ? `<a href="tel:${p.phone2}" class="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-xl font-bold flex items-center gap-1">📱 Alt: ${p.phone2}</a>` : ''}
+            </div>
           </div>
-          ${p.maintenanceallergies ? `<div class="text-xs text-amber-800 bg-amber-50 p-2 rounded-lg border border-amber-200">💊 <strong>Meds/Allergies:</strong> ${p.maintenanceallergies}</div>` : ''}
+
+          <!-- Multi Email Buttons -->
+          <div class="space-y-1.5 text-xs">
+            <div class="font-semibold text-gray-500 text-[10px] uppercase">Email Addresses</div>
+            <div class="flex flex-wrap gap-2">
+              ${p.email1 ? `<a href="mailto:${p.email1}" class="bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-xl font-semibold flex items-center gap-1">✉️ ${p.email1}</a>` : ''}
+              ${p.email2 ? `<a href="mailto:${p.email2}" class="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-xl font-semibold flex items-center gap-1">✉️ ${p.email2}</a>` : ''}
+            </div>
+          </div>
+
+          <!-- Health & Meds Info -->
+          <div class="text-xs text-gray-600 grid grid-cols-2 gap-2 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+            <div>🩸 <strong>Blood:</strong> <span class="font-bold text-red-600">${p.bloodtype || 'N/A'}</span></div>
+            <div>📏 <strong>Ht/Wt:</strong> ${p.heightweight || 'N/A'}</div>
+          </div>
+          ${p.medsallergies ? `<div class="text-xs text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200">💊 <strong>Meds/Allergies:</strong> ${p.medsallergies}</div>` : ''}
         </div>
       `).join('');
     }
@@ -614,12 +668,13 @@
         action: "saveProfile",
         name: document.getElementById('profName').value,
         role: document.getElementById('profRole').value,
-        phone: document.getElementById('profPhone').value,
-        email: document.getElementById('profEmail').value,
+        phone1: document.getElementById('profPhone1').value,
+        phone2: document.getElementById('profPhone2').value,
+        email1: document.getElementById('profEmail1').value,
+        email2: document.getElementById('profEmail2').value,
         bloodType: document.getElementById('profBlood').value,
         heightWeight: document.getElementById('profHW').value,
-        meds: document.getElementById('profMeds').value,
-        notes: ""
+        meds: document.getElementById('profMeds').value
       }, 'profileForm');
     });
 
