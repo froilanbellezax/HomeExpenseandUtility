@@ -54,20 +54,20 @@
     </button>
   </header>
 
-  <!-- USER CONTEXT ISOLATION: PERSONAL SUMMARY BANNER -->
+  <!-- USER CONTEXT ISOLATION: PRIVATE VIEW SUMMARY BANNER -->
   <div id="userSummaryCard" class="px-4 mb-3">
     <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-3.5 rounded-2xl shadow-md border border-blue-700">
       <div class="flex justify-between items-center border-b border-blue-700/50 pb-2 mb-2">
-        <span class="text-xs font-bold text-blue-200">👤 User Context: <span id="summaryUserName" class="text-white">---</span></span>
-        <span class="text-[10px] bg-blue-800 text-blue-200 px-2 py-0.5 rounded-full">Private View</span>
+        <span class="text-xs font-bold text-blue-200">👤 Private View: <span id="summaryUserName" class="text-white">---</span></span>
+        <span class="text-[10px] bg-blue-800 text-blue-200 px-2 py-0.5 rounded-full">Personal Balance</span>
       </div>
       <div class="grid grid-cols-2 gap-2 text-xs">
         <div class="bg-blue-800/40 p-2 rounded-xl border border-blue-700/30">
-          <span class="text-[10px] text-green-300 block">Singilin Mo (To Receive):</span>
+          <span class="text-[10px] text-green-300 block font-semibold">Sisingilin Mo (To Receive):</span>
           <span id="userReceivable" class="font-bold text-green-400 text-sm">₱0.00</span>
         </div>
         <div class="bg-blue-800/40 p-2 rounded-xl border border-blue-700/30">
-          <span class="text-[10px] text-red-300 block">Utang Mo (To Pay):</span>
+          <span class="text-[10px] text-red-300 block font-semibold">Utang Mo (To Pay):</span>
           <span id="userPayable" class="font-bold text-red-400 text-sm">₱0.00</span>
         </div>
       </div>
@@ -76,7 +76,7 @@
 
   <main class="px-4 flex-1">
 
-    <!-- LITE MODE DASHBOARD MENU -->
+    <!-- DASHBOARD MENU -->
     <section id="view-dashboard" class="grid grid-cols-2 gap-3">
       <button onclick="openTab('expenses')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-blue-50 transition active:scale-95">
         <span class="text-3xl mb-1">💰</span>
@@ -93,13 +93,13 @@
       <button onclick="openTab('lista')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-purple-50 transition active:scale-95">
         <span class="text-3xl mb-1">📋</span>
         <span class="font-bold text-gray-800 text-sm">Lista Vault</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">My Utang & Pautang</span>
+        <span class="text-[10px] text-gray-400 mt-0.5">Sisingilin & Utang</span>
       </button>
 
       <button onclick="openTab('kkb')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-pink-50 transition active:scale-95">
         <span class="text-3xl mb-1">🍔</span>
         <span class="font-bold text-gray-800 text-sm">KKB Splitter</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">With custom names</span>
+        <span class="text-[10px] text-gray-400 mt-0.5">With Cash/Full/Half</span>
       </button>
 
       <button onclick="openTab('parcels')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-orange-50 transition active:scale-95">
@@ -141,7 +141,7 @@
     <!-- MODULE: LISTA DEBT VAULT -->
     <section id="tab-lista" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📋 Lista: Record Utang / Pautang</h2>
+        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📋 Lista: Record Utang / Sisingilin</h2>
         <form id="debtForm" class="space-y-3">
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -151,7 +151,7 @@
             <div>
               <label class="text-xs font-semibold text-gray-500">Type / Direction</label>
               <select id="debtDir" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
-                <option value="Pautang (Singilin)">🟢 Pautang (Singilin)</option>
+                <option value="Pautang (Singilin)">🟢 Pautang (Sisingilin)</option>
                 <option value="Utang (Babayaran)">🔴 Utang (Babayaran)</option>
               </select>
             </div>
@@ -169,7 +169,7 @@
       </div>
 
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">My Active Listahan & Balanse</h3>
+        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">My Active Lista Vault</h3>
         <div id="debtsList" class="space-y-2 text-sm">
           <p class="text-gray-400 text-center">Loading listahan...</p>
         </div>
@@ -179,7 +179,7 @@
     <!-- MODULE: KKB BILL SPLITTER -->
     <section id="tab-kkb" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🍔 KKB Splitter (Family & Friends)</h2>
+        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🍔 KKB Splitter (With Payment Options)</h2>
         <form id="kkbForm" class="space-y-3">
           <div>
             <label class="text-xs font-semibold text-gray-500">Total Receipt Amount (₱)</label>
@@ -191,8 +191,8 @@
           </div>
 
           <div>
-            <label class="text-xs font-semibold text-gray-500 mb-1 block">Sinu-sino ang kasama (Check / Add friends):</label>
-            <div id="kkbParticipantsList" class="space-y-1 bg-gray-50 p-2.5 rounded-xl border border-gray-200 max-h-36 overflow-y-auto mb-2"></div>
+            <label class="text-xs font-semibold text-gray-500 mb-1 block">Participants & Payments Given On-the-spot:</label>
+            <div id="kkbParticipantsList" class="space-y-2 bg-gray-50 p-2.5 rounded-xl border border-gray-200 max-h-48 overflow-y-auto mb-2"></div>
             
             <div class="flex gap-2">
               <input type="text" id="customFriendInput" placeholder="Add custom name (e.g. Alex)" class="flex-1 p-2 border rounded-xl text-xs outline-none">
@@ -205,7 +205,7 @@
             <span id="kkbSplitResult" class="text-xl font-bold text-pink-900">₱0.00</span>
           </div>
 
-          <button type="submit" class="w-full bg-pink-600 text-white font-bold py-3 rounded-xl hover:bg-pink-700 transition">Save & Auto-Add to Lista</button>
+          <button type="submit" class="w-full bg-pink-600 text-white font-bold py-3 rounded-xl hover:bg-pink-700 transition">Save & Auto-Add Unpaid Shares to Lista</button>
         </form>
       </div>
     </section>
@@ -530,7 +530,6 @@
           errEl.classList.remove('hidden');
         }
       } catch (err) {
-        // Fallback for CORS mode
         currentUser = name;
         localStorage.setItem("household_hub_user", name);
         checkAuth();
@@ -580,10 +579,23 @@
 
       if (kkbContainer && profiles.length) {
         kkbContainer.innerHTML = profiles.map(p => `
-          <label class="flex items-center gap-2 text-xs font-semibold text-gray-700 py-1">
-            <input type="checkbox" value="${p.name}" class="kkb-check rounded text-pink-600 focus:ring-pink-500" onchange="calculateKKB()" checked>
-            <span>${p.name}</span>
-          </label>
+          <div class="p-2 bg-white rounded-xl border border-gray-200 flex flex-col gap-1.5 kkb-row">
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-2 text-xs font-semibold text-gray-800">
+                <input type="checkbox" value="${p.name}" class="kkb-check rounded text-pink-600 focus:ring-pink-500" onchange="calculateKKB()" checked>
+                <span>${p.name}</span>
+              </label>
+              <select class="kkb-mode text-[10px] bg-gray-100 p-1 rounded font-semibold" onchange="calculateKKB()">
+                <option value="none">🔴 Unpaid (Utang)</option>
+                <option value="full">✅ Paid Full</option>
+                <option value="half">🌓 Paid Half</option>
+                <option value="custom">💵 Custom Paid</option>
+              </select>
+            </div>
+            <div class="hidden custom-paid-box">
+              <input type="number" step="0.01" placeholder="Paid Amount (₱)" class="kkb-custom-val w-full p-1.5 border rounded-lg text-xs outline-none" oninput="calculateKKB()">
+            </div>
+          </div>
         `).join('');
       }
     }
@@ -594,15 +606,51 @@
       if (!name) return;
 
       const kkbContainer = document.getElementById('kkbParticipantsList');
-      const newLabel = document.createElement('label');
-      newLabel.className = 'flex items-center gap-2 text-xs font-semibold text-pink-900 py-1 bg-pink-100/50 px-2 rounded-lg';
-      newLabel.innerHTML = `
-        <input type="checkbox" value="${name}" class="kkb-check rounded text-pink-600 focus:ring-pink-500" onchange="calculateKKB()" checked>
-        <span>${name} (Guest)</span>
+      const newDiv = document.createElement('div');
+      newDiv.className = 'p-2 bg-pink-50/60 rounded-xl border border-pink-200 flex flex-col gap-1.5 kkb-row';
+      newDiv.innerHTML = `
+        <div class="flex items-center justify-between">
+          <label class="flex items-center gap-2 text-xs font-semibold text-pink-900">
+            <input type="checkbox" value="${name}" class="kkb-check rounded text-pink-600 focus:ring-pink-500" onchange="calculateKKB()" checked>
+            <span>${name} (Guest)</span>
+          </label>
+          <select class="kkb-mode text-[10px] bg-white p-1 rounded font-semibold" onchange="calculateKKB()">
+            <option value="none">🔴 Unpaid (Utang)</option>
+            <option value="full">✅ Paid Full</option>
+            <option value="half">🌓 Paid Half</option>
+            <option value="custom">💵 Custom Paid</option>
+          </select>
+        </div>
+        <div class="hidden custom-paid-box">
+          <input type="number" step="0.01" placeholder="Paid Amount (₱)" class="kkb-custom-val w-full p-1.5 border rounded-lg text-xs outline-none" oninput="calculateKKB()">
+        </div>
       `;
-      kkbContainer.appendChild(newLabel);
+      kkbContainer.appendChild(newDiv);
       input.value = '';
       calculateKKB();
+    }
+
+    function calculateKKB() {
+      const total = parseFloat(document.getElementById('kkbTotal').value) || 0;
+      const rows = document.querySelectorAll('.kkb-row');
+      let activeCount = 0;
+
+      rows.forEach(r => {
+        const chk = r.querySelector('.kkb-check');
+        const mode = r.querySelector('.kkb-mode');
+        const customBox = r.querySelector('.custom-paid-box');
+
+        if (mode.value === 'custom') {
+          customBox.classList.remove('hidden');
+        } else {
+          customBox.classList.add('hidden');
+        }
+
+        if (chk && chk.checked) activeCount++;
+      });
+
+      const perPerson = activeCount > 0 ? (total / activeCount) : 0;
+      document.getElementById('kkbSplitResult').innerText = `₱${perPerson.toFixed(2)}`;
     }
 
     function updateUserSummary() {
@@ -618,10 +666,13 @@
       cachedDebts.forEach(d => {
         const amt = parseFloat(d.amount) || 0;
         const status = String(d.status || '');
+        const personName = String(d.borrowerperson || d.person || '');
+        const loggedUser = String(d.loggedby || '');
+
         if (status === 'Unpaid') {
-          if (d.loggedby === currentUser && d.direction?.includes('Pautang')) {
+          if (loggedUser.toLowerCase() === currentUser.toLowerCase() && personName.toLowerCase() !== currentUser.toLowerCase()) {
             receivable += amt;
-          } else if (d.borrowerperson === currentUser && d.direction?.includes('Pautang')) {
+          } else if (personName.toLowerCase() === currentUser.toLowerCase() && loggedUser.toLowerCase() !== currentUser.toLowerCase()) {
             payable += amt;
           }
         }
@@ -631,31 +682,33 @@
       document.getElementById('userPayable').innerText = `₱${payable.toFixed(2)}`;
     }
 
-    function calculateKKB() {
-      const total = parseFloat(document.getElementById('kkbTotal').value) || 0;
-      const checked = document.querySelectorAll('.kkb-check:checked');
-      const count = checked.length;
-      const perPerson = count > 0 ? (total / count) : 0;
-      document.getElementById('kkbSplitResult').innerText = `₱${perPerson.toFixed(2)}`;
-    }
-
     function renderDebts(data) {
       const container = document.getElementById('debtsList');
       if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No active listahan logs for your account.</p>'; return; }
-      container.innerHTML = data.map(d => `
-        <div class="p-3 bg-purple-50/60 rounded-xl border border-purple-100 flex justify-between items-center">
-          <div>
-            <div class="font-bold text-gray-800">${d.borrowerperson} <span class="text-[10px] text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">${d.direction}</span></div>
-            <div class="text-xs text-gray-500">${d.reasonnotes || 'No details'} • By: ${d.loggedby}</div>
+      
+      container.innerHTML = data.map(d => {
+        const personName = d.borrowerperson || d.person || 'Unknown';
+        const direction = d.direction || 'Utang/Pautang';
+        const notes = d.reasonnotes || d.notes || 'No details';
+        const amt = parseFloat(d.amount || 0).toFixed(2);
+        const logged = d.loggedby || 'System';
+        const isSettled = String(d.status) === 'Settled';
+
+        return `
+          <div class="p-3 bg-purple-50/60 rounded-xl border border-purple-100 flex justify-between items-center">
+            <div>
+              <div class="font-bold text-gray-800">${personName} <span class="text-[10px] text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded font-semibold">${direction}</span></div>
+              <div class="text-xs text-gray-500">${notes} • By: ${logged}</div>
+            </div>
+            <div class="text-right">
+              <div class="font-bold text-purple-900">₱${amt}</div>
+              ${!isSettled 
+                ? `<button onclick="markDebtSettled('${personName}', '${notes}')" class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">Mark Settled</button>`
+                : `<span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">Settled</span>`}
+            </div>
           </div>
-          <div class="text-right">
-            <div class="font-bold text-purple-900">₱${parseFloat(d.amount || 0).toFixed(2)}</div>
-            ${d.status === 'Unpaid' 
-              ? `<button onclick="markDebtSettled('${d.borrowerperson}', '${d.reasonnotes}')" class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">Mark Settled</button>`
-              : `<span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">Settled</span>`}
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     async function markDebtSettled(person, notes) {
@@ -821,11 +874,40 @@
 
     document.getElementById('kkbForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      const checked = Array.from(document.querySelectorAll('.kkb-check:checked')).map(cb => cb.value);
       const total = parseFloat(document.getElementById('kkbTotal').value) || 0;
-      const perPerson = checked.length ? (total / checked.length) : 0;
+      const rows = document.querySelectorAll('.kkb-row');
+      let activeRows = [];
 
-      postData({ action: "splitBill", payer: currentUser, reason: document.getElementById('kkbReason').value, amountPerPerson: perPerson, participants: checked }, 'kkbForm');
+      rows.forEach(r => {
+        const chk = r.querySelector('.kkb-check');
+        if (chk && chk.checked) {
+          activeRows.push({
+            person: chk.value,
+            mode: r.querySelector('.kkb-mode').value,
+            customVal: parseFloat(r.querySelector('.kkb-custom-val').value) || 0
+          });
+        }
+      });
+
+      const count = activeRows.length;
+      const perPerson = count > 0 ? (total / count) : 0;
+      let splits = [];
+
+      activeRows.forEach(item => {
+        let oweAmount = 0;
+        if (item.mode === 'none') {
+          oweAmount = perPerson;
+        } else if (item.mode === 'half') {
+          oweAmount = perPerson / 2;
+        } else if (item.mode === 'custom') {
+          oweAmount = Math.max(0, perPerson - item.customVal);
+        } else if (item.mode === 'full') {
+          oweAmount = 0;
+        }
+        splits.push({ person: item.person, oweAmount: oweAmount });
+      });
+
+      postData({ action: "splitBill", payer: currentUser, reason: document.getElementById('kkbReason').value, splits: splits }, 'kkbForm');
     });
 
     document.getElementById('parcelForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addParcel", recipient: currentUser, courier: document.getElementById('parcCourier').value, amount: document.getElementById('parcAmount').value, paymentStatus: document.getElementById('parcStatus').value, receivedBy: currentUser, notes: "" }, 'parcelForm'); });
