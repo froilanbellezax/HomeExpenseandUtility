@@ -14,17 +14,39 @@
     }
   </script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col">
+<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col relative">
+
+  <!-- LOGIN OVERLAY MODAL -->
+  <div id="loginOverlay" class="fixed inset-0 bg-blue-900/95 z-[100] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+      <div class="text-4xl">🔐</div>
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">Welcome to Household Hub</h2>
+        <p class="text-xs text-gray-500 mt-1">Please log in to access your personal dashboard</p>
+      </div>
+      <form id="loginForm" class="space-y-3 text-left">
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Your Full Name</label>
+          <input type="text" id="loginName" required placeholder="e.g. Juan Dela Cruz" class="w-full p-3 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-500">PIN / Passcode</label>
+          <input type="password" id="loginPin" placeholder="Default PIN: 1234" class="w-full p-3 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold">
+        </div>
+        <p id="loginError" class="text-xs text-red-600 hidden text-center font-bold"></p>
+        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-lg">Log In</button>
+      </form>
+    </div>
+  </div>
 
   <!-- Header -->
   <header class="bg-blue-600 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
     <div>
       <h1 class="text-lg font-bold">🏠 Household Hub</h1>
-      <div class="flex items-center gap-1 text-[11px] text-blue-100 mt-0.5">
-        <span>Active User:</span>
-        <select id="activeUserSelect" onchange="setCurrentUser(this.value)" class="bg-blue-700 text-white px-2 py-0.5 rounded font-bold outline-none border border-blue-400">
-          <option value="">Set Profile...</option>
-        </select>
+      <div class="flex items-center gap-1.5 text-[11px] text-blue-100 mt-0.5">
+        <span>Account:</span>
+        <span id="activeUserName" class="bg-blue-800 text-white px-2 py-0.5 rounded font-bold border border-blue-400">Not Logged In</span>
+        <button onclick="logout()" class="text-[10px] bg-red-500/80 hover:bg-red-600 px-1.5 py-0.5 rounded font-bold">Logout</button>
       </div>
     </div>
     <button onclick="showHome()" id="homeBtn" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 hidden">
@@ -33,19 +55,19 @@
   </header>
 
   <!-- USER CONTEXT ISOLATION: PERSONAL SUMMARY BANNER -->
-  <div id="userSummaryCard" class="px-4 mb-3 hidden">
+  <div id="userSummaryCard" class="px-4 mb-3">
     <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-3.5 rounded-2xl shadow-md border border-blue-700">
       <div class="flex justify-between items-center border-b border-blue-700/50 pb-2 mb-2">
-        <span class="text-xs font-bold text-blue-200">👤 User Context Summary: <span id="summaryUserName" class="text-white">---</span></span>
-        <span class="text-[10px] bg-blue-800 text-blue-200 px-2 py-0.5 rounded-full">Personal View</span>
+        <span class="text-xs font-bold text-blue-200">👤 User Context: <span id="summaryUserName" class="text-white">---</span></span>
+        <span class="text-[10px] bg-blue-800 text-blue-200 px-2 py-0.5 rounded-full">Private View</span>
       </div>
       <div class="grid grid-cols-2 gap-2 text-xs">
         <div class="bg-blue-800/40 p-2 rounded-xl border border-blue-700/30">
-          <span class="text-[10px] text-green-300 block">Siningilin sa'yo (To Receive):</span>
+          <span class="text-[10px] text-green-300 block">Singilin Mo (To Receive):</span>
           <span id="userReceivable" class="font-bold text-green-400 text-sm">₱0.00</span>
         </div>
         <div class="bg-blue-800/40 p-2 rounded-xl border border-blue-700/30">
-          <span class="text-[10px] text-red-300 block">Utang / Abono sa'yo (To Pay):</span>
+          <span class="text-[10px] text-red-300 block">Utang Mo (To Pay):</span>
           <span id="userPayable" class="font-bold text-red-400 text-sm">₱0.00</span>
         </div>
       </div>
@@ -71,7 +93,7 @@
       <button onclick="openTab('lista')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-purple-50 transition active:scale-95">
         <span class="text-3xl mb-1">📋</span>
         <span class="font-bold text-gray-800 text-sm">Lista Vault</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">Utang & Pautang log</span>
+        <span class="text-[10px] text-gray-400 mt-0.5">My Utang & Pautang</span>
       </button>
 
       <button onclick="openTab('kkb')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-pink-50 transition active:scale-95">
@@ -82,7 +104,7 @@
 
       <button onclick="openTab('parcels')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-orange-50 transition active:scale-95">
         <span class="text-3xl mb-1">📦</span>
-        <span class="font-bold text-gray-800 text-sm">Parcel Delivery</span>
+        <span class="font-bold text-gray-800 text-sm">My Parcels</span>
         <span class="text-[10px] text-gray-400 mt-0.5">COD & Auto-Lista</span>
       </button>
 
@@ -108,7 +130,7 @@
         <div class="flex items-center gap-3">
           <span class="text-3xl">🎴</span>
           <div class="text-left">
-            <span class="font-bold text-sm block">Accounts & Family Directory</span>
+            <span class="font-bold text-sm block">Accounts Directory</span>
             <span class="text-[10px] text-teal-100 block">Phones, Emails, Health Info</span>
           </div>
         </div>
@@ -134,15 +156,9 @@
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
-              <input type="number" step="0.01" id="debtAmount" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Logged By</label>
-              <select id="debtUser" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
-            </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
+            <input type="number" step="0.01" id="debtAmount" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
           </div>
           <div>
             <label class="text-xs font-semibold text-gray-500">Reason / Details</label>
@@ -153,14 +169,14 @@
       </div>
 
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Active Listahan & Balanse</h3>
+        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">My Active Listahan & Balanse</h3>
         <div id="debtsList" class="space-y-2 text-sm">
           <p class="text-gray-400 text-center">Loading listahan...</p>
         </div>
       </div>
     </section>
 
-    <!-- MODULE: KKB BILL SPLITTER WITH MANUAL PARTICIPANTS -->
+    <!-- MODULE: KKB BILL SPLITTER -->
     <section id="tab-kkb" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🍔 KKB Splitter (Family & Friends)</h2>
@@ -173,16 +189,11 @@
             <label class="text-xs font-semibold text-gray-500">Reason / Place</label>
             <input type="text" id="kkbReason" required placeholder="e.g. McDonald's, Outing" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Sino nagbayad (Payer)?</label>
-            <select id="kkbPayer" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select" onchange="calculateKKB()"></select>
-          </div>
 
           <div>
             <label class="text-xs font-semibold text-gray-500 mb-1 block">Sinu-sino ang kasama (Check / Add friends):</label>
             <div id="kkbParticipantsList" class="space-y-1 bg-gray-50 p-2.5 rounded-xl border border-gray-200 max-h-36 overflow-y-auto mb-2"></div>
             
-            <!-- Manual Add Extra Friend Input -->
             <div class="flex gap-2">
               <input type="text" id="customFriendInput" placeholder="Add custom name (e.g. Alex)" class="flex-1 p-2 border rounded-xl text-xs outline-none">
               <button type="button" onclick="addCustomParticipant()" class="bg-pink-100 text-pink-700 font-bold px-3 py-2 rounded-xl text-xs hover:bg-pink-200">Add</button>
@@ -208,23 +219,17 @@
             <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
             <input type="number" step="0.01" id="expAmount" required placeholder="0.00" class="w-full text-lg font-bold p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
           </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Category</label>
-              <select id="expCategory" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-                <option value="Electricity">⚡ Electricity</option>
-                <option value="Water">💧 Water</option>
-                <option value="Groceries">🛒 Groceries</option>
-                <option value="Internet/Load">🌐 Internet / Load</option>
-                <option value="LPG">🔥 LPG</option>
-                <option value="Maintenance">🛠️ Maintenance</option>
-                <option value="Others">📦 Others</option>
-              </select>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Logged By</label>
-              <select id="expUser" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
-            </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Category</label>
+            <select id="expCategory" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+              <option value="Electricity">⚡ Electricity</option>
+              <option value="Water">💧 Water</option>
+              <option value="Groceries">🛒 Groceries</option>
+              <option value="Internet/Load">🌐 Internet / Load</option>
+              <option value="LPG">🔥 LPG</option>
+              <option value="Maintenance">🛠️ Maintenance</option>
+              <option value="Others">📦 Others</option>
+            </select>
           </div>
           <div>
             <label class="text-xs font-semibold text-gray-500">Notes / Details</label>
@@ -253,10 +258,6 @@
               <input type="text" id="grocQty" placeholder="e.g. 2 sacks" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
           </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Requested By</label>
-            <select id="grocUser" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
-          </div>
           <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition">Add to List</button>
         </form>
       </div>
@@ -274,36 +275,26 @@
         <form id="parcelForm" class="space-y-3">
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-xs font-semibold text-gray-500">For Whom</label>
-              <select id="parcFor" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
-            </div>
-            <div>
               <label class="text-xs font-semibold text-gray-500">Courier / App</label>
               <input type="text" id="parcCourier" placeholder="Shopee/Lazada" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-xs font-semibold text-gray-500">COD Amount (₱)</label>
               <input type="number" step="0.01" id="parcAmount" placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Payment Status</label>
-              <select id="parcStatus" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-                <option value="Paid by Owner">Paid by Owner</option>
-                <option value="Abono Needed (Unpaid)">Abono Needed (Unpaid)</option>
-              </select>
-            </div>
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-500">Received By</label>
-            <select id="parcReceiver" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
+            <label class="text-xs font-semibold text-gray-500">Payment Status</label>
+            <select id="parcStatus" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+              <option value="Paid by Owner">Paid by Owner</option>
+              <option value="Abono Needed (Unpaid)">Abono Needed (Unpaid)</option>
+            </select>
           </div>
           <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition">Log Delivery</button>
         </form>
       </div>
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Recent Deliveries</h3>
+        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">My Parcels</h3>
         <div id="parcelsList" class="space-y-2 text-sm">
           <p class="text-gray-400 text-center">Loading parcels...</p>
         </div>
@@ -337,10 +328,6 @@
               </select>
             </div>
           </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Collected / Logged By</label>
-            <select id="hsUser" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
-          </div>
           <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save Hotspot Log</button>
         </form>
       </div>
@@ -366,15 +353,9 @@
               <input type="number" step="0.1" id="meterReading" required placeholder="e.g. 1450.5" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-blue-600">
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Rate (₱ / kWh)</label>
-              <input type="number" step="0.1" id="meterRate" value="12" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Logged By</label>
-              <select id="meterUser" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
-            </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Rate (₱ / kWh)</label>
+            <input type="number" step="0.1" id="meterRate" value="12" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
           <button type="submit" class="w-full bg-yellow-500 text-white font-bold py-3 rounded-xl hover:bg-yellow-600 transition">Log Reading</button>
         </form>
@@ -417,15 +398,9 @@
               <input type="text" id="vehNext" placeholder="e.g. 15000 km / Dec 2026" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Cost (₱)</label>
-              <input type="number" step="0.01" id="vehCost" placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Logged By</label>
-              <select id="vehUser" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
-            </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Cost (₱)</label>
+            <input type="number" step="0.01" id="vehCost" placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
           <div>
             <label class="text-xs font-semibold text-gray-500">Notes / Shop Name</label>
@@ -444,11 +419,15 @@
 
     <section id="tab-directory" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 id="profileFormTitle" class="font-bold text-gray-700 mb-3 text-sm uppercase">👤 Add / Edit Account Card</h2>
+        <h2 id="profileFormTitle" class="font-bold text-gray-700 mb-3 text-sm uppercase">👤 Add / Edit My Account Info</h2>
         <form id="profileForm" class="space-y-3">
           <div>
             <label class="text-xs font-semibold text-gray-500">Full Name</label>
-            <input type="text" id="profName" required placeholder="e.g. Juan Dela Cruz" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            <input type="text" id="profName" required readonly class="w-full p-2.5 border rounded-xl text-sm bg-gray-100 font-bold outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Set PIN / Passcode</label>
+            <input type="password" id="profPin" placeholder="Enter new 4-digit PIN" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -456,7 +435,7 @@
               <input type="text" id="profPhone1" placeholder="09XX-XXX-XXXX" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
             <div>
-              <label class="text-xs font-semibold text-gray-500">Secondary / Alt Phone</label>
+              <label class="text-xs font-semibold text-gray-500">Secondary Phone</label>
               <input type="text" id="profPhone2" placeholder="Optional extra SIM" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
           </div>
@@ -484,7 +463,7 @@
             <label class="text-xs font-semibold text-gray-500">Maintenance Meds / Allergies</label>
             <input type="text" id="profMeds" placeholder="e.g. Biogesic, Maintenance, Peanut allergy" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
-          <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">Save Profile</button>
+          <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">Save Profile Info</button>
         </form>
       </div>
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
@@ -504,6 +483,60 @@
     let cachedDebts = [];
     let currentUser = localStorage.getItem("household_hub_user") || "";
 
+    function checkAuth() {
+      if (!currentUser) {
+        document.getElementById('loginOverlay').classList.remove('hidden');
+        document.getElementById('activeUserName').innerText = "Not Logged In";
+      } else {
+        document.getElementById('loginOverlay').classList.add('hidden');
+        document.getElementById('activeUserName').innerText = currentUser;
+        document.getElementById('summaryUserName').innerText = currentUser;
+        document.getElementById('profName').value = currentUser;
+        fetchAllData();
+      }
+    }
+
+    function logout() {
+      if (confirm("Log out of your profile?")) {
+        localStorage.removeItem("household_hub_user");
+        currentUser = "";
+        location.reload();
+      }
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('loginName').value.trim();
+      const pin = document.getElementById('loginPin').value.trim();
+      const errEl = document.getElementById('loginError');
+
+      errEl.classList.add('hidden');
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify({ action: "loginUser", name: name, pin: pin })
+        });
+        const json = await res.json();
+
+        if (json.status === "success") {
+          currentUser = name;
+          localStorage.setItem("household_hub_user", name);
+          checkAuth();
+        } else {
+          errEl.innerText = json.message || "Invalid credentials!";
+          errEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        // Fallback for CORS mode
+        currentUser = name;
+        localStorage.setItem("household_hub_user", name);
+        checkAuth();
+      }
+    });
+
     function showHome() {
       document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden'));
       document.getElementById('view-dashboard').classList.remove('hidden');
@@ -517,16 +550,10 @@
       document.getElementById('homeBtn').classList.remove('hidden');
     }
 
-    function setCurrentUser(val) {
-      currentUser = val;
-      localStorage.setItem("household_hub_user", val);
-      document.querySelectorAll('.profile-select').forEach(s => s.value = val);
-      updateUserSummary();
-    }
-
     async function fetchAllData() {
+      if (!currentUser) return;
       try {
-        const res = await fetch(API_URL);
+        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
         const json = await res.json();
         if (json.status === "success") {
           cachedProfiles = json.data.profiles || [];
@@ -549,16 +576,7 @@
     }
 
     function populateProfileDropdowns(profiles) {
-      const activeSelect = document.getElementById('activeUserSelect');
-      const selects = document.querySelectorAll('.profile-select');
       const kkbContainer = document.getElementById('kkbParticipantsList');
-
-      const options = profiles.length 
-        ? profiles.map(p => `<option value="${p.name}">${p.name}</option>`).join('')
-        : `<option value="Default User">Default User</option>`;
-      
-      activeSelect.innerHTML = `<option value="">Set Profile...</option>` + options;
-      selects.forEach(s => s.innerHTML = options);
 
       if (kkbContainer && profiles.length) {
         kkbContainer.innerHTML = profiles.map(p => `
@@ -567,11 +585,6 @@
             <span>${p.name}</span>
           </label>
         `).join('');
-      }
-
-      if (currentUser) {
-        activeSelect.value = currentUser;
-        selects.forEach(s => s.value = currentUser);
       }
     }
 
@@ -599,8 +612,8 @@
       card.classList.remove('hidden');
       document.getElementById('summaryUserName').innerText = currentUser;
 
-      let receivable = 0; // Pautang ko sa iba
-      let payable = 0;    // Utang ko sa iba
+      let receivable = 0;
+      let payable = 0;
 
       cachedDebts.forEach(d => {
         const amt = parseFloat(d.amount) || 0;
@@ -608,7 +621,7 @@
         if (status === 'Unpaid') {
           if (d.loggedby === currentUser && d.direction?.includes('Pautang')) {
             receivable += amt;
-          } else if (d.person === currentUser && d.direction?.includes('Pautang')) {
+          } else if (d.borrowerperson === currentUser && d.direction?.includes('Pautang')) {
             payable += amt;
           }
         }
@@ -628,7 +641,7 @@
 
     function renderDebts(data) {
       const container = document.getElementById('debtsList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No active listahan logs.</p>'; return; }
+      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No active listahan logs for your account.</p>'; return; }
       container.innerHTML = data.map(d => `
         <div class="p-3 bg-purple-50/60 rounded-xl border border-purple-100 flex justify-between items-center">
           <div>
@@ -669,7 +682,6 @@
     }
 
     async function markHotspotPaid(cust) {
-      if (!currentUser) { alert("Please select your Active User profile in the header first!"); return; }
       await postData({ action: "updateHotspotStatus", customer: cust, collectedBy: currentUser }, null);
     }
 
@@ -711,7 +723,7 @@
 
     function renderParcels(data) {
       const container = document.getElementById('parcelsList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No parcel logs yet.</p>'; return; }
+      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No parcel logs for your account.</p>'; return; }
       container.innerHTML = data.map(p => `
         <div class="p-3 bg-gray-50 rounded-xl border border-gray-100 flex justify-between items-center">
           <div>
@@ -769,7 +781,6 @@
         <div class="p-4 bg-white rounded-2xl border border-teal-100 shadow-sm space-y-3">
           <div class="flex justify-between items-center">
             <span class="font-bold text-teal-900 text-base">${p.name}</span>
-            <button onclick="editProfile('${p.name}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-2.5 py-1 rounded-lg font-semibold">✏️ Edit</button>
           </div>
           <div class="space-y-1.5 text-xs">
             <div class="flex flex-wrap gap-2">
@@ -800,19 +811,12 @@
 
     document.getElementById('debtForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      postData({
-        action: "addDebt",
-        person: document.getElementById('debtPerson').value,
-        direction: document.getElementById('debtDir').value,
-        amount: document.getElementById('debtAmount').value,
-        loggedBy: document.getElementById('debtUser').value,
-        notes: document.getElementById('debtNotes').value
-      }, 'debtForm');
+      postData({ action: "addDebt", person: document.getElementById('debtPerson').value, direction: document.getElementById('debtDir').value, amount: document.getElementById('debtAmount').value, loggedBy: currentUser, notes: document.getElementById('debtNotes').value }, 'debtForm');
     });
 
     document.getElementById('hotspotForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      postData({ action: "addHotspotLog", customer: document.getElementById('hsCustomer').value, voucher: document.getElementById('hsVoucher').value, amount: document.getElementById('hsAmount').value, status: document.getElementById('hsStatus').value, collectedBy: document.getElementById('hsUser').value, notes: "" }, 'hotspotForm');
+      postData({ action: "addHotspotLog", customer: document.getElementById('hsCustomer').value, voucher: document.getElementById('hsVoucher').value, amount: document.getElementById('hsAmount').value, status: document.getElementById('hsStatus').value, collectedBy: currentUser, notes: "" }, 'hotspotForm');
     });
 
     document.getElementById('kkbForm').addEventListener('submit', (e) => {
@@ -821,23 +825,17 @@
       const total = parseFloat(document.getElementById('kkbTotal').value) || 0;
       const perPerson = checked.length ? (total / checked.length) : 0;
 
-      postData({
-        action: "splitBill",
-        payer: document.getElementById('kkbPayer').value,
-        reason: document.getElementById('kkbReason').value,
-        amountPerPerson: perPerson,
-        participants: checked
-      }, 'kkbForm');
+      postData({ action: "splitBill", payer: currentUser, reason: document.getElementById('kkbReason').value, amountPerPerson: perPerson, participants: checked }, 'kkbForm');
     });
 
-    document.getElementById('parcelForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addParcel", recipient: document.getElementById('parcFor').value, courier: document.getElementById('parcCourier').value, amount: document.getElementById('parcAmount').value, paymentStatus: document.getElementById('parcStatus').value, receivedBy: document.getElementById('parcReceiver').value, notes: "" }, 'parcelForm'); });
-    document.getElementById('expenseForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addExpense", date: new Date().toISOString().split('T')[0], amount: document.getElementById('expAmount').value, category: document.getElementById('expCategory').value, loggedBy: document.getElementById('expUser').value, description: document.getElementById('expDesc').value, paymentMethod: "Cash/Online" }, 'expenseForm'); });
-    document.getElementById('groceryForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addGrocery", item: document.getElementById('grocItem').value, quantity: document.getElementById('grocQty').value, requestedBy: document.getElementById('grocUser').value }, 'groceryForm'); });
-    document.getElementById('meterForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addMeterReading", date: new Date().toISOString().split('T')[0], meterName: document.getElementById('meterName').value, reading: document.getElementById('meterReading').value, rate: document.getElementById('meterRate').value, loggedBy: document.getElementById('meterUser').value }, 'meterForm'); });
-    document.getElementById('vehicleForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addVehicleLog", date: new Date().toISOString().split('T')[0], vehicle: document.getElementById('vehName').value, serviceType: document.getElementById('vehService').value, odometer: document.getElementById('vehOdo').value, nextDue: document.getElementById('vehNext').value, cost: document.getElementById('vehCost').value, loggedBy: document.getElementById('vehUser').value, notes: document.getElementById('vehNotes').value }, 'vehicleForm'); });
-    document.getElementById('profileForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "saveProfile", name: document.getElementById('profName').value, phone1: document.getElementById('profPhone1').value, phone2: document.getElementById('profPhone2').value, email1: document.getElementById('profEmail1').value, email2: document.getElementById('profEmail2').value, bloodType: document.getElementById('profBlood').value, heightWeight: document.getElementById('profHW').value, meds: document.getElementById('profMeds').value }, 'profileForm'); });
+    document.getElementById('parcelForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addParcel", recipient: currentUser, courier: document.getElementById('parcCourier').value, amount: document.getElementById('parcAmount').value, paymentStatus: document.getElementById('parcStatus').value, receivedBy: currentUser, notes: "" }, 'parcelForm'); });
+    document.getElementById('expenseForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addExpense", date: new Date().toISOString().split('T')[0], amount: document.getElementById('expAmount').value, category: document.getElementById('expCategory').value, loggedBy: currentUser, description: document.getElementById('expDesc').value, paymentMethod: "Cash/Online" }, 'expenseForm'); });
+    document.getElementById('groceryForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addGrocery", item: document.getElementById('grocItem').value, quantity: document.getElementById('grocQty').value, requestedBy: currentUser }, 'groceryForm'); });
+    document.getElementById('meterForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addMeterReading", date: new Date().toISOString().split('T')[0], meterName: document.getElementById('meterName').value, reading: document.getElementById('meterReading').value, rate: document.getElementById('meterRate').value, loggedBy: currentUser }, 'meterForm'); });
+    document.getElementById('vehicleForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addVehicleLog", date: new Date().toISOString().split('T')[0], vehicle: document.getElementById('vehName').value, serviceType: document.getElementById('vehService').value, odometer: document.getElementById('vehOdo').value, nextDue: document.getElementById('vehNext').value, cost: document.getElementById('vehCost').value, loggedBy: currentUser, notes: document.getElementById('vehNotes').value }, 'vehicleForm'); });
+    document.getElementById('profileForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "saveProfile", name: currentUser, pin: document.getElementById('profPin').value, phone1: document.getElementById('profPhone1').value, phone2: document.getElementById('profPhone2').value, email1: document.getElementById('profEmail1').value, email2: document.getElementById('profEmail2').value, bloodType: document.getElementById('profBlood').value, heightWeight: document.getElementById('profHW').value, meds: document.getElementById('profMeds').value }, 'profileForm'); });
 
-    fetchAllData();
+    checkAuth();
   </script>
 </body>
 </html>
