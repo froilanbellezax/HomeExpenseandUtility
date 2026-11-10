@@ -68,10 +68,22 @@
         <span class="text-[10px] text-gray-400 mt-0.5">Needed supplies</span>
       </button>
 
+      <button onclick="openTab('lista')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-purple-50 transition active:scale-95">
+        <span class="text-3xl mb-1">📋</span>
+        <span class="font-bold text-gray-800 text-sm">Lista Vault</span>
+        <span class="text-[10px] text-gray-400 mt-0.5">Utang & Pautang log</span>
+      </button>
+
+      <button onclick="openTab('kkb')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-pink-50 transition active:scale-95">
+        <span class="text-3xl mb-1">🍔</span>
+        <span class="font-bold text-gray-800 text-sm">KKB Splitter</span>
+        <span class="text-[10px] text-gray-400 mt-0.5">With custom names</span>
+      </button>
+
       <button onclick="openTab('parcels')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-orange-50 transition active:scale-95">
         <span class="text-3xl mb-1">📦</span>
         <span class="font-bold text-gray-800 text-sm">Parcel Delivery</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">COD & Auto-Abono</span>
+        <span class="text-[10px] text-gray-400 mt-0.5">COD & Auto-Lista</span>
       </button>
 
       <button onclick="openTab('hotspot')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-cyan-50 transition active:scale-95">
@@ -80,10 +92,10 @@
         <span class="text-[10px] text-gray-400 mt-0.5">Sales & Utang log</span>
       </button>
 
-      <button onclick="openTab('kkb')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-pink-50 transition active:scale-95">
-        <span class="text-3xl mb-1">🍔</span>
-        <span class="font-bold text-gray-800 text-sm">KKB Splitter</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">Bill calculator</span>
+      <button onclick="openTab('meter')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-yellow-50 transition active:scale-95">
+        <span class="text-3xl mb-1">⚡</span>
+        <span class="font-bold text-gray-800 text-sm">Sub-Meter</span>
+        <span class="text-[10px] text-gray-400 mt-0.5">Baking room kWh</span>
       </button>
 
       <button onclick="openTab('vehicle')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-red-50 transition active:scale-95">
@@ -92,77 +104,66 @@
         <span class="text-[10px] text-gray-400 mt-0.5">Change oil & repairs</span>
       </button>
 
-      <button onclick="openTab('reimburse')" class="col-span-2 bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex items-center justify-between hover:bg-purple-50 transition active:scale-95">
-        <div class="flex items-center gap-3">
-          <span class="text-2xl">💸</span>
-          <div class="text-left">
-            <span class="font-bold text-gray-800 text-sm block">Abono & Claims</span>
-            <span class="text-[10px] text-gray-400 block">Reimbursements tracker</span>
-          </div>
-        </div>
-        <span class="text-gray-400 font-bold">➡️</span>
-      </button>
-
       <button onclick="openTab('directory')" class="col-span-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white p-4 rounded-2xl shadow-md flex items-center justify-between hover:opacity-95 transition active:scale-95">
         <div class="flex items-center gap-3">
           <span class="text-3xl">🎴</span>
           <div class="text-left">
             <span class="font-bold text-sm block">Accounts & Family Directory</span>
-            <span class="text-[10px] text-teal-100 block">Edit Phones, Emails, Health Info</span>
+            <span class="text-[10px] text-teal-100 block">Phones, Emails, Health Info</span>
           </div>
         </div>
         <span class="text-lg">➡️</span>
       </button>
     </section>
 
-    <!-- MODULE: HOTSPOT WI-FI SALES & UTANG -->
-    <section id="tab-hotspot" class="module-content hidden space-y-4">
+    <!-- MODULE: LISTA DEBT VAULT -->
+    <section id="tab-lista" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📶 Log Hotspot Sale / Voucher Utang</h2>
-        <form id="hotspotForm" class="space-y-3">
+        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📋 Lista: Record Utang / Pautang</h2>
+        <form id="debtForm" class="space-y-3">
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-xs font-semibold text-gray-500">Customer / Device</label>
-              <input type="text" id="hsCustomer" required placeholder="e.g. Neighbor, John" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+              <label class="text-xs font-semibold text-gray-500">Person / Customer</label>
+              <input type="text" id="debtPerson" required placeholder="e.g. Mark, Friend" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
             <div>
-              <label class="text-xs font-semibold text-gray-500">Voucher / Code</label>
-              <input type="text" id="hsVoucher" placeholder="e.g. 1 Day / Code 849" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+              <label class="text-xs font-semibold text-gray-500">Type / Direction</label>
+              <select id="debtDir" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+                <option value="Pautang (Singilin)">🟢 Pautang (Singilin)</option>
+                <option value="Utang (Babayaran)">🔴 Utang (Babayaran)</option>
+              </select>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
-              <input type="number" step="1" id="hsAmount" required placeholder="e.g. 20" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+              <input type="number" step="0.01" id="debtAmount" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
             </div>
             <div>
-              <label class="text-xs font-semibold text-gray-500">Payment Status</label>
-              <select id="hsStatus" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
-                <option value="Paid">✅ Paid</option>
-                <option value="Utang">🔴 Utang</option>
-              </select>
+              <label class="text-xs font-semibold text-gray-500">Logged By</label>
+              <select id="debtUser" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
             </div>
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-500">Collected / Logged By</label>
-            <select id="hsUser" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
+            <label class="text-xs font-semibold text-gray-500">Reason / Details</label>
+            <input type="text" id="debtNotes" placeholder="e.g. McDo split, emergency load" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
-          <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save Hotspot Log</button>
+          <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 transition">Save to Lista</button>
         </form>
       </div>
 
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Hotspot Sales & Active Utang</h3>
-        <div id="hotspotList" class="space-y-2 text-sm">
-          <p class="text-gray-400 text-center">Loading hotspot logs...</p>
+        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Active Listahan & Balanse</h3>
+        <div id="debtsList" class="space-y-2 text-sm">
+          <p class="text-gray-400 text-center">Loading listahan...</p>
         </div>
       </div>
     </section>
 
-    <!-- MODULE: KKB BILL SPLITTER -->
+    <!-- MODULE: KKB BILL SPLITTER WITH MANUAL PARTICIPANTS -->
     <section id="tab-kkb" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🍔 KKB Bill Splitter Calculator</h2>
+        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🍔 KKB Splitter (Family & Friends)</h2>
         <form id="kkbForm" class="space-y-3">
           <div>
             <label class="text-xs font-semibold text-gray-500">Total Receipt Amount (₱)</label>
@@ -170,16 +171,22 @@
           </div>
           <div>
             <label class="text-xs font-semibold text-gray-500">Reason / Place</label>
-            <input type="text" id="kkbReason" required placeholder="e.g. McDonald's, Grocery run" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            <input type="text" id="kkbReason" required placeholder="e.g. McDonald's, Outing" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-500">Sino muna nagbayad (Payer)?</label>
+            <label class="text-xs font-semibold text-gray-500">Sino nagbayad (Payer)?</label>
             <select id="kkbPayer" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select" onchange="calculateKKB()"></select>
           </div>
 
           <div>
-            <label class="text-xs font-semibold text-gray-500 mb-1 block">Sinu-sino ang maghahati (Check participants):</label>
-            <div id="kkbParticipantsList" class="space-y-1 bg-gray-50 p-2.5 rounded-xl border border-gray-200 max-h-36 overflow-y-auto"></div>
+            <label class="text-xs font-semibold text-gray-500 mb-1 block">Sinu-sino ang kasama (Check / Add friends):</label>
+            <div id="kkbParticipantsList" class="space-y-1 bg-gray-50 p-2.5 rounded-xl border border-gray-200 max-h-36 overflow-y-auto mb-2"></div>
+            
+            <!-- Manual Add Extra Friend Input -->
+            <div class="flex gap-2">
+              <input type="text" id="customFriendInput" placeholder="Add custom name (e.g. Alex)" class="flex-1 p-2 border rounded-xl text-xs outline-none">
+              <button type="button" onclick="addCustomParticipant()" class="bg-pink-100 text-pink-700 font-bold px-3 py-2 rounded-xl text-xs hover:bg-pink-200">Add</button>
+            </div>
           </div>
 
           <div class="bg-pink-50 p-3 rounded-xl border border-pink-200 text-center">
@@ -187,56 +194,12 @@
             <span id="kkbSplitResult" class="text-xl font-bold text-pink-900">₱0.00</span>
           </div>
 
-          <button type="submit" class="w-full bg-pink-600 text-white font-bold py-3 rounded-xl hover:bg-pink-700 transition">Save & Auto-Generate Claims</button>
+          <button type="submit" class="w-full bg-pink-600 text-white font-bold py-3 rounded-xl hover:bg-pink-700 transition">Save & Auto-Add to Lista</button>
         </form>
       </div>
     </section>
 
-    <!-- MODULE: PARCELS -->
-    <section id="tab-parcels" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📦 Log Delivery / Parcel</h2>
-        <form id="parcelForm" class="space-y-3">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">For Whom (Recipient)</label>
-              <select id="parcFor" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Courier / App</label>
-              <input type="text" id="parcCourier" placeholder="Shopee/Lazada" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">COD Amount (₱)</label>
-              <input type="number" step="0.01" id="parcAmount" placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Payment Status</label>
-              <select id="parcStatus" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-                <option value="Paid by Owner">Paid by Owner</option>
-                <option value="Abono Needed (Unpaid)">Abono Needed (Unpaid)</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Received By</label>
-            <select id="parcReceiver" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
-          </div>
-          <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition">Log Delivery</button>
-        </form>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Recent Deliveries</h3>
-        <div id="parcelsList" class="space-y-2 text-sm">
-          <p class="text-gray-400 text-center">Loading parcels...</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- OTHER MODULES (Expenses, Grocery, Meter, Vehicle, Claims, Directory) -->
+    <!-- OTHER MODULES -->
     <section id="tab-expenses" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">💰 Log Expense / Bill</h2>
@@ -305,6 +268,90 @@
       </div>
     </section>
 
+    <section id="tab-parcels" class="module-content hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📦 Log Delivery / Parcel</h2>
+        <form id="parcelForm" class="space-y-3">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-semibold text-gray-500">For Whom</label>
+              <select id="parcFor" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Courier / App</label>
+              <input type="text" id="parcCourier" placeholder="Shopee/Lazada" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-semibold text-gray-500">COD Amount (₱)</label>
+              <input type="number" step="0.01" id="parcAmount" placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Payment Status</label>
+              <select id="parcStatus" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+                <option value="Paid by Owner">Paid by Owner</option>
+                <option value="Abono Needed (Unpaid)">Abono Needed (Unpaid)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Received By</label>
+            <select id="parcReceiver" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
+          </div>
+          <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition">Log Delivery</button>
+        </form>
+      </div>
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Recent Deliveries</h3>
+        <div id="parcelsList" class="space-y-2 text-sm">
+          <p class="text-gray-400 text-center">Loading parcels...</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="tab-hotspot" class="module-content hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📶 Log Hotspot Sale / Utang</h2>
+        <form id="hotspotForm" class="space-y-3">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Customer / Device</label>
+              <input type="text" id="hsCustomer" required placeholder="e.g. Neighbor, Mark" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Voucher / Code</label>
+              <input type="text" id="hsVoucher" placeholder="e.g. 1 Day / Code 849" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
+              <input type="number" step="1" id="hsAmount" required placeholder="e.g. 20" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Payment Status</label>
+              <select id="hsStatus" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+                <option value="Paid">✅ Paid</option>
+                <option value="Utang">🔴 Utang</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Collected / Logged By</label>
+            <select id="hsUser" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
+          </div>
+          <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save Hotspot Log</button>
+        </form>
+      </div>
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Hotspot Sales & Utang</h3>
+        <div id="hotspotList" class="space-y-2 text-sm">
+          <p class="text-gray-400 text-center">Loading hotspot logs...</p>
+        </div>
+      </div>
+    </section>
+
     <section id="tab-meter" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">⚡ Sub-Meter Reading Log</h2>
@@ -333,7 +380,7 @@
         </form>
       </div>
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Sub-meter History & Cost</h3>
+        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Sub-meter History</h3>
         <div id="meterList" class="space-y-2 text-sm">
           <p class="text-gray-400 text-center">Loading readings...</p>
         </div>
@@ -395,49 +442,13 @@
       </div>
     </section>
 
-    <section id="tab-reimburse" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">💸 File Claim / Abono</h2>
-        <form id="reimburseForm" class="space-y-3">
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Paid By (Sino nag-abono?)</label>
-            <select id="reimPayer" class="w-full p-2.5 border rounded-xl text-sm outline-none profile-select"></select>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
-              <input type="number" step="0.01" id="reimAmount" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Item / Reason</label>
-              <input type="text" id="reimDesc" required placeholder="e.g. LPG, Hardware" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
-          <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 transition">Submit Claim</button>
-        </form>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Pending Claims & Abono Records</h3>
-        <div id="reimburseList" class="space-y-2 text-sm">
-          <p class="text-gray-400 text-center">Loading claims...</p>
-        </div>
-      </div>
-    </section>
-
     <section id="tab-directory" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 id="profileFormTitle" class="font-bold text-gray-700 mb-3 text-sm uppercase">👤 Add / Edit Account Card</h2>
         <form id="profileForm" class="space-y-3">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Full Name</label>
-              <input type="text" id="profName" required placeholder="e.g. Juan Dela Cruz" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Role / Relation</label>
-              <input type="text" id="profRole" placeholder="e.g. Sister, Me, Dad" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Full Name</label>
+            <input type="text" id="profName" required placeholder="e.g. Juan Dela Cruz" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -490,7 +501,7 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     let chartInstance = null;
     let cachedProfiles = [];
-    let cachedReimbursements = [];
+    let cachedDebts = [];
     let currentUser = localStorage.getItem("household_hub_user") || "";
 
     function showHome() {
@@ -519,7 +530,7 @@
         const json = await res.json();
         if (json.status === "success") {
           cachedProfiles = json.data.profiles || [];
-          cachedReimbursements = json.data.reimbursements || [];
+          cachedDebts = json.data.debts || [];
           populateProfileDropdowns(cachedProfiles);
 
           renderExpensesChart(json.data.transactions);
@@ -527,7 +538,7 @@
           renderParcels(json.data.parcels);
           renderMeter(json.data.submeter);
           renderVehicle(json.data.vehicle);
-          renderReimbursements(cachedReimbursements);
+          renderDebts(cachedDebts);
           renderProfiles(cachedProfiles);
           renderHotspot(json.data.hotspot);
           updateUserSummary();
@@ -543,7 +554,7 @@
       const kkbContainer = document.getElementById('kkbParticipantsList');
 
       const options = profiles.length 
-        ? profiles.map(p => `<option value="${p.name}">${p.name} (${p.role || 'Member'})</option>`).join('')
+        ? profiles.map(p => `<option value="${p.name}">${p.name}</option>`).join('')
         : `<option value="Default User">Default User</option>`;
       
       activeSelect.innerHTML = `<option value="">Set Profile...</option>` + options;
@@ -564,6 +575,23 @@
       }
     }
 
+    function addCustomParticipant() {
+      const input = document.getElementById('customFriendInput');
+      const name = input.value.trim();
+      if (!name) return;
+
+      const kkbContainer = document.getElementById('kkbParticipantsList');
+      const newLabel = document.createElement('label');
+      newLabel.className = 'flex items-center gap-2 text-xs font-semibold text-pink-900 py-1 bg-pink-100/50 px-2 rounded-lg';
+      newLabel.innerHTML = `
+        <input type="checkbox" value="${name}" class="kkb-check rounded text-pink-600 focus:ring-pink-500" onchange="calculateKKB()" checked>
+        <span>${name} (Guest)</span>
+      `;
+      kkbContainer.appendChild(newLabel);
+      input.value = '';
+      calculateKKB();
+    }
+
     function updateUserSummary() {
       const card = document.getElementById('userSummaryCard');
       if (!currentUser) { card.classList.add('hidden'); return; }
@@ -571,17 +599,18 @@
       card.classList.remove('hidden');
       document.getElementById('summaryUserName').innerText = currentUser;
 
-      let receivable = 0; // Siningilin sa iba (paidby = currentUser)
-      let payable = 0;    // Utang kay iba (status contains "Owed by currentUser")
+      let receivable = 0; // Pautang ko sa iba
+      let payable = 0;    // Utang ko sa iba
 
-      cachedReimbursements.forEach(r => {
-        const amt = parseFloat(r.amount) || 0;
-        const status = String(r.reimbursementstatus || '');
-
-        if (r.paidby === currentUser && status.includes('Pending')) {
-          receivable += amt;
-        } else if (status.includes(`Owed by ${currentUser}`)) {
-          payable += amt;
+      cachedDebts.forEach(d => {
+        const amt = parseFloat(d.amount) || 0;
+        const status = String(d.status || '');
+        if (status === 'Unpaid') {
+          if (d.loggedby === currentUser && d.direction?.includes('Pautang')) {
+            receivable += amt;
+          } else if (d.person === currentUser && d.direction?.includes('Pautang')) {
+            payable += amt;
+          }
         }
       });
 
@@ -595,6 +624,29 @@
       const count = checked.length;
       const perPerson = count > 0 ? (total / count) : 0;
       document.getElementById('kkbSplitResult').innerText = `₱${perPerson.toFixed(2)}`;
+    }
+
+    function renderDebts(data) {
+      const container = document.getElementById('debtsList');
+      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No active listahan logs.</p>'; return; }
+      container.innerHTML = data.map(d => `
+        <div class="p-3 bg-purple-50/60 rounded-xl border border-purple-100 flex justify-between items-center">
+          <div>
+            <div class="font-bold text-gray-800">${d.borrowerperson} <span class="text-[10px] text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded">${d.direction}</span></div>
+            <div class="text-xs text-gray-500">${d.reasonnotes || 'No details'} • By: ${d.loggedby}</div>
+          </div>
+          <div class="text-right">
+            <div class="font-bold text-purple-900">₱${parseFloat(d.amount || 0).toFixed(2)}</div>
+            ${d.status === 'Unpaid' 
+              ? `<button onclick="markDebtSettled('${d.borrowerperson}', '${d.reasonnotes}')" class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">Mark Settled</button>`
+              : `<span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">Settled</span>`}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function markDebtSettled(person, notes) {
+      await postData({ action: "updateDebtStatus", person: person, notes: notes }, null);
     }
 
     function renderHotspot(data) {
@@ -710,37 +762,19 @@
       `).join('');
     }
 
-    function renderReimbursements(data) {
-      const container = document.getElementById('reimburseList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No pending claims.</p>'; return; }
-      container.innerHTML = data.map(r => `
-        <div class="p-3 bg-gray-50 rounded-xl border border-gray-100 flex justify-between items-center">
-          <div>
-            <div class="font-bold text-gray-800">${r.paidby}</div>
-            <div class="text-xs text-gray-500">${r.description}</div>
-          </div>
-          <div class="text-right">
-            <div class="font-bold text-purple-700">₱${parseFloat(r.amount || 0).toFixed(2)}</div>
-            <span class="text-xs font-semibold text-amber-600">${r.reimbursementstatus}</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
     function renderProfiles(data) {
       const container = document.getElementById('familyList');
       if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No account profiles saved yet.</p>'; return; }
       container.innerHTML = data.map(p => `
         <div class="p-4 bg-white rounded-2xl border border-teal-100 shadow-sm space-y-3">
-          <div class="flex justify-between items-start">
-            <div>
-              <span class="font-bold text-teal-900 text-base">${p.name}</span>
-              <span class="text-xs bg-teal-100 text-teal-800 px-2 py-0.5 rounded-md font-semibold ml-2">${p.role || 'Member'}</span>
-            </div>
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-teal-900 text-base">${p.name}</span>
+            <button onclick="editProfile('${p.name}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-2.5 py-1 rounded-lg font-semibold">✏️ Edit</button>
           </div>
           <div class="space-y-1.5 text-xs">
             <div class="flex flex-wrap gap-2">
               ${p.phone1 ? `<a href="tel:${p.phone1}" class="bg-teal-50 text-teal-800 border border-teal-200 px-2.5 py-1 rounded-xl font-bold">📞 ${p.phone1}</a>` : ''}
+              ${p.phone2 ? `<a href="tel:${p.phone2}" class="bg-gray-50 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-xl font-bold">📱 Alt: ${p.phone2}</a>` : ''}
               ${p.email1 ? `<a href="mailto:${p.email1}" class="bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-xl font-semibold">✉️ ${p.email1}</a>` : ''}
             </div>
           </div>
@@ -764,17 +798,21 @@
       }
     }
 
-    document.getElementById('hotspotForm').addEventListener('submit', (e) => {
+    document.getElementById('debtForm').addEventListener('submit', (e) => {
       e.preventDefault();
       postData({
-        action: "addHotspotLog",
-        customer: document.getElementById('hsCustomer').value,
-        voucher: document.getElementById('hsVoucher').value,
-        amount: document.getElementById('hsAmount').value,
-        status: document.getElementById('hsStatus').value,
-        collectedBy: document.getElementById('hsUser').value,
-        notes: ""
-      }, 'hotspotForm');
+        action: "addDebt",
+        person: document.getElementById('debtPerson').value,
+        direction: document.getElementById('debtDir').value,
+        amount: document.getElementById('debtAmount').value,
+        loggedBy: document.getElementById('debtUser').value,
+        notes: document.getElementById('debtNotes').value
+      }, 'debtForm');
+    });
+
+    document.getElementById('hotspotForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      postData({ action: "addHotspotLog", customer: document.getElementById('hsCustomer').value, voucher: document.getElementById('hsVoucher').value, amount: document.getElementById('hsAmount').value, status: document.getElementById('hsStatus').value, collectedBy: document.getElementById('hsUser').value, notes: "" }, 'hotspotForm');
     });
 
     document.getElementById('kkbForm').addEventListener('submit', (e) => {
@@ -792,17 +830,12 @@
       }, 'kkbForm');
     });
 
-    document.getElementById('parcelForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      postData({ action: "addParcel", recipient: document.getElementById('parcFor').value, courier: document.getElementById('parcCourier').value, amount: document.getElementById('parcAmount').value, paymentStatus: document.getElementById('parcStatus').value, receivedBy: document.getElementById('parcReceiver').value, notes: "" }, 'parcelForm');
-    });
-
+    document.getElementById('parcelForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addParcel", recipient: document.getElementById('parcFor').value, courier: document.getElementById('parcCourier').value, amount: document.getElementById('parcAmount').value, paymentStatus: document.getElementById('parcStatus').value, receivedBy: document.getElementById('parcReceiver').value, notes: "" }, 'parcelForm'); });
     document.getElementById('expenseForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addExpense", date: new Date().toISOString().split('T')[0], amount: document.getElementById('expAmount').value, category: document.getElementById('expCategory').value, loggedBy: document.getElementById('expUser').value, description: document.getElementById('expDesc').value, paymentMethod: "Cash/Online" }, 'expenseForm'); });
     document.getElementById('groceryForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addGrocery", item: document.getElementById('grocItem').value, quantity: document.getElementById('grocQty').value, requestedBy: document.getElementById('grocUser').value }, 'groceryForm'); });
     document.getElementById('meterForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addMeterReading", date: new Date().toISOString().split('T')[0], meterName: document.getElementById('meterName').value, reading: document.getElementById('meterReading').value, rate: document.getElementById('meterRate').value, loggedBy: document.getElementById('meterUser').value }, 'meterForm'); });
     document.getElementById('vehicleForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addVehicleLog", date: new Date().toISOString().split('T')[0], vehicle: document.getElementById('vehName').value, serviceType: document.getElementById('vehService').value, odometer: document.getElementById('vehOdo').value, nextDue: document.getElementById('vehNext').value, cost: document.getElementById('vehCost').value, loggedBy: document.getElementById('vehUser').value, notes: document.getElementById('vehNotes').value }, 'vehicleForm'); });
-    document.getElementById('reimburseForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addReimbursement", paidBy: document.getElementById('reimPayer').value, amount: document.getElementById('reimAmount').value, description: document.getElementById('reimDesc').value }, 'reimburseForm'); });
-    document.getElementById('profileForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "saveProfile", name: document.getElementById('profName').value, role: document.getElementById('profRole').value, phone1: document.getElementById('profPhone1').value, phone2: document.getElementById('profPhone2').value, email1: document.getElementById('profEmail1').value, email2: document.getElementById('profEmail2').value, bloodType: document.getElementById('profBlood').value, heightWeight: document.getElementById('profHW').value, meds: document.getElementById('profMeds').value }, 'profileForm'); });
+    document.getElementById('profileForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "saveProfile", name: document.getElementById('profName').value, phone1: document.getElementById('profPhone1').value, phone2: document.getElementById('profPhone2').value, email1: document.getElementById('profEmail1').value, email2: document.getElementById('profEmail2').value, bloodType: document.getElementById('profBlood').value, heightWeight: document.getElementById('profHW').value, meds: document.getElementById('profMeds').value }, 'profileForm'); });
 
     fetchAllData();
   </script>
