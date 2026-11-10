@@ -96,7 +96,7 @@
           <span class="text-3xl">🎴</span>
           <div class="text-left">
             <span class="font-bold text-sm block">Accounts & Family Directory</span>
-            <span class="text-[10px] text-teal-100 block">Phones, Emails, Health & Emergency info</span>
+            <span class="text-[10px] text-teal-100 block">Edit Phones, Emails, Health Info</span>
           </div>
         </div>
         <span class="text-lg">➡️</span>
@@ -385,10 +385,10 @@
       </div>
     </section>
 
-    <!-- MODULE 8: DIRECTORY & ACCOUNTS -->
+    <!-- MODULE 8: DIRECTORY & ACCOUNTS (WITH EDIT PROFILE SUPPORT) -->
     <section id="tab-directory" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">👤 Add Account / Contact Card</h2>
+        <h2 id="profileFormTitle" class="font-bold text-gray-700 mb-3 text-sm uppercase">👤 Add / Edit Account Card</h2>
         <form id="profileForm" class="space-y-3">
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -439,7 +439,7 @@
             <input type="text" id="profMeds" placeholder="e.g. Biogesic, Maintenance, Peanut allergy" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
 
-          <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">Save Account Info</button>
+          <button type="submit" id="profSubmitBtn" class="w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">Save / Update Profile</button>
         </form>
       </div>
 
@@ -517,6 +517,85 @@
       }
     }
 
+    function editProfile(name) {
+      const p = cachedProfiles.find(item => item.name === name);
+      if (!p) return;
+
+      document.getElementById('profName').value = p.name || '';
+      document.getElementById('profRole').value = p.role || '';
+      document.getElementById('profPhone1').value = p.phone1 || '';
+      document.getElementById('profPhone2').value = p.phone2 || '';
+      document.getElementById('profEmail1').value = p.email1 || '';
+      document.getElementById('profEmail2').value = p.email2 || '';
+      document.getElementById('profBlood').value = p.bloodtype || '';
+      document.getElementById('profHW').value = p.heightweight || '';
+      document.getElementById('profMeds').value = p.medsallergies || '';
+
+      document.getElementById('profileFormTitle').innerText = `✏️ Editing: ${p.name}`;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function toggleGroceryStatus(id, newStatus) {
+      await postData({ action: "updateGroceryStatus", id: id, status: newStatus }, null, false);
+    }
+
+    function renderGrocery(data) {
+      const list = document.getElementById('groceryList');
+      if (!data || !data.length) { list.innerHTML = '<li class="py-2 text-gray-400 text-center">No items needed!</li>'; return; }
+      list.innerHTML = data.map(i => `
+        <li class="py-2 flex justify-between items-center">
+          <div>
+            <span class="font-bold text-gray-800 ${i.status === 'Bought' ? 'line-through text-gray-400' : ''}">${i.item}</span> 
+            <span class="text-xs text-gray-400">(${i.quantity || '1'})</span>
+            <div class="text-xs text-gray-400">Req by: ${i.requestedby}</div>
+          </div>
+          <button onclick="toggleGroceryStatus('${i.id}', '${i.status === 'Bought' ? 'Pending' : 'Bought'}')" class="px-2.5 py-1 ${i.status === 'Bought' ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-800'} rounded-full text-xs font-semibold">
+            ${i.status === 'Bought' ? '✓ Bought' : 'Mark Bought'}
+          </button>
+        </li>
+      `).join('');
+    }
+
+    function renderProfiles(data) {
+      const container = document.getElementById('familyList');
+      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No account profiles saved yet.</p>'; return; }
+      container.innerHTML = data.map(p => `
+        <div class="p-4 bg-white rounded-2xl border border-teal-100 shadow-sm space-y-3">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="font-bold text-teal-900 text-base">${p.name}</span>
+              <span class="text-xs bg-teal-100 text-teal-800 px-2 py-0.5 rounded-md font-semibold ml-2">${p.role || 'Member'}</span>
+            </div>
+            <button onclick="editProfile('${p.name}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1">
+              ✏️ Edit
+            </button>
+          </div>
+
+          <div class="space-y-1.5 text-xs">
+            <div class="font-semibold text-gray-500 text-[10px] uppercase">Phone Numbers</div>
+            <div class="flex flex-wrap gap-2">
+              ${p.phone1 ? `<a href="tel:${p.phone1}" class="bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 px-2.5 py-1 rounded-xl font-bold flex items-center gap-1">📞 Main: ${p.phone1}</a>` : ''}
+              ${p.phone2 ? `<a href="tel:${p.phone2}" class="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-xl font-bold flex items-center gap-1">📱 Alt: ${p.phone2}</a>` : ''}
+            </div>
+          </div>
+
+          <div class="space-y-1.5 text-xs">
+            <div class="font-semibold text-gray-500 text-[10px] uppercase">Email Addresses</div>
+            <div class="flex flex-wrap gap-2">
+              ${p.email1 ? `<a href="mailto:${p.email1}" class="bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-xl font-semibold flex items-center gap-1">✉️ ${p.email1}</a>` : ''}
+              ${p.email2 ? `<a href="mailto:${p.email2}" class="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-xl font-semibold flex items-center gap-1">✉️ ${p.email2}</a>` : ''}
+            </div>
+          </div>
+
+          <div class="text-xs text-gray-600 grid grid-cols-2 gap-2 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+            <div>🩸 <strong>Blood:</strong> <span class="font-bold text-red-600">${p.bloodtype || 'N/A'}</span></div>
+            <div>📏 <strong>Ht/Wt:</strong> ${p.heightweight || 'N/A'}</div>
+          </div>
+          ${p.medsallergies ? `<div class="text-xs text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200">💊 <strong>Meds/Allergies:</strong> ${p.medsallergies}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
     function renderExpensesChart(data) {
       if(!data || !data.length) return;
       const totals = {};
@@ -534,21 +613,6 @@
         },
         options: { responsive: true, maintainAspectRatio: false }
       });
-    }
-
-    function renderGrocery(data) {
-      const list = document.getElementById('groceryList');
-      if (!data || !data.length) { list.innerHTML = '<li class="py-2 text-gray-400 text-center">No items needed!</li>'; return; }
-      list.innerHTML = data.map(i => `
-        <li class="py-2 flex justify-between items-center">
-          <div>
-            <span class="font-bold text-gray-800">${i.item}</span> 
-            <span class="text-xs text-gray-400">(${i.quantity || '1'})</span>
-            <div class="text-xs text-gray-400">Req by: ${i.requestedby}</div>
-          </div>
-          <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">${i.status}</span>
-        </li>
-      `).join('');
     }
 
     function renderParcels(data) {
@@ -661,44 +725,7 @@
       `).join('');
     }
 
-    function renderProfiles(data) {
-      const container = document.getElementById('familyList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No account profiles saved yet.</p>'; return; }
-      container.innerHTML = data.map(p => `
-        <div class="p-4 bg-white rounded-2xl border border-teal-100 shadow-sm space-y-3">
-          <div class="flex justify-between items-start">
-            <div>
-              <span class="font-bold text-teal-900 text-base">${p.name}</span>
-              <span class="text-xs bg-teal-100 text-teal-800 px-2 py-0.5 rounded-md font-semibold ml-2">${p.role || 'Member'}</span>
-            </div>
-          </div>
-
-          <div class="space-y-1.5 text-xs">
-            <div class="font-semibold text-gray-500 text-[10px] uppercase">Phone Numbers</div>
-            <div class="flex flex-wrap gap-2">
-              ${p.phone1 ? `<a href="tel:${p.phone1}" class="bg-teal-50 hover:bg-teal-100 text-teal-800 border border-teal-200 px-2.5 py-1 rounded-xl font-bold flex items-center gap-1">📞 Main: ${p.phone1}</a>` : ''}
-              ${p.phone2 ? `<a href="tel:${p.phone2}" class="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-xl font-bold flex items-center gap-1">📱 Alt: ${p.phone2}</a>` : ''}
-            </div>
-          </div>
-
-          <div class="space-y-1.5 text-xs">
-            <div class="font-semibold text-gray-500 text-[10px] uppercase">Email Addresses</div>
-            <div class="flex flex-wrap gap-2">
-              ${p.email1 ? `<a href="mailto:${p.email1}" class="bg-blue-50 hover:bg-blue-100 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-xl font-semibold flex items-center gap-1">✉️ ${p.email1}</a>` : ''}
-              ${p.email2 ? `<a href="mailto:${p.email2}" class="bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-xl font-semibold flex items-center gap-1">✉️ ${p.email2}</a>` : ''}
-            </div>
-          </div>
-
-          <div class="text-xs text-gray-600 grid grid-cols-2 gap-2 bg-gray-50 p-2.5 rounded-xl border border-gray-100">
-            <div>🩸 <strong>Blood:</strong> <span class="font-bold text-red-600">${p.bloodtype || 'N/A'}</span></div>
-            <div>📏 <strong>Ht/Wt:</strong> ${p.heightweight || 'N/A'}</div>
-          </div>
-          ${p.medsallergies ? `<div class="text-xs text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-200">💊 <strong>Meds/Allergies:</strong> ${p.medsallergies}</div>` : ''}
-        </div>
-      `).join('');
-    }
-
-    async function postData(payload, formId) {
+    async function postData(payload, formId, showAlert = true) {
       try {
         await fetch(API_URL, {
           method: "POST",
@@ -706,11 +733,11 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-        alert("Saved successfully!");
-        document.getElementById(formId).reset();
+        if (showAlert) alert("Saved successfully!");
+        if (formId) document.getElementById(formId).reset();
         setTimeout(fetchAllData, 1500);
       } catch(e) {
-        alert("Failed to submit.");
+        if (showAlert) alert("Failed to submit.");
       }
     }
 
@@ -736,17 +763,7 @@
 
     document.getElementById('vehicleForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      postData({
-        action: "addVehicleLog",
-        date: new Date().toISOString().split('T')[0],
-        vehicle: document.getElementById('vehName').value,
-        serviceType: document.getElementById('vehService').value,
-        odometer: document.getElementById('vehOdo').value,
-        nextDue: document.getElementById('vehNext').value,
-        cost: document.getElementById('vehCost').value,
-        loggedBy: document.getElementById('vehUser').value,
-        notes: document.getElementById('vehNotes').value
-      }, 'vehicleForm');
+      postData({ action: "addVehicleLog", date: new Date().toISOString().split('T')[0], vehicle: document.getElementById('vehName').value, serviceType: document.getElementById('vehService').value, odometer: document.getElementById('vehOdo').value, nextDue: document.getElementById('vehNext').value, cost: document.getElementById('vehCost').value, loggedBy: document.getElementById('vehUser').value, notes: document.getElementById('vehNotes').value }, 'vehicleForm');
     });
 
     document.getElementById('recurringForm').addEventListener('submit', (e) => {
@@ -773,6 +790,7 @@
         heightWeight: document.getElementById('profHW').value,
         meds: document.getElementById('profMeds').value
       }, 'profileForm');
+      document.getElementById('profileFormTitle').innerText = '👤 Add / Edit Account Card';
     });
 
     fetchAllData();
