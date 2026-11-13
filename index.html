@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Household Hub Lite</title>
+  <title>BelPan House Hub</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdn.tailwindcss.com"></script>
@@ -21,7 +21,7 @@
     <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 text-center">
       <div class="text-4xl">🔐</div>
       <div>
-        <h2 class="text-xl font-bold text-gray-800">Welcome to Household Hub</h2>
+        <h2 class="text-xl font-bold text-gray-800">BelPan House Hub</h2>
         <p class="text-xs text-gray-500 mt-1">Please log in to access your personal dashboard</p>
       </div>
       <form id="loginForm" class="space-y-3 text-left">
@@ -39,18 +39,21 @@
     </div>
   </div>
 
-  <!-- Header -->
+  <!-- Header with Upper Right Contacts Icon -->
   <header class="bg-blue-600 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
     <div>
-      <h1 class="text-lg font-bold">🏠 Household Hub</h1>
+      <h1 class="text-lg font-bold">🏠 BelPan House Hub</h1>
       <div class="flex items-center gap-1.5 text-[11px] text-blue-100 mt-0.5">
         <span>Account:</span>
         <span id="activeUserName" class="bg-blue-800 text-white px-2 py-0.5 rounded font-bold border border-blue-400">Not Logged In</span>
         <button onclick="logout()" class="text-[10px] bg-red-500/80 hover:bg-red-600 px-1.5 py-0.5 rounded font-bold">Logout</button>
       </div>
     </div>
-    <div class="flex items-center gap-2">
-      <button onclick="openTab('adminLogs')" id="adminNavBtn" class="bg-purple-700 hover:bg-purple-800 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold hidden">🛡️ Logs</button>
+    <div class="flex items-center gap-1.5">
+      <button onclick="openTab('directory')" class="bg-teal-700 hover:bg-teal-800 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-sm" title="Contacts Directory">
+        🎴 Contacts
+      </button>
+      <button onclick="openTab('adminLogs')" id="adminNavBtn" class="bg-purple-700 hover:bg-purple-800 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold hidden" title="Admin Audit Logs">🛡️</button>
       <button onclick="showHome()" id="homeBtn" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold hidden">⬅️ Menu</button>
     </div>
   </header>
@@ -75,85 +78,87 @@
     </div>
   </div>
 
-  <main class="px-4 flex-1">
+  <main class="px-4 flex-1 space-y-4">
 
     <!-- DASHBOARD MENU -->
-    <section id="view-dashboard" class="grid grid-cols-2 gap-3">
-      <button onclick="openTab('loans')" class="col-span-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-4 rounded-2xl shadow-md flex items-center justify-between hover:opacity-95 transition active:scale-95">
-        <div class="flex items-center gap-3">
-          <span class="text-3xl">🏦</span>
-          <div class="text-left">
-            <span class="font-bold text-sm block">Loans & Installments</span>
-            <span id="dashLoanSub" class="text-[11px] text-indigo-100 block">Track monthly dues & remaining months</span>
+    <section id="view-dashboard" class="space-y-4">
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="openTab('loans')" class="col-span-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-4 rounded-2xl shadow-md flex items-center justify-between hover:opacity-95 transition active:scale-95">
+          <div class="flex items-center gap-3">
+            <span class="text-3xl">🏦</span>
+            <div class="text-left">
+              <span class="font-bold text-sm block">Loans & Installments</span>
+              <span id="dashLoanSub" class="text-[11px] text-indigo-100 block">Track monthly dues & remaining months</span>
+            </div>
           </div>
+          <span class="text-lg">➡️</span>
+        </button>
+
+        <button onclick="openTab('expenses')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-blue-50 transition active:scale-95">
+          <span class="text-3xl mb-1">💰</span>
+          <span class="font-bold text-gray-800 text-sm">Daily Expenses</span>
+          <span class="text-[10px] text-gray-400 mt-0.5">Log daily costs</span>
+        </button>
+
+        <button onclick="openTab('bills')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-indigo-50 transition active:scale-95">
+          <span class="text-3xl mb-1">📃</span>
+          <span class="font-bold text-gray-800 text-sm">Bills & Utilities</span>
+          <span class="text-[10px] text-gray-400 mt-0.5">Internet, electricity, etc.</span>
+        </button>
+
+        <button onclick="openTab('grocery')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-green-50 transition active:scale-95">
+          <span class="text-3xl mb-1">🛒</span>
+          <span class="font-bold text-gray-800 text-sm">Grocery List</span>
+          <span class="text-[10px] text-gray-400 mt-0.5">Needed supplies</span>
+        </button>
+
+        <button onclick="openTab('lista')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-purple-50 transition active:scale-95">
+          <span class="text-3xl mb-1">📋</span>
+          <span class="font-bold text-gray-800 text-sm">Lista Vault</span>
+          <span class="text-[10px] text-gray-400 mt-0.5">Sisingilin & Utang</span>
+        </button>
+
+        <button onclick="openTab('kkb')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-pink-50 transition active:scale-95">
+          <span class="text-3xl mb-1">🍔</span>
+          <span class="font-bold text-gray-800 text-sm">KKB Splitter</span>
+          <span class="text-[10px] text-gray-400 mt-0.5">With Cash/Full/Half</span>
+        </button>
+
+        <button onclick="openTab('parcels')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-orange-50 transition active:scale-95">
+          <span class="text-3xl mb-1">📦</span>
+          <span class="font-bold text-gray-800 text-sm">My Parcels</span>
+          <span class="text-[10px] text-gray-400 mt-0.5">COD & Auto-Lista</span>
+        </button>
+
+        <button onclick="openTab('hotspot')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-cyan-50 transition active:scale-95">
+          <span class="text-3xl mb-1">📶</span>
+          <span class="font-bold text-gray-800 text-sm">Hotspot Wi-Fi</span>
+          <span class="text-[10px] text-gray-400 mt-0.5">Sales & Utang log</span>
+        </button>
+
+        <button onclick="openTab('meter')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-yellow-50 transition active:scale-95">
+          <span class="text-3xl mb-1">⚡</span>
+          <span class="font-bold text-gray-800 text-sm">Sub-Meter</span>
+          <span class="text-[10px] text-gray-400 mt-0.5">Baking room kWh</span>
+        </button>
+
+        <button onclick="openTab('vehicle')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-red-50 transition active:scale-95">
+          <span class="text-3xl mb-1">🛵</span>
+          <span class="font-bold text-gray-800 text-sm">Vehicle Care</span>
+          <span class="text-[10px] text-gray-400 mt-0.5">Change oil & repairs</span>
+        </button>
+      </div>
+
+      <!-- UPCOMING DUES PREVIEW CARD (Bottom of Dashboard - Max 5 entries) -->
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-2">
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-gray-700 text-xs uppercase">⏰ Upcoming Dues & Bills (Top 5)</h3>
+          <span class="text-[10px] text-blue-600 font-semibold">Sorted by schedule</span>
         </div>
-        <span class="text-lg">➡️</span>
-      </button>
-
-      <button onclick="openTab('expenses')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-blue-50 transition active:scale-95">
-        <span class="text-3xl mb-1">💰</span>
-        <span class="font-bold text-gray-800 text-sm">Daily Expenses</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">Log daily costs</span>
-      </button>
-
-      <button onclick="openTab('bills')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-indigo-50 transition active:scale-95">
-        <span class="text-3xl mb-1">📃</span>
-        <span class="font-bold text-gray-800 text-sm">Bills & Utilities</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">Internet, electricity, etc.</span>
-      </button>
-
-      <button onclick="openTab('grocery')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-green-50 transition active:scale-95">
-        <span class="text-3xl mb-1">🛒</span>
-        <span class="font-bold text-gray-800 text-sm">Grocery List</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">Needed supplies</span>
-      </button>
-
-      <button onclick="openTab('lista')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-purple-50 transition active:scale-95">
-        <span class="text-3xl mb-1">📋</span>
-        <span class="font-bold text-gray-800 text-sm">Lista Vault</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">Sisingilin & Utang</span>
-      </button>
-
-      <button onclick="openTab('kkb')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-pink-50 transition active:scale-95">
-        <span class="text-3xl mb-1">🍔</span>
-        <span class="font-bold text-gray-800 text-sm">KKB Splitter</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">With Cash/Full/Half</span>
-      </button>
-
-      <button onclick="openTab('parcels')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-orange-50 transition active:scale-95">
-        <span class="text-3xl mb-1">📦</span>
-        <span class="font-bold text-gray-800 text-sm">My Parcels</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">COD & Auto-Lista</span>
-      </button>
-
-      <button onclick="openTab('hotspot')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-cyan-50 transition active:scale-95">
-        <span class="text-3xl mb-1">📶</span>
-        <span class="font-bold text-gray-800 text-sm">Hotspot Wi-Fi</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">Sales & Utang log</span>
-      </button>
-
-      <button onclick="openTab('meter')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-yellow-50 transition active:scale-95">
-        <span class="text-3xl mb-1">⚡</span>
-        <span class="font-bold text-gray-800 text-sm">Sub-Meter</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">Baking room kWh</span>
-      </button>
-
-      <button onclick="openTab('vehicle')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-red-50 transition active:scale-95">
-        <span class="text-3xl mb-1">🛵</span>
-        <span class="font-bold text-gray-800 text-sm">Vehicle Care</span>
-        <span class="text-[10px] text-gray-400 mt-0.5">Change oil & repairs</span>
-      </button>
-
-      <button onclick="openTab('directory')" class="col-span-2 bg-gradient-to-r from-teal-600 to-emerald-600 text-white p-4 rounded-2xl shadow-md flex items-center justify-between hover:opacity-95 transition active:scale-95">
-        <div class="flex items-center gap-3">
-          <span class="text-3xl">🎴</span>
-          <div class="text-left">
-            <span class="font-bold text-sm block">Accounts Directory</span>
-            <span class="text-[10px] text-teal-100 block">Phones, Emails, Health Info</span>
-          </div>
+        <div id="dashUpcomingList" class="space-y-2 text-xs">
+          <p class="text-gray-400 text-center">Loading upcoming dues...</p>
         </div>
-        <span class="text-lg">➡️</span>
-      </button>
+      </div>
     </section>
 
     <!-- MODULE: LOANS & INSTALLMENTS -->
@@ -246,14 +251,14 @@
               <input type="text" id="billName" required placeholder="e.g. PLDT Internet, VECO" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
             <div>
-              <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
+              <label class="text-xs font-semibold text-gray-500">Estimated/Default Amount (₱)</label>
               <input type="number" step="0.01" id="billAmount" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="text-xs font-semibold text-gray-500">Due Date (Day of Month)</label>
-              <input type="text" id="billDueDate" required placeholder="e.g. Every 25th" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+              <input type="text" id="billDueDate" required placeholder="e.g. 25" class="w-full p-2.5 border rounded-xl text-sm outline-none">
             </div>
             <div>
               <label class="text-xs font-semibold text-gray-500">Responsible Person</label>
@@ -622,7 +627,6 @@
     let cachedProfiles = [];
     let cachedDebts = [];
     let currentUser = localStorage.getItem("household_hub_user") || "";
-    // Admin check: update this with your exact admin profile name if needed
     const ADMIN_USER = "Admin"; 
 
     function getCurrentMonthStr() {
@@ -645,7 +649,6 @@
         document.getElementById('summaryUserName').innerText = currentUser;
         document.getElementById('profName').value = currentUser;
         
-        // Show Admin Logs button if user is Admin
         if (currentUser.toLowerCase() === ADMIN_USER.toLowerCase() || currentUser.toLowerCase().includes("admin")) {
           document.getElementById('adminNavBtn').classList.remove('hidden');
         } else {
@@ -716,7 +719,6 @@
       
       let options = '';
       const now = new Date();
-      // Generate from 24 months ago up to 12 months in the future for historical/active tracking
       for (let i = -24; i <= 12; i++) {
         const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
         const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
@@ -739,6 +741,7 @@
 
           renderLoans(json.data.loans || []);
           renderBills(json.data.recurring || []);
+          renderDashboardUpcoming(json.data.recurring || [], json.data.loans || []);
           renderAdminLogs(json.data.auditLogs || []);
           renderExpensesChart(json.data.transactions);
           renderGrocery(json.data.grocery);
@@ -763,7 +766,6 @@
         ? profiles.map(p => `<option value="${p.name}">${p.name}</option>`).join('')
         : `<option value="${currentUser}">${currentUser}</option>`;
       
-      // Append Others option for Actual Payer dropdown
       const payerOptions = options + `<option value="Others">🌐 Others (Custom Name)</option>`;
 
       loanSelects.forEach(s => {
@@ -891,6 +893,61 @@
 
       document.getElementById('userReceivable').innerText = `₱${receivable.toFixed(2)}`;
       document.getElementById('userPayable').innerText = `₱${payable.toFixed(2)}`;
+    }
+
+    function renderDashboardUpcoming(bills, loans) {
+      const container = document.getElementById('dashUpcomingList');
+      let combined = [];
+
+      // Add bills
+      if (bills) {
+        bills.forEach(b => {
+          if (String(b.status || '') !== 'Paid') {
+            combined.push({
+              name: b.billname || 'Bill',
+              amount: parseFloat(b.amount || 0),
+              day: parseInt(b.duedatedayofmonth) || 99,
+              type: 'Bill'
+            });
+          }
+        });
+      }
+
+      // Add active loans
+      const currMonth = getCurrentMonthStr();
+      if (loans) {
+        loans.forEach(l => {
+          const remM = Math.max(0, (parseInt(l.totalmonths) || 1) - (parseInt(l.monthspaid) || 0));
+          const isPaidThisMonth = String(l.lastpaidmonth) === currMonth || remM === 0;
+          if (remM > 0 && !isPaidThisMonth && l.status !== 'Pending Approval') {
+            combined.push({
+              name: `${l.loanprovider || 'Loan'} (${l.itemdescription || ''})`,
+              amount: parseFloat(l.monthlydue || 0),
+              day: parseInt(String(l.dueday || '1').replace(/\D/g, '')) || 15,
+              type: 'Loan'
+            });
+          }
+        });
+      }
+
+      // Sort by due day (duest first) and take top 5
+      combined.sort((a, b) => a.day - b.day);
+      const top5 = combined.slice(0, 5);
+
+      if (!top5.length) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-1">No upcoming dues or bills! 🎉</p>';
+        return;
+      }
+
+      container.innerHTML = top5.map(item => `
+        <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100 flex justify-between items-center">
+          <div>
+            <div class="font-bold text-gray-800">${item.name} <span class="text-[10px] text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded font-semibold">${item.type}</span></div>
+            <div class="text-[10px] text-gray-500">Due day: Every ${item.day}th</div>
+          </div>
+          <div class="text-right font-bold text-gray-900">₱${item.amount.toFixed(2)}</div>
+        </div>
+      `).join('');
     }
 
     function renderLoans(data) {
@@ -1025,7 +1082,7 @@
       
       container.innerHTML = data.map(b => {
         const name = b.billname || 'Bill';
-        const amt = parseFloat(b.amount || 0).toFixed(2);
+        const defaultAmt = parseFloat(b.amount || 0);
         const due = b.duedatedayofmonth || '';
         const status = b.status || 'Unpaid';
         const resp = b.responsibleperson || '';
@@ -1033,22 +1090,37 @@
         return `
           <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 flex justify-between items-center">
             <div>
-              <div class="font-bold text-gray-800">${name} <span class="text-xs text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded">Due: ${due}</span></div>
+              <div class="font-bold text-gray-800">${name} <span class="text-xs text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded">Due Day: ${due}</span></div>
               <div class="text-xs text-gray-500">Responsible: ${resp} • Acct: ${b.accountnumber || 'N/A'}</div>
             </div>
             <div class="text-right">
-              <div class="font-bold text-indigo-900">₱${amt}</div>
+              <div class="font-bold text-indigo-900">₱${defaultAmt.toFixed(2)}</div>
               ${status === 'Paid'
                 ? `<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Paid</span>`
-                : `<button onclick="updateBillStatus('${name}', 'Paid')" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Mark Paid</button>`}
+                : `<button onclick="promptAndPayBill('${name}', ${defaultAmt})" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Mark Paid</button>`}
             </div>
           </div>
         `;
       }).join('');
     }
 
-    async function updateBillStatus(billName, status) {
-      await postData({ action: "updateBillStatus", billName: billName, status: status, actor: currentUser }, null);
+    // Prompt user for actual paid amount before marking bill as Paid
+    async function promptAndPayBill(billName, defaultAmount) {
+      const input = prompt(`Magkano ang aktwal na binayaran para sa "${billName}" ngayong buwan?`, defaultAmount);
+      if (input === null) return; // Cancelled
+      const actualAmount = parseFloat(input);
+      if (isNaN(actualAmount) || actualAmount < 0) {
+        alert("Maglagay ng tamang halaga!");
+        return;
+      }
+
+      await postData({ 
+        action: "updateBillStatus", 
+        billName: billName, 
+        amount: actualAmount, 
+        status: "Paid", 
+        actor: currentUser 
+      }, null);
     }
 
     function renderAdminLogs(data) {
@@ -1339,7 +1411,7 @@
     document.getElementById('expenseForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addExpense", date: new Date().toISOString().split('T')[0], amount: document.getElementById('expAmount').value, category: document.getElementById('expCategory').value, loggedBy: currentUser, description: document.getElementById('expDesc').value, paymentMethod: "Cash/Online", actor: currentUser }, 'expenseForm'); });
     document.getElementById('groceryForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addGrocery", item: document.getElementById('grocItem').value, quantity: document.getElementById('grocQty').value, requestedBy: currentUser, actor: currentUser }, 'groceryForm'); });
     document.getElementById('meterForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addMeterReading", date: new Date().toISOString().split('T')[0], meterName: document.getElementById('meterName').value, reading: document.getElementById('meterReading').value, rate: document.getElementById('meterRate').value, loggedBy: currentUser, actor: currentUser }, 'meterForm'); });
-    document.getElementById('vehicleForm').addEventListener('submit', (e) => { e.DIRECTORYpreventDefault = true; postData({ action: "addVehicleLog", date: new Date().toISOString().split('T')[0], vehicle: document.getElementById('vehName').value, serviceType: document.getElementById('vehService').value, odometer: document.getElementById('vehOdo').value, nextDue: document.getElementById('vehNext').value, cost: document.getElementById('vehCost').value, loggedBy: currentUser, notes: document.getElementById('vehNotes').value, actor: currentUser }, 'vehicleForm'); });
+    document.getElementById('vehicleForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addVehicleLog", date: new Date().toISOString().split('T')[0], vehicle: document.getElementById('vehName').value, serviceType: document.getElementById('vehService').value, odometer: document.getElementById('vehOdo').value, nextDue: document.getElementById('vehNext').value, cost: document.getElementById('vehCost').value, loggedBy: currentUser, notes: document.getElementById('vehNotes').value, actor: currentUser }, 'vehicleForm'); });
     document.getElementById('profileForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "saveProfile", name: currentUser, pin: document.getElementById('profPin').value, phone1: document.getElementById('profPhone1').value, phone2: document.getElementById('profPhone2').value, email1: document.getElementById('profEmail1').value, email2: document.getElementById('profEmail2').value, bloodType: document.getElementById('profBlood').value, heightWeight: document.getElementById('profHW').value, meds: document.getElementById('profMeds').value, actor: currentUser }, 'profileForm'); });
 
     checkAuth();
