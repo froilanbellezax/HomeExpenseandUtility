@@ -31,7 +31,7 @@
         </div>
         <div>
           <label class="text-xs font-semibold text-gray-500">PIN / Passcode</label>
-          <input type="password" id="loginPin" placeholder="Default PIN: 1234" class="w-full p-3 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold">
+          <input type="password" id="loginPin" placeholder="Default PIN: 1234 or mobile no." class="w-full p-3 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold">
         </div>
         <p id="loginError" class="text-xs text-red-600 hidden text-center font-bold"></p>
         <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-lg">Log In</button>
@@ -151,7 +151,6 @@
 
     <!-- MODULE: LOANS & INSTALLMENTS -->
     <section id="tab-loans" class="module-content hidden space-y-4">
-      <!-- Monthly Dues Overview Card -->
       <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-4 rounded-2xl shadow-md border border-indigo-700 space-y-2">
         <div class="flex justify-between items-center">
           <span class="text-xs font-bold text-indigo-200 uppercase">📅 This Month's Loan Dues</span>
@@ -169,22 +168,27 @@
         </div>
       </div>
 
-      <!-- Add New Loan Form -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🏦 Add Loan / Installment</h2>
         <form id="loanForm" class="space-y-3">
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Loan / Item Name</label>
-            <input type="text" id="loanName" required placeholder="e.g. SPayLater Oven, Home Credit, Motor" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Loan Provider / App</label>
+              <input type="text" id="loanProvider" required placeholder="e.g. SPayLater, Home Credit" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Item / Description</label>
+              <input type="text" id="loanItemDesc" required placeholder="e.g. Baking Oven, Phone" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            </div>
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="text-xs font-semibold text-gray-500">Account Holder (Kanino nakapangalan)</label>
-              <input type="text" id="loanHolder" required placeholder="e.g. Me / John" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+              <label class="text-xs font-semibold text-gray-500">Account Holder</label>
+              <select id="loanHolder" class="w-full p-2.5 border rounded-xl text-sm outline-none loan-profile-select"></select>
             </div>
             <div>
-              <label class="text-xs font-semibold text-gray-500">Actual Payer (Sino magbabayad)</label>
-              <input type="text" id="loanPayer" required placeholder="e.g. Sister, Me" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-indigo-700">
+              <label class="text-xs font-semibold text-gray-500">Actual Payer (Magbabayad)</label>
+              <select id="loanPayer" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-indigo-700 loan-profile-select"></select>
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2">
@@ -211,7 +215,6 @@
         </form>
       </div>
 
-      <!-- Active Loans List -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Installment Tracker & Progress</h3>
         <div id="loansList" class="space-y-3 text-sm">
@@ -233,7 +236,7 @@
             <div>
               <label class="text-xs font-semibold text-gray-500">Type / Direction</label>
               <select id="debtDir" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
-                <option value="Pautang (Singilin)">🟢 Pautang (Sisingilin)</option>
+                <option value="Pautang (Sisingilin)">🟢 Pautang (Sisingilin)</option>
                 <option value="Utang (Babayaran)">🔴 Utang (Babayaran)</option>
               </select>
             </div>
@@ -583,7 +586,6 @@
         document.getElementById('activeUserName').innerText = currentUser;
         document.getElementById('summaryUserName').innerText = currentUser;
         document.getElementById('profName').value = currentUser;
-        document.getElementById('loanHolder').value = currentUser;
         fetchAllData();
       }
     }
@@ -667,93 +669,18 @@
       }
     }
 
-    function renderLoans(data) {
-      const container = document.getElementById('loansList');
-      const currMonth = getCurrentMonthStr();
-      document.getElementById('currentMonthBadge').innerText = getCurrentMonthLabel();
-
-      let dueThisMonth = 0;
-      let totalRemaining = 0;
-
-      if (!data || !data.length) {
-        container.innerHTML = '<p class="text-gray-400 text-center">No active loans or installments yet.</p>';
-        document.getElementById('loanDueThisMonth').innerText = "₱0.00";
-        document.getElementById('loanTotalRemaining').innerText = "₱0.00";
-        return;
-      }
-
-      container.innerHTML = data.map(l => {
-        const monthly = parseFloat(l.monthlydue) || 0;
-        const totalM = parseInt(l.totalmonths) || 1;
-        const paidM = parseInt(l.monthspaid) || 0;
-        const remM = Math.max(0, totalM - paidM);
-        const remBalance = remM * monthly;
-        const progressPct = Math.min(100, Math.round((paidM / totalM) * 100));
-        const isPaidThisMonth = String(l.lastpaidmonth) === currMonth || remM === 0;
-
-        if (remM > 0) {
-          totalRemaining += remBalance;
-          if (!isPaidThisMonth) {
-            dueThisMonth += monthly;
-          }
-        }
-
-        return `
-          <div class="p-3.5 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-2.5">
-            <div class="flex justify-between items-start">
-              <div>
-                <div class="font-bold text-indigo-950 text-base">${l.loanname}</div>
-                <div class="text-[11px] text-gray-600 mt-0.5">
-                  Account: <strong>${l.accountholder}</strong> • Payer: <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-bold">${l.actualpayer}</span>
-                </div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Due: ${l.dueday || 'Monthly'}</div>
-              </div>
-              <div class="text-right">
-                <div class="font-extrabold text-indigo-700 text-base">₱${monthly.toFixed(2)}<span class="text-[10px] font-normal text-gray-500">/mo</span></div>
-                <div class="text-[10px] font-bold ${remM === 0 ? 'text-green-600' : 'text-amber-600'}">
-                  ${remM === 0 ? '🎉 Fully Paid!' : `${remM} mos left (₱${remBalance.toFixed(2)})`}
-                </div>
-              </div>
-            </div>
-
-            <!-- Progress Bar -->
-            <div>
-              <div class="flex justify-between text-[10px] font-semibold text-gray-500 mb-1">
-                <span>Paid: ${paidM} / ${totalM} months</span>
-                <span>${progressPct}%</span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: ${progressPct}%"></div>
-              </div>
-            </div>
-
-            <!-- Action Button -->
-            ${remM > 0 ? (
-              isPaidThisMonth 
-                ? `<div class="text-center text-xs bg-green-100 text-green-800 py-1.5 rounded-xl font-bold">✅ Paid for ${getCurrentMonthLabel()}</div>`
-                : `<button onclick="payLoanMonth('${l.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${getCurrentMonthLabel()} as Paid</button>`
-            ) : ''}
-          </div>
-        `;
-      }).join('');
-
-      document.getElementById('loanDueThisMonth').innerText = `₱${dueThisMonth.toFixed(2)}`;
-      document.getElementById('loanTotalRemaining').innerText = `₱${totalRemaining.toFixed(2)}`;
-      document.getElementById('dashLoanSub').innerText = dueThisMonth > 0 
-        ? `₱${dueThisMonth.toFixed(2)} unpaid due this month` 
-        : `All paid for ${getCurrentMonthLabel()}!`;
-    }
-
-    async function payLoanMonth(id) {
-      await postData({
-        action: "payLoanMonth",
-        id: id,
-        currentMonthStr: getCurrentMonthStr()
-      }, null);
-    }
-
     function populateProfileDropdowns(profiles) {
       const kkbContainer = document.getElementById('kkbParticipantsList');
+      const loanSelects = document.querySelectorAll('.loan-profile-select');
+
+      const options = profiles.length 
+        ? profiles.map(p => `<option value="${p.name}">${p.name}</option>`).join('')
+        : `<option value="${currentUser}">${currentUser}</option>`;
+
+      loanSelects.forEach(s => {
+        s.innerHTML = options;
+        if (currentUser) s.value = currentUser;
+      });
 
       if (kkbContainer && profiles.length) {
         kkbContainer.innerHTML = profiles.map(p => `
@@ -858,6 +785,94 @@
 
       document.getElementById('userReceivable').innerText = `₱${receivable.toFixed(2)}`;
       document.getElementById('userPayable').innerText = `₱${payable.toFixed(2)}`;
+    }
+
+    function renderLoans(data) {
+      const container = document.getElementById('loansList');
+      const currMonth = getCurrentMonthStr();
+      document.getElementById('currentMonthBadge').innerText = getCurrentMonthLabel();
+
+      let dueThisMonth = 0;
+      let totalRemaining = 0;
+
+      if (!data || !data.length) {
+        container.innerHTML = '<p class="text-gray-400 text-center">No active loans or installments yet.</p>';
+        document.getElementById('loanDueThisMonth').innerText = "₱0.00";
+        document.getElementById('loanTotalRemaining').innerText = "₱0.00";
+        return;
+      }
+
+      container.innerHTML = data.map(l => {
+        const monthly = parseFloat(l.monthlydue) || 0;
+        const totalM = parseInt(l.totalmonths) || 1;
+        const paidM = parseInt(l.monthspaid) || 0;
+        const remM = Math.max(0, totalM - paidM);
+        const remBalance = remM * monthly;
+        const progressPct = Math.min(100, Math.round((paidM / totalM) * 100));
+        const isPaidThisMonth = String(l.lastpaidmonth) === currMonth || remM === 0;
+        const provider = l.loanprovider || l.loanname || 'Loan';
+        const desc = l.itemdescription || '';
+
+        if (remM > 0) {
+          totalRemaining += remBalance;
+          if (!isPaidThisMonth) {
+            dueThisMonth += monthly;
+          }
+        }
+
+        return `
+          <div class="p-3.5 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-2.5">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded font-bold uppercase">${provider}</span>
+                  <span class="font-bold text-indigo-950 text-sm">${desc || provider}</span>
+                </div>
+                <div class="text-[11px] text-gray-600 mt-1">
+                  Account: <strong>${l.accountholder}</strong> • Payer: <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-bold">${l.actualpayer}</span>
+                </div>
+                <div class="text-[10px] text-gray-400 mt-0.5">Due: ${l.dueday || 'Monthly'}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-extrabold text-indigo-700 text-base">₱${monthly.toFixed(2)}<span class="text-[10px] font-normal text-gray-500">/mo</span></div>
+                <div class="text-[10px] font-bold ${remM === 0 ? 'text-green-600' : 'text-amber-600'}">
+                  ${remM === 0 ? '🎉 Fully Paid!' : `${remM} mos left (₱${remBalance.toFixed(2)})`}
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-[10px] font-semibold text-gray-500 mb-1">
+                <span>Paid: ${paidM} / ${totalM} months</span>
+                <span>${progressPct}%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: ${progressPct}%"></div>
+              </div>
+            </div>
+
+            ${remM > 0 ? (
+              isPaidThisMonth 
+                ? `<div class="text-center text-xs bg-green-100 text-green-800 py-1.5 rounded-xl font-bold">✅ Paid for ${getCurrentMonthLabel()}</div>`
+                : `<button onclick="payLoanMonth('${l.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${getCurrentMonthLabel()} as Paid</button>`
+            ) : ''}
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('loanDueThisMonth').innerText = `₱${dueThisMonth.toFixed(2)}`;
+      document.getElementById('loanTotalRemaining').innerText = `₱${totalRemaining.toFixed(2)}`;
+      document.getElementById('dashLoanSub').innerText = dueThisMonth > 0 
+        ? `₱${dueThisMonth.toFixed(2)} unpaid due this month` 
+        : `All paid for ${getCurrentMonthLabel()}!`;
+    }
+
+    async function payLoanMonth(id) {
+      await postData({
+        action: "payLoanMonth",
+        id: id,
+        currentMonthStr: getCurrentMonthStr()
+      }, null);
     }
 
     function renderDebts(data) {
@@ -1044,7 +1059,8 @@
       e.preventDefault();
       postData({
         action: "addLoan",
-        loanName: document.getElementById('loanName').value,
+        loanProvider: document.getElementById('loanProvider').value,
+        itemDesc: document.getElementById('loanItemDesc').value,
         holder: document.getElementById('loanHolder').value,
         payer: document.getElementById('loanPayer').value,
         monthlyDue: document.getElementById('loanMonthly').value,
