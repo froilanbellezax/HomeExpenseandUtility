@@ -1343,6 +1343,15 @@
     document.getElementById('profileForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "saveProfile", name: currentUser, pin: document.getElementById('profPin').value, phone1: document.getElementById('profPhone1').value, phone2: document.getElementById('profPhone2').value, email1: document.getElementById('profEmail1').value, email2: document.getElementById('profEmail2').value, bloodType: document.getElementById('profBlood').value, heightWeight: document.getElementById('profHW').value, meds: document.getElementById('profMeds').value, actor: currentUser }, 'profileForm'); });
 
     checkAuth();
+
+    // Ilagay ito SA LOOB ng <script> tag sa pinakababa (bago ang </script>)
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        if (typeof fetchAllData === "function" && currentUser) {
+          fetchAllData();
+        }
+      }
+    });
   </script>
 </body>
 </html>
