@@ -49,9 +49,10 @@
         <button onclick="logout()" class="text-[10px] bg-red-500/80 hover:bg-red-600 px-1.5 py-0.5 rounded font-bold">Logout</button>
       </div>
     </div>
-    <button onclick="showHome()" id="homeBtn" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 hidden">
-      ⬅️ Menu
-    </button>
+    <div class="flex items-center gap-2">
+      <button onclick="openTab('adminLogs')" id="adminNavBtn" class="bg-purple-700 hover:bg-purple-800 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold hidden">🛡️ Logs</button>
+      <button onclick="showHome()" id="homeBtn" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold hidden">⬅️ Menu</button>
+    </div>
   </header>
 
   <!-- USER CONTEXT ISOLATION: PRIVATE VIEW SUMMARY BANNER -->
@@ -91,8 +92,14 @@
 
       <button onclick="openTab('expenses')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-blue-50 transition active:scale-95">
         <span class="text-3xl mb-1">💰</span>
-        <span class="font-bold text-gray-800 text-sm">Expenses & Bills</span>
+        <span class="font-bold text-gray-800 text-sm">Daily Expenses</span>
         <span class="text-[10px] text-gray-400 mt-0.5">Log daily costs</span>
+      </button>
+
+      <button onclick="openTab('bills')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-indigo-50 transition active:scale-95">
+        <span class="text-3xl mb-1">📃</span>
+        <span class="font-bold text-gray-800 text-sm">Bills & Utilities</span>
+        <span class="text-[10px] text-gray-400 mt-0.5">Internet, electricity, etc.</span>
       </button>
 
       <button onclick="openTab('grocery')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-green-50 transition active:scale-95">
@@ -188,7 +195,8 @@
             </div>
             <div>
               <label class="text-xs font-semibold text-gray-500">Actual Payer (Magbabayad)</label>
-              <select id="loanPayer" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-indigo-700 loan-profile-select"></select>
+              <select id="loanPayer" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-indigo-700 loan-profile-select" onchange="checkCustomPayer()"></select>
+              <input type="text" id="loanCustomPayer" placeholder="Enter Payer Name" class="w-full p-2 border rounded-xl text-xs outline-none mt-1 hidden">
             </div>
           </div>
           <div class="grid grid-cols-2 gap-2">
@@ -197,7 +205,7 @@
               <input type="number" step="0.01" id="loanMonthly" required placeholder="e.g. 2500.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
             </div>
             <div>
-              <label class="text-xs font-semibold text-gray-500">Start Month (Kailan magsisimula)</label>
+              <label class="text-xs font-semibold text-gray-500">Start Month</label>
               <select id="loanStartMonth" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-indigo-700"></select>
             </div>
           </div>
@@ -227,7 +235,90 @@
       </div>
     </section>
 
-    <!-- MODULE: LISTA DEBT VAULT -->
+    <!-- MODULE: BILLS & UTILITIES -->
+    <section id="tab-bills" class="module-content hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📃 Add Recurring Bill</h2>
+        <form id="billForm" class="space-y-3">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Bill Name</label>
+              <input type="text" id="billName" required placeholder="e.g. PLDT Internet, VECO" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
+              <input type="number" step="0.01" id="billAmount" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Due Date (Day of Month)</label>
+              <input type="text" id="billDueDate" required placeholder="e.g. Every 25th" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Responsible Person</label>
+              <select id="billResponsible" class="w-full p-2.5 border rounded-xl text-sm outline-none loan-profile-select"></select>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Account Number / Details</label>
+            <input type="text" id="billAccountNo" placeholder="Optional account number" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+          <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition">Save Bill</button>
+        </form>
+      </div>
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Household Bills Tracker</h3>
+        <div id="billsList" class="space-y-2 text-sm">
+          <p class="text-gray-400 text-center">Loading bills...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- MODULE: ADMIN LOGS -->
+    <section id="tab-adminLogs" class="module-content hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <h2 class="font-bold text-purple-900 mb-1 text-sm uppercase">🛡️ Admin Audit Logs</h2>
+        <p class="text-xs text-gray-500 mb-3">Complete tracking of all household activities and transactions.</p>
+        <div id="adminLogsList" class="space-y-2 text-xs">
+          <p class="text-gray-400 text-center">Loading audit logs...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- OTHER MODULES -->
+    <section id="tab-expenses" class="module-content hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">💰 Log Daily Expense</h2>
+        <form id="expenseForm" class="space-y-3">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
+            <input type="number" step="0.01" id="expAmount" required placeholder="0.00" class="w-full text-lg font-bold p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Category</label>
+            <select id="expCategory" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+              <option value="Groceries">🛒 Groceries</option>
+              <option value="Food & Dining">🍔 Food & Dining</option>
+              <option value="Transportation">🚗 Transportation</option>
+              <option value="Utilities">💡 Utilities</option>
+              <option value="Maintenance">🛠️ Maintenance</option>
+              <option value="Others">📦 Others</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Notes / Details</label>
+            <input type="text" id="expDesc" placeholder="e.g. Palengke, Gas" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+          <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Save Daily Expense</button>
+        </form>
+      </div>
+      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-2">Spending Breakdown</h3>
+        <canvas id="expenseChart" class="max-h-48"></canvas>
+      </div>
+    </section>
+
     <section id="tab-lista" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📋 Lista: Record Utang / Sisingilin</h2>
@@ -256,7 +347,6 @@
           <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 transition">Save to Lista</button>
         </form>
       </div>
-
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">My Active Lista Vault</h3>
         <div id="debtsList" class="space-y-2 text-sm">
@@ -265,7 +355,6 @@
       </div>
     </section>
 
-    <!-- MODULE: KKB BILL SPLITTER -->
     <section id="tab-kkb" class="module-content hidden space-y-4">
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
         <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🍔 KKB Splitter (With Payment Options)</h2>
@@ -278,58 +367,20 @@
             <label class="text-xs font-semibold text-gray-500">Reason / Place</label>
             <input type="text" id="kkbReason" required placeholder="e.g. McDonald's, Outing" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
-
           <div>
             <label class="text-xs font-semibold text-gray-500 mb-1 block">Participants & Payments Given On-the-spot:</label>
             <div id="kkbParticipantsList" class="space-y-2 bg-gray-50 p-2.5 rounded-xl border border-gray-200 max-h-48 overflow-y-auto mb-2"></div>
-            
             <div class="flex gap-2">
               <input type="text" id="customFriendInput" placeholder="Add custom name (e.g. Alex)" class="flex-1 p-2 border rounded-xl text-xs outline-none">
               <button type="button" onclick="addCustomParticipant()" class="bg-pink-100 text-pink-700 font-bold px-3 py-2 rounded-xl text-xs hover:bg-pink-200">Add</button>
             </div>
           </div>
-
           <div class="bg-pink-50 p-3 rounded-xl border border-pink-200 text-center">
             <span class="text-xs text-pink-700 block">Equal Share per Person:</span>
             <span id="kkbSplitResult" class="text-xl font-bold text-pink-900">₱0.00</span>
           </div>
-
           <button type="submit" class="w-full bg-pink-600 text-white font-bold py-3 rounded-xl hover:bg-pink-700 transition">Save & Auto-Add Unpaid Shares to Lista</button>
         </form>
-      </div>
-    </section>
-
-    <!-- OTHER MODULES -->
-    <section id="tab-expenses" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">💰 Log Expense / Bill</h2>
-        <form id="expenseForm" class="space-y-3">
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
-            <input type="number" step="0.01" id="expAmount" required placeholder="0.00" class="w-full text-lg font-bold p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Category</label>
-            <select id="expCategory" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-              <option value="Electricity">⚡ Electricity</option>
-              <option value="Water">💧 Water</option>
-              <option value="Groceries">🛒 Groceries</option>
-              <option value="Internet/Load">🌐 Internet / Load</option>
-              <option value="LPG">🔥 LPG</option>
-              <option value="Maintenance">🛠️ Maintenance</option>
-              <option value="Others">📦 Others</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Notes / Details</label>
-            <input type="text" id="expDesc" placeholder="e.g. VECO bill, Palengke" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-          <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Save Expense</button>
-        </form>
-      </div>
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-2">Spending Breakdown</h3>
-        <canvas id="expenseChart" class="max-h-48"></canvas>
       </div>
     </section>
 
@@ -571,6 +622,8 @@
     let cachedProfiles = [];
     let cachedDebts = [];
     let currentUser = localStorage.getItem("household_hub_user") || "";
+    // Admin check: update this with your exact admin profile name if needed
+    const ADMIN_USER = "Admin"; 
 
     function getCurrentMonthStr() {
       const now = new Date();
@@ -585,11 +638,20 @@
       if (!currentUser) {
         document.getElementById('loginOverlay').classList.remove('hidden');
         document.getElementById('activeUserName').innerText = "Not Logged In";
+        document.getElementById('adminNavBtn').classList.add('hidden');
       } else {
         document.getElementById('loginOverlay').classList.add('hidden');
         document.getElementById('activeUserName').innerText = currentUser;
         document.getElementById('summaryUserName').innerText = currentUser;
         document.getElementById('profName').value = currentUser;
+        
+        // Show Admin Logs button if user is Admin
+        if (currentUser.toLowerCase() === ADMIN_USER.toLowerCase() || currentUser.toLowerCase().includes("admin")) {
+          document.getElementById('adminNavBtn').classList.remove('hidden');
+        } else {
+          document.getElementById('adminNavBtn').classList.add('hidden');
+        }
+
         populateStartMonthDropdown();
         fetchAllData();
       }
@@ -654,7 +716,8 @@
       
       let options = '';
       const now = new Date();
-      for (let i = -1; i <= 6; i++) {
+      // Generate from 24 months ago up to 12 months in the future for historical/active tracking
+      for (let i = -24; i <= 12; i++) {
         const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
         const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -675,6 +738,8 @@
           populateProfileDropdowns(cachedProfiles);
 
           renderLoans(json.data.loans || []);
+          renderBills(json.data.recurring || []);
+          renderAdminLogs(json.data.auditLogs || []);
           renderExpensesChart(json.data.transactions);
           renderGrocery(json.data.grocery);
           renderParcels(json.data.parcels);
@@ -694,12 +759,19 @@
       const kkbContainer = document.getElementById('kkbParticipantsList');
       const loanSelects = document.querySelectorAll('.loan-profile-select');
 
-      const options = profiles.length 
+      let options = profiles.length 
         ? profiles.map(p => `<option value="${p.name}">${p.name}</option>`).join('')
         : `<option value="${currentUser}">${currentUser}</option>`;
+      
+      // Append Others option for Actual Payer dropdown
+      const payerOptions = options + `<option value="Others">🌐 Others (Custom Name)</option>`;
 
       loanSelects.forEach(s => {
-        s.innerHTML = options;
+        if (s.id === 'loanPayer') {
+          s.innerHTML = payerOptions;
+        } else {
+          s.innerHTML = options;
+        }
         if (currentUser) s.value = currentUser;
       });
 
@@ -723,6 +795,19 @@
             </div>
           </div>
         `).join('');
+      }
+    }
+
+    function checkCustomPayer() {
+      const sel = document.getElementById('loanPayer');
+      const customInput = document.getElementById('loanCustomPayer');
+      if (sel.value === 'Others') {
+        customInput.classList.remove('hidden');
+        customInput.required = true;
+      } else {
+        customInput.classList.add('hidden');
+        customInput.required = false;
+        customInput.value = '';
       }
     }
 
@@ -817,7 +902,7 @@
       let totalRemaining = 0;
 
       if (!data || !data.length) {
-        container.innerHTML = '<p class="text-gray-400 text-center">No active loans or installments yet.</p>';
+        container.innerHTML = '<p class="text-gray-400 text-center">No active loans or installments found for your account.</p>';
         document.getElementById('loanDueThisMonth').innerText = "₱0.00";
         document.getElementById('loanTotalRemaining').innerText = "₱0.00";
         return;
@@ -834,12 +919,18 @@
         
         const isStarted = currMonth >= startM;
         const isPaidThisMonth = String(l.lastpaidmonth) === currMonth || remM === 0;
+        const loanStatus = l.status || 'Active';
         const provider = l.loanprovider || l.loanname || 'Loan';
         const desc = l.itemdescription || '';
+        const holder = l.accountholder || '';
+        const payer = l.actualpayer || '';
+
+        const isHolder = holder.toLowerCase() === currentUser.toLowerCase();
+        const isPayer = payer.toLowerCase() === currentUser.toLowerCase();
 
         if (remM > 0) {
           totalRemaining += remBalance;
-          if (isStarted && !isPaidThisMonth) {
+          if (isStarted && !isPaidThisMonth && loanStatus !== 'Pending Approval') {
             dueThisMonth += monthly;
           }
         }
@@ -850,8 +941,26 @@
             actionButtonHTML = `<div class="text-center text-xs bg-amber-50 text-amber-800 py-1.5 rounded-xl font-bold border border-amber-200">⏳ Upcoming (Starts on ${startM})</div>`;
           } else if (isPaidThisMonth) {
             actionButtonHTML = `<div class="text-center text-xs bg-green-100 text-green-800 py-1.5 rounded-xl font-bold">✅ Paid for ${getCurrentMonthLabel()}</div>`;
+          } else if (loanStatus === 'Pending Approval') {
+            if (isHolder) {
+              actionButtonHTML = `
+                <div class="p-2 bg-amber-50 rounded-xl border border-amber-200 space-y-1.5 text-center">
+                  <span class="text-xs text-amber-800 font-bold block">⚠️ ${payer} requested payment confirmation</span>
+                  <div class="flex gap-2">
+                    <button onclick="approveLoan('${l.id}')" class="flex-1 bg-green-600 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-green-700">Accept Payment</button>
+                    <button onclick="rejectLoan('${l.id}')" class="flex-1 bg-red-500 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-red-600">Reject</button>
+                  </div>
+                </div>
+              `;
+            } else {
+              actionButtonHTML = `<div class="text-center text-xs bg-amber-100 text-amber-800 py-1.5 rounded-xl font-bold">⏳ Payment submitted, waiting for ${holder}'s approval</div>`;
+            }
           } else {
-            actionButtonHTML = `<button onclick="payLoanMonth('${l.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${getCurrentMonthLabel()} as Paid</button>`;
+            if (isPayer || isHolder) {
+              actionButtonHTML = `<button onclick="payLoanMonth('${l.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${getCurrentMonthLabel()} as Paid</button>`;
+            } else {
+              actionButtonHTML = `<div class="text-center text-xs bg-gray-100 text-gray-500 py-1.5 rounded-xl font-semibold">Viewing only</div>`;
+            }
           }
         }
 
@@ -864,7 +973,7 @@
                   <span class="font-bold text-indigo-950 text-sm">${desc || provider}</span>
                 </div>
                 <div class="text-[11px] text-gray-600 mt-1">
-                  Account: <strong>${l.accountholder}</strong> • Payer: <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-bold">${l.actualpayer}</span>
+                  Account: <strong>${holder}</strong> • Payer: <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-bold">${payer}</span>
                 </div>
                 <div class="text-[10px] text-gray-400 mt-0.5">Start: ${startM} • Due: ${l.dueday || 'Monthly'}</div>
               </div>
@@ -899,11 +1008,64 @@
     }
 
     async function payLoanMonth(id) {
-      await postData({
-        action: "payLoanMonth",
-        id: id,
-        currentMonthStr: getCurrentMonthStr()
-      }, null);
+      await postData({ action: "payLoanMonth", id: id, actor: currentUser }, null);
+    }
+
+    async function approveLoan(id) {
+      await postData({ action: "approveLoanPayment", id: id, currentMonthStr: getCurrentMonthStr(), actor: currentUser }, null);
+    }
+
+    async function rejectLoan(id) {
+      await postData({ action: "rejectLoanPayment", id: id, actor: currentUser }, null);
+    }
+
+    function renderBills(data) {
+      const container = document.getElementById('billsList');
+      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No recurring bills logged.</p>'; return; }
+      
+      container.innerHTML = data.map(b => {
+        const name = b.billname || 'Bill';
+        const amt = parseFloat(b.amount || 0).toFixed(2);
+        const due = b.duedatedayofmonth || '';
+        const status = b.status || 'Unpaid';
+        const resp = b.responsibleperson || '';
+
+        return `
+          <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 flex justify-between items-center">
+            <div>
+              <div class="font-bold text-gray-800">${name} <span class="text-xs text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded">Due: ${due}</span></div>
+              <div class="text-xs text-gray-500">Responsible: ${resp} • Acct: ${b.accountnumber || 'N/A'}</div>
+            </div>
+            <div class="text-right">
+              <div class="font-bold text-indigo-900">₱${amt}</div>
+              ${status === 'Paid'
+                ? `<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Paid</span>`
+                : `<button onclick="updateBillStatus('${name}', 'Paid')" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Mark Paid</button>`}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function updateBillStatus(billName, status) {
+      await postData({ action: "updateBillStatus", billName: billName, status: status, actor: currentUser }, null);
+    }
+
+    function renderAdminLogs(data) {
+      const container = document.getElementById('adminLogsList');
+      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No audit logs found.</p>'; return; }
+      
+      container.innerHTML = data.map(log => {
+        const time = new Date(log.timestamp).toLocaleString();
+        return `
+          <div class="p-2.5 bg-purple-50 rounded-lg border border-purple-100 flex justify-between items-center">
+            <div>
+              <span class="font-bold text-purple-900">[${log.actiontype}]</span> <span class="text-gray-700">${log.details}</span>
+              <div class="text-[10px] text-gray-400 mt-0.5">By: ${log.actor || 'System'} • ${time}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function renderDebts(data) {
@@ -936,7 +1098,7 @@
     }
 
     async function markDebtSettled(person, notes) {
-      await postData({ action: "updateDebtStatus", person: person, notes: notes }, null);
+      await postData({ action: "updateDebtStatus", person: person, notes: notes, actor: currentUser }, null);
     }
 
     function renderHotspot(data) {
@@ -959,7 +1121,7 @@
     }
 
     async function markHotspotPaid(cust) {
-      await postData({ action: "updateHotspotStatus", customer: cust, collectedBy: currentUser }, null);
+      await postData({ action: "updateHotspotStatus", customer: cust, collectedBy: currentUser, actor: currentUser }, null);
     }
 
     function renderExpensesChart(data) {
@@ -996,6 +1158,10 @@
           </button>
         </li>
       `).join('');
+    }
+
+    async function toggleGroceryStatus(id, newStatus) {
+      await postData({ action: "updateGroceryStatus", id: id, status: newStatus, actor: currentUser }, null);
     }
 
     function renderParcels(data) {
@@ -1088,29 +1254,47 @@
 
     document.getElementById('loanForm').addEventListener('submit', (e) => {
       e.preventDefault();
+      const payerSelect = document.getElementById('loanPayer').value;
+      const customPayer = document.getElementById('loanCustomPayer').value.trim();
+      const finalPayer = payerSelect === 'Others' ? customPayer : payerSelect;
+
       postData({
         action: "addLoan",
         loanProvider: document.getElementById('loanProvider').value,
         itemDesc: document.getElementById('loanItemDesc').value,
         holder: document.getElementById('loanHolder').value,
-        payer: document.getElementById('loanPayer').value,
+        payer: finalPayer,
         monthlyDue: document.getElementById('loanMonthly').value,
         startMonth: document.getElementById('loanStartMonth').value,
         dueDay: document.getElementById('loanDueDay').value,
         totalMonths: document.getElementById('loanTotalMonths').value,
         monthsPaid: document.getElementById('loanMonthsPaid').value,
-        currentMonthStr: getCurrentMonthStr()
+        currentMonthStr: getCurrentMonthStr(),
+        actor: currentUser
       }, 'loanForm');
+    });
+
+    document.getElementById('billForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      postData({
+        action: "addRecurringBill",
+        billName: document.getElementById('billName').value,
+        amount: document.getElementById('billAmount').value,
+        dueDate: document.getElementById('billDueDate').value,
+        responsible: document.getElementById('billResponsible').value,
+        accountNo: document.getElementById('billAccountNo').value,
+        actor: currentUser
+      }, 'billForm');
     });
 
     document.getElementById('debtForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      postData({ action: "addDebt", person: document.getElementById('debtPerson').value, direction: document.getElementById('debtDir').value, amount: document.getElementById('debtAmount').value, loggedBy: currentUser, notes: document.getElementById('debtNotes').value }, 'debtForm');
+      postData({ action: "addDebt", person: document.getElementById('debtPerson').value, direction: document.getElementById('debtDir').value, amount: document.getElementById('debtAmount').value, loggedBy: currentUser, notes: document.getElementById('debtNotes').value, actor: currentUser }, 'debtForm');
     });
 
     document.getElementById('hotspotForm').addEventListener('submit', (e) => {
       e.preventDefault();
-      postData({ action: "addHotspotLog", customer: document.getElementById('hsCustomer').value, voucher: document.getElementById('hsVoucher').value, amount: document.getElementById('hsAmount').value, status: document.getElementById('hsStatus').value, collectedBy: currentUser, notes: "" }, 'hotspotForm');
+      postData({ action: "addHotspotLog", customer: document.getElementById('hsCustomer').value, voucher: document.getElementById('hsVoucher').value, amount: document.getElementById('hsAmount').value, status: document.getElementById('hsStatus').value, collectedBy: currentUser, notes: "", actor: currentUser }, 'hotspotForm');
     });
 
     document.getElementById('kkbForm').addEventListener('submit', (e) => {
@@ -1148,15 +1332,15 @@
         splits.push({ person: item.person, oweAmount: oweAmount });
       });
 
-      postData({ action: "splitBill", payer: currentUser, reason: document.getElementById('kkbReason').value, splits: splits }, 'kkbForm');
+      postData({ action: "splitBill", payer: currentUser, reason: document.getElementById('kkbReason').value, splits: splits, actor: currentUser }, 'kkbForm');
     });
 
-    document.getElementById('parcelForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addParcel", recipient: currentUser, courier: document.getElementById('parcCourier').value, amount: document.getElementById('parcAmount').value, paymentStatus: document.getElementById('parcStatus').value, receivedBy: currentUser, notes: "" }, 'parcelForm'); });
-    document.getElementById('expenseForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addExpense", date: new Date().toISOString().split('T')[0], amount: document.getElementById('expAmount').value, category: document.getElementById('expCategory').value, loggedBy: currentUser, description: document.getElementById('expDesc').value, paymentMethod: "Cash/Online" }, 'expenseForm'); });
-    document.getElementById('groceryForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addGrocery", item: document.getElementById('grocItem').value, quantity: document.getElementById('grocQty').value, requestedBy: currentUser }, 'groceryForm'); });
-    document.getElementById('meterForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addMeterReading", date: new Date().toISOString().split('T')[0], meterName: document.getElementById('meterName').value, reading: document.getElementById('meterReading').value, rate: document.getElementById('meterRate').value, loggedBy: currentUser }, 'meterForm'); });
-    document.getElementById('vehicleForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addVehicleLog", date: new Date().toISOString().split('T')[0], vehicle: document.getElementById('vehName').value, serviceType: document.getElementById('vehService').value, odometer: document.getElementById('vehOdo').value, nextDue: document.getElementById('vehNext').value, cost: document.getElementById('vehCost').value, loggedBy: currentUser, notes: document.getElementById('vehNotes').value }, 'vehicleForm'); });
-    document.getElementById('profileForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "saveProfile", name: currentUser, pin: document.getElementById('profPin').value, phone1: document.getElementById('profPhone1').value, phone2: document.getElementById('profPhone2').value, email1: document.getElementById('profEmail1').value, email2: document.getElementById('profEmail2').value, bloodType: document.getElementById('profBlood').value, heightWeight: document.getElementById('profHW').value, meds: document.getElementById('profMeds').value }, 'profileForm'); });
+    document.getElementById('parcelForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addParcel", recipient: currentUser, courier: document.getElementById('parcCourier').value, amount: document.getElementById('parcAmount').value, paymentStatus: document.getElementById('parcStatus').value, receivedBy: currentUser, notes: "", actor: currentUser }, 'parcelForm'); });
+    document.getElementById('expenseForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addExpense", date: new Date().toISOString().split('T')[0], amount: document.getElementById('expAmount').value, category: document.getElementById('expCategory').value, loggedBy: currentUser, description: document.getElementById('expDesc').value, paymentMethod: "Cash/Online", actor: currentUser }, 'expenseForm'); });
+    document.getElementById('groceryForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addGrocery", item: document.getElementById('grocItem').value, quantity: document.getElementById('grocQty').value, requestedBy: currentUser, actor: currentUser }, 'groceryForm'); });
+    document.getElementById('meterForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addMeterReading", date: new Date().toISOString().split('T')[0], meterName: document.getElementById('meterName').value, reading: document.getElementById('meterReading').value, rate: document.getElementById('meterRate').value, loggedBy: currentUser, actor: currentUser }, 'meterForm'); });
+    document.getElementById('vehicleForm').addEventListener('submit', (e) => { e.DIRECTORYpreventDefault = true; postData({ action: "addVehicleLog", date: new Date().toISOString().split('T')[0], vehicle: document.getElementById('vehName').value, serviceType: document.getElementById('vehService').value, odometer: document.getElementById('vehOdo').value, nextDue: document.getElementById('vehNext').value, cost: document.getElementById('vehCost').value, loggedBy: currentUser, notes: document.getElementById('vehNotes').value, actor: currentUser }, 'vehicleForm'); });
+    document.getElementById('profileForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "saveProfile", name: currentUser, pin: document.getElementById('profPin').value, phone1: document.getElementById('profPhone1').value, phone2: document.getElementById('profPhone2').value, email1: document.getElementById('profEmail1').value, email2: document.getElementById('profEmail2').value, bloodType: document.getElementById('profBlood').value, heightWeight: document.getElementById('profHW').value, meds: document.getElementById('profMeds').value, actor: currentUser }, 'profileForm'); });
 
     checkAuth();
   </script>
