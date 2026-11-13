@@ -149,11 +149,11 @@
         </button>
       </div>
 
-      <!-- UPCOMING DUES PREVIEW CARD (Bottom of Dashboard - Max 5 entries) -->
+      <!-- UPCOMING DUES PREVIEW CARD (Bottom of Dashboard - Clickable to navigate) -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-2">
         <div class="flex justify-between items-center">
           <h3 class="font-bold text-gray-700 text-xs uppercase">⏰ Upcoming Dues & Bills (Top 5)</h3>
-          <span class="text-[10px] text-blue-600 font-semibold">Sorted by schedule</span>
+          <span class="text-[10px] text-blue-600 font-semibold">Tap to view module</span>
         </div>
         <div id="dashUpcomingList" class="space-y-2 text-xs">
           <p class="text-gray-400 text-center">Loading upcoming dues...</p>
@@ -899,7 +899,7 @@
       const container = document.getElementById('dashUpcomingList');
       let combined = [];
 
-      // Add bills
+      // Add bills (Only if status is NOT Paid)
       if (bills) {
         bills.forEach(b => {
           if (String(b.status || '') !== 'Paid') {
@@ -907,7 +907,8 @@
               name: b.billname || 'Bill',
               amount: parseFloat(b.amount || 0),
               day: parseInt(b.duedatedayofmonth) || 99,
-              type: 'Bill'
+              type: 'Bill',
+              targetTab: 'bills'
             });
           }
         });
@@ -924,7 +925,8 @@
               name: `${l.loanprovider || 'Loan'} (${l.itemdescription || ''})`,
               amount: parseFloat(l.monthlydue || 0),
               day: parseInt(String(l.dueday || '1').replace(/\D/g, '')) || 15,
-              type: 'Loan'
+              type: 'Loan',
+              targetTab: 'loans'
             });
           }
         });
@@ -940,10 +942,10 @@
       }
 
       container.innerHTML = top5.map(item => `
-        <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100 flex justify-between items-center">
+        <div onclick="openTab('${item.targetTab}')" class="p-2.5 bg-gray-50 hover:bg-blue-50 cursor-pointer rounded-xl border border-gray-100 flex justify-between items-center transition">
           <div>
             <div class="font-bold text-gray-800">${item.name} <span class="text-[10px] text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded font-semibold">${item.type}</span></div>
-            <div class="text-[10px] text-gray-500">Due day: Every ${item.day}th</div>
+            <div class="text-[10px] text-gray-500">Due day: Every ${item.day}th • Tap to open</div>
           </div>
           <div class="text-right font-bold text-gray-900">₱${item.amount.toFixed(2)}</div>
         </div>
@@ -1104,10 +1106,9 @@
       }).join('');
     }
 
-    // Prompt user for actual paid amount before marking bill as Paid
     async function promptAndPayBill(billName, defaultAmount) {
       const input = prompt(`Magkano ang aktwal na binayaran para sa "${billName}" ngayong buwan?`, defaultAmount);
-      if (input === null) return; // Cancelled
+      if (input === null) return;
       const actualAmount = parseFloat(input);
       if (isNaN(actualAmount) || actualAmount < 0) {
         alert("Maglagay ng tamang halaga!");
