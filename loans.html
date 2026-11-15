@@ -15,7 +15,7 @@
   <main class="px-4 flex-1 space-y-4">
     <!-- OVERALL SUMMARY CARD -->
     <div class="bg-gradient-to-r from-indigo-900 to-blue-900 text-white p-4 rounded-2xl shadow-md border border-indigo-700">
-      <div class="text-xs font-bold text-indigo-200 uppercase mb-2">📊 Overall Loans & BNPL Summary</div>
+      <div class="text-xs font-bold text-indigo-200 uppercase mb-2">📊 Overall Loans & BNPL Summary (Including Paid)</div>
       <div class="grid grid-cols-3 gap-2 text-center">
         <div class="bg-indigo-800/50 p-2.5 rounded-xl border border-indigo-700/40">
           <span class="text-[10px] text-gray-300 block font-semibold">Total Obligation</span>
@@ -95,6 +95,7 @@
               <option value="TikTok PayLater">TikTok PayLater (15th)</option>
               <option value="SPayLater">SPayLater (15th)</option>
               <option value="LazPayLater">LazPayLater (16th)</option>
+              <option value="Salmon Credit Line">Salmon Credit Line (27th)</option>
               <option value="Atome">Atome</option>
               <option value="GCash GGives">GCash GGives</option>
               <option value="Custom">Other / Custom...</option>
@@ -618,6 +619,7 @@
         if (preset === 'TikTok PayLater') dueInput.value = '15th';
         else if (preset === 'SPayLater') dueInput.value = '15th';
         else if (preset === 'LazPayLater') dueInput.value = '16th';
+        else if (preset === 'Salmon Credit Line') dueInput.value = '27th';
       }
     }
 
@@ -678,7 +680,7 @@
 
     function isBnplItem(providerName) {
       const p = String(providerName || '').toLowerCase();
-      return p.startsWith('bnpl') || p.includes('paylater') || p.includes('atome') || p.includes('ggives');
+      return p.startsWith('bnpl') || p.includes('paylater') || p.includes('atome') || p.includes('ggives') || p.includes('salmon');
     }
 
     function cleanProviderLabel(providerName) {
@@ -693,7 +695,7 @@
       let dueThisMonth = 0;
       let totalRemaining = 0;
 
-      // OVERALL SUMMARY VARIABLES
+      // OVERALL SUMMARY VARIABLES (Kasama na ang Paid/Fully Paid)
       let grandTotalObligation = 0;
       let grandTotalPaid = 0;
       let grandTotalRemaining = 0;
@@ -715,6 +717,11 @@
           const isPartial = paidAmt > 0 && !isPaid;
           const bMonth = String(c.billingmonth || '').replace(/'/g, '');
           const datePaid = String(c.datepaid || '').replace(/'/g, '');
+
+          // Idagdag sa overall summary ang credit cards
+          grandTotalObligation += amt;
+          grandTotalPaid += paidAmt;
+          grandTotalRemaining += Math.max(0, amt - paidAmt);
 
           if (!isPaid && bMonth === currMonth) {
             dueThisMonth += remAmt;
@@ -776,14 +783,14 @@
         document.getElementById('consolidatedBnplCard').classList.add('hidden');
         document.getElementById('loanDueThisMonth').innerText = `₱${formatMoney(dueThisMonth)}`;
         document.getElementById('loanTotalRemaining').innerText = "₱0.00";
-        document.getElementById('sumTotal').innerText = '₱0.00';
-        document.getElementById('sumPaid').innerText = '₱0.00';
-        document.getElementById('sumRemaining').innerText = '₱0.00';
+        document.getElementById('sumTotal').innerText = `₱${formatMoney(grandTotalObligation)}`;
+        document.getElementById('sumPaid').innerText = `₱${formatMoney(grandTotalPaid)}`;
+        document.getElementById('sumRemaining').innerText = `₱${formatMoney(grandTotalRemaining)}`;
         return;
       }
 
       // --- AUTOMATIC SORTING LOGIC ---
-      // Inuuna ang Active, tapos naka-sort base sa Due Day (pinakamalapit sa unahan)
+      // Inuuna ang Active, tapos naka-sort base sa Due Day (pinakamalapit sa unahan, e.g. 8th, 15th, 27th)
       const sortedLoans = [...loans].sort((a, b) => {
         const remA = Math.max(0, (parseInt(a.totalmonths) || 1) - (parseInt(a.monthspaid) || 0));
         const remB = Math.max(0, (parseInt(b.totalmonths) || 1) - (parseInt(b.monthspaid) || 0));
@@ -820,7 +827,7 @@
         const payer = l.actualpayer || '';
         const dueDay = l.dueday || '15th';
 
-        // CALCULATE FOR OVERALL SUMMARY
+        // CALCULATE FOR OVERALL SUMMARY (Kasama ang paid at fully paid)
         const itemTotalObligation = monthly * totalM;
         const itemTotalPaid = monthly * paidM;
         const itemRemaining = monthly * remM;
@@ -936,7 +943,7 @@
         bnplCard.classList.add('hidden');
       }
 
-      // UPDATE SUMMARY VALUES
+      // UPDATE SUMMARY VALUES (Lahat kasama: Active, Paid, at Fully Paid)
       document.getElementById('loanDueThisMonth').innerText = `₱${formatMoney(dueThisMonth)}`;
       document.getElementById('loanTotalRemaining').innerText = `₱${formatMoney(totalRemaining)}`;
       document.getElementById('sumTotal').innerText = `₱${formatMoney(grandTotalObligation)}`;
