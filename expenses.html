@@ -1,1 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Expenses - BelPan House Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col relative">
+  <header class="bg-blue-600 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
+    <h1 class="text-lg font-bold">💰 Daily Expenses</h1>
+    <button onclick="location.href='index.html'" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">⬅️ Menu</button>
+  </header>
 
+  <main class="px-4 flex-1 space-y-4">
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Log Daily Expense</h2>
+      <form id="expenseForm" class="space-y-3">
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
+          <input type="number" step="0.01" id="expAmount" required placeholder="0.00" class="w-full text-lg font-bold p-2.5 border rounded-xl outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Category</label>
+          <select id="expCategory" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            <option value="Groceries">🛒 Groceries</option>
+            <option value="Food & Dining">🍔 Food & Dining</option>
+            <option value="Transportation">🚗 Transportation</option>
+            <option value="Utilities">💡 Utilities</option>
+            <option value="Maintenance">🛠️ Maintenance</option>
+            <option value="Others">📦 Others</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Notes / Details</label>
+          <input type="text" id="expDesc" placeholder="e.g. Palengke, Gas" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Save Daily Expense</button>
+      </form>
+    </div>
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+      <h3 class="font-semibold text-gray-700 text-xs uppercase mb-2">Spending Breakdown</h3>
+      <canvas id="expenseChart" class="max-h-48"></canvas>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
+    const currentUser = localStorage.getItem("household_hub_user") || "";
+    let chartInstance = null;
+
+    async function fetchExpenses() {
+      try {
+        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const json = await res.json();
+        if (json.status === "success") {
+          renderExpensesChart(json.data.transactions || []);
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function renderExpensesChart(data) {
+      if(!data.length) return;
+      const totals = {};
+      data.forEach(item => {
+        const cat = item.category || 'Others';
+        totals[cat] = (totals[cat] || 0) + (parseFloat(item.amount) || 0);
+      });
+      const ctx = document.getElementById('expenseChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: Object.keys(totals),
+          datasets: [{ data: Object.values(totals), backgroundColor: ['#3B82F6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'] }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+      });
+    }
+
+    document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "addExpense",
+          date: new Date().toISOString().split('T')[0],
+          amount: document.getElementById('expAmount').value,
+          category: document.getElementById('expCategory').value,
+          loggedBy: currentUser,
+          description: document.getElementById('expDesc').value,
+          paymentMethod: "Cash/Online",
+          actor: currentUser
+        })
+      });
+      alert("Expense saved!");
+      document.getElementById('expenseForm').reset();
+      setTimeout(fetchExpenses, 1500);
+    });
+
+    fetchExpenses();
+  </script>
+</body>
+</html>
