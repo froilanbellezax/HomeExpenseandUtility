@@ -7,7 +7,6 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js');
@@ -17,7 +16,7 @@
 <body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col relative">
 
   <!-- LOGIN OVERLAY MODAL -->
-  <div id="loginOverlay" class="fixed inset-0 bg-blue-900/95 z-[100] flex items-center justify-center p-4">
+  <div id="loginOverlay" class="fixed inset-0 bg-blue-900/95 z-[100] flex items-center justify-center p-4 hidden">
     <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 text-center">
       <div class="text-4xl">🔐</div>
       <div>
@@ -27,7 +26,7 @@
       <form id="loginForm" class="space-y-3 text-left">
         <div>
           <label class="text-xs font-semibold text-gray-500">Your Full Name</label>
-          <input type="text" id="loginName" required placeholder="e.g. Juan Dela Cruz" class="w-full p-3 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold">
+          <input type="text" id="loginName" required placeholder="e.g. Froilan" class="w-full p-3 border rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 font-semibold">
         </div>
         <div>
           <label class="text-xs font-semibold text-gray-500">PIN / Passcode</label>
@@ -39,7 +38,7 @@
     </div>
   </div>
 
-  <!-- Header with Upper Right Contacts Icon -->
+  <!-- Header -->
   <header class="bg-blue-600 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
     <div>
       <h1 class="text-lg font-bold">🏠 BelPan House Hub</h1>
@@ -50,15 +49,14 @@
       </div>
     </div>
     <div class="flex items-center gap-1.5">
-      <button onclick="openTab('directory')" class="bg-teal-700 hover:bg-teal-800 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-sm" title="Contacts Directory">
+      <button onclick="location.href='directory.html'" class="bg-teal-700 hover:bg-teal-800 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 shadow-sm" title="Contacts Directory">
         🎴 Contacts
       </button>
-      <button onclick="openTab('adminLogs')" id="adminNavBtn" class="bg-purple-700 hover:bg-purple-800 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold hidden" title="Admin Audit Logs">🛡️</button>
-      <button onclick="showHome()" id="homeBtn" class="bg-blue-800 hover:bg-blue-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold hidden">⬅️ Menu</button>
+      <button onclick="location.href='adminLogs.html'" id="adminNavBtn" class="bg-purple-700 hover:bg-purple-800 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold hidden" title="Admin Audit Logs">🛡️</button>
     </div>
   </header>
 
-  <!-- USER CONTEXT ISOLATION: PRIVATE VIEW SUMMARY BANNER -->
+  <!-- USER SUMMARY BANNER -->
   <div id="userSummaryCard" class="px-4 mb-3">
     <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-3.5 rounded-2xl shadow-md border border-blue-700">
       <div class="flex justify-between items-center border-b border-blue-700/50 pb-2 mb-2">
@@ -80,10 +78,10 @@
 
   <main class="px-4 flex-1 space-y-4">
 
-    <!-- DASHBOARD MENU -->
-    <section id="view-dashboard" class="space-y-4">
+    <!-- DASHBOARD MENU TILES -->
+    <section class="space-y-4">
       <div class="grid grid-cols-2 gap-3">
-        <button onclick="openTab('loans')" class="col-span-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-4 rounded-2xl shadow-md flex items-center justify-between hover:opacity-95 transition active:scale-95">
+        <button onclick="location.href='loans.html'" class="col-span-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-4 rounded-2xl shadow-md flex items-center justify-between hover:opacity-95 transition active:scale-95">
           <div class="flex items-center gap-3">
             <span class="text-3xl">🏦</span>
             <div class="text-left">
@@ -94,549 +92,77 @@
           <span class="text-lg">➡️</span>
         </button>
 
-        <button onclick="openTab('expenses')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-blue-50 transition active:scale-95">
+        <button onclick="location.href='expenses.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-blue-50 transition active:scale-95">
           <span class="text-3xl mb-1">💰</span>
           <span class="font-bold text-gray-800 text-sm">Daily Expenses</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Log daily costs</span>
         </button>
 
-        <button onclick="openTab('bills')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-indigo-50 transition active:scale-95">
+        <button onclick="location.href='bills.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-indigo-50 transition active:scale-95">
           <span class="text-3xl mb-1">📃</span>
           <span class="font-bold text-gray-800 text-sm">Bills & Utilities</span>
-          <span class="text-[10px] text-gray-400 mt-0.5">Internet, electricity, etc.</span>
+          <span class="text-[10px] text-gray-400 mt-0.5">Internet, electricity, events</span>
         </button>
 
-        <button onclick="openTab('grocery')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-green-50 transition active:scale-95">
+        <button onclick="location.href='grocery.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-green-50 transition active:scale-95">
           <span class="text-3xl mb-1">🛒</span>
           <span class="font-bold text-gray-800 text-sm">Grocery List</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Needed supplies</span>
         </button>
 
-        <button onclick="openTab('lista')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-purple-50 transition active:scale-95">
+        <button onclick="location.href='lista.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-purple-50 transition active:scale-95">
           <span class="text-3xl mb-1">📋</span>
           <span class="font-bold text-gray-800 text-sm">Lista Vault</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Sisingilin & Utang</span>
         </button>
 
-        <button onclick="openTab('kkb')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-pink-50 transition active:scale-95">
+        <button onclick="location.href='kkb.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-pink-50 transition active:scale-95">
           <span class="text-3xl mb-1">🍔</span>
           <span class="font-bold text-gray-800 text-sm">KKB Splitter</span>
           <span class="text-[10px] text-gray-400 mt-0.5">With Cash/Full/Half</span>
         </button>
 
-        <button onclick="openTab('parcels')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-orange-50 transition active:scale-95">
+        <button onclick="location.href='parcels.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-orange-50 transition active:scale-95">
           <span class="text-3xl mb-1">📦</span>
           <span class="font-bold text-gray-800 text-sm">My Parcels</span>
           <span class="text-[10px] text-gray-400 mt-0.5">COD & Auto-Lista</span>
         </button>
 
-        <button onclick="openTab('hotspot')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-cyan-50 transition active:scale-95">
+        <button onclick="location.href='hotspot.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-cyan-50 transition active:scale-95">
           <span class="text-3xl mb-1">📶</span>
           <span class="font-bold text-gray-800 text-sm">Hotspot Wi-Fi</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Sales & Utang log</span>
         </button>
 
-        <button onclick="openTab('meter')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-yellow-50 transition active:scale-95">
+        <button onclick="location.href='meter.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-yellow-50 transition active:scale-95">
           <span class="text-3xl mb-1">⚡</span>
           <span class="font-bold text-gray-800 text-sm">Sub-Meter</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Baking room kWh</span>
         </button>
 
-        <button onclick="openTab('vehicle')" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-red-50 transition active:scale-95">
+        <button onclick="location.href='vehicle.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center hover:bg-red-50 transition active:scale-95">
           <span class="text-3xl mb-1">🛵</span>
           <span class="font-bold text-gray-800 text-sm">Vehicle Care</span>
           <span class="text-[10px] text-gray-400 mt-0.5">Change oil & repairs</span>
         </button>
       </div>
 
-      <!-- UPCOMING DUES PREVIEW CARD (Bottom of Dashboard - Clickable to navigate) -->
+      <!-- UPCOMING DUES PREVIEW CARD -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-2">
         <div class="flex justify-between items-center">
           <h3 class="font-bold text-gray-700 text-xs uppercase">⏰ Upcoming Dues & Bills (Top 5)</h3>
-          <span class="text-[10px] text-blue-600 font-semibold">Tap to view module</span>
         </div>
         <div id="dashUpcomingList" class="space-y-2 text-xs">
           <p class="text-gray-400 text-center">Loading upcoming dues...</p>
         </div>
       </div>
     </section>
-
-    <!-- MODULE: LOANS & INSTALLMENTS -->
-    <section id="tab-loans" class="module-content hidden space-y-4">
-      <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-4 rounded-2xl shadow-md border border-indigo-700 space-y-2">
-        <div class="flex justify-between items-center">
-          <span class="text-xs font-bold text-indigo-200 uppercase">📅 This Month's Loan Dues</span>
-          <span id="currentMonthBadge" class="text-[10px] bg-indigo-700 px-2 py-0.5 rounded-full font-bold">---</span>
-        </div>
-        <div class="grid grid-cols-2 gap-3 pt-1">
-          <div class="bg-white/10 p-2.5 rounded-xl">
-            <span class="text-[10px] text-amber-300 block font-semibold">Unpaid Due This Month:</span>
-            <span id="loanDueThisMonth" class="text-lg font-extrabold text-amber-400">₱0.00</span>
-          </div>
-          <div class="bg-white/10 p-2.5 rounded-xl">
-            <span class="text-[10px] text-indigo-200 block font-semibold">Total Remaining Balance:</span>
-            <span id="loanTotalRemaining" class="text-lg font-extrabold text-white">₱0.00</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🏦 Add Loan / Installment</h2>
-        <form id="loanForm" class="space-y-3">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Loan Provider / App</label>
-              <input type="text" id="loanProvider" required placeholder="e.g. SPayLater, Home Credit" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Item / Description</label>
-              <input type="text" id="loanItemDesc" required placeholder="e.g. Baking Oven, Phone" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Account Holder</label>
-              <select id="loanHolder" class="w-full p-2.5 border rounded-xl text-sm outline-none loan-profile-select"></select>
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Actual Payer (Magbabayad)</label>
-              <select id="loanPayer" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-indigo-700 loan-profile-select" onchange="checkCustomPayer()"></select>
-              <input type="text" id="loanCustomPayer" placeholder="Enter Payer Name" class="w-full p-2 border rounded-xl text-xs outline-none mt-1 hidden">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Monthly Due (₱)</label>
-              <input type="number" step="0.01" id="loanMonthly" required placeholder="e.g. 2500.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Start Month</label>
-              <select id="loanStartMonth" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-indigo-700"></select>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Total Term (Months)</label>
-              <input type="number" id="loanTotalMonths" required placeholder="e.g. 12" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Already Paid (Months)</label>
-              <input type="number" id="loanMonthsPaid" value="0" min="0" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Due Day / Schedule Notes</label>
-            <input type="text" id="loanDueDay" placeholder="e.g. Every 15th of the month" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-          <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition">Save Installment Plan</button>
-        </form>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Installment Tracker & Progress</h3>
-        <div id="loansList" class="space-y-3 text-sm">
-          <p class="text-gray-400 text-center">Loading loans...</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- MODULE: BILLS & UTILITIES -->
-    <section id="tab-bills" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📃 Add Recurring Bill</h2>
-        <form id="billForm" class="space-y-3">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Bill Name</label>
-              <input type="text" id="billName" required placeholder="e.g. PLDT Internet, VECO" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Estimated/Default Amount (₱)</label>
-              <input type="number" step="0.01" id="billAmount" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Due Date (Day of Month)</label>
-              <input type="text" id="billDueDate" required placeholder="e.g. 25" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Responsible Person</label>
-              <select id="billResponsible" class="w-full p-2.5 border rounded-xl text-sm outline-none loan-profile-select"></select>
-            </div>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Account Number / Details</label>
-            <input type="text" id="billAccountNo" placeholder="Optional account number" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-          <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition">Save Bill</button>
-        </form>
-      </div>
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Household Bills Tracker</h3>
-        <div id="billsList" class="space-y-2 text-sm">
-          <p class="text-gray-400 text-center">Loading bills...</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- MODULE: ADMIN LOGS -->
-    <section id="tab-adminLogs" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-purple-900 mb-1 text-sm uppercase">🛡️ Admin Audit Logs</h2>
-        <p class="text-xs text-gray-500 mb-3">Complete tracking of all household activities and transactions.</p>
-        <div id="adminLogsList" class="space-y-2 text-xs">
-          <p class="text-gray-400 text-center">Loading audit logs...</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- OTHER MODULES -->
-    <section id="tab-expenses" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">💰 Log Daily Expense</h2>
-        <form id="expenseForm" class="space-y-3">
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
-            <input type="number" step="0.01" id="expAmount" required placeholder="0.00" class="w-full text-lg font-bold p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Category</label>
-            <select id="expCategory" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-              <option value="Groceries">🛒 Groceries</option>
-              <option value="Food & Dining">🍔 Food & Dining</option>
-              <option value="Transportation">🚗 Transportation</option>
-              <option value="Utilities">💡 Utilities</option>
-              <option value="Maintenance">🛠️ Maintenance</option>
-              <option value="Others">📦 Others</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Notes / Details</label>
-            <input type="text" id="expDesc" placeholder="e.g. Palengke, Gas" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-          <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Save Daily Expense</button>
-        </form>
-      </div>
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-2">Spending Breakdown</h3>
-        <canvas id="expenseChart" class="max-h-48"></canvas>
-      </div>
-    </section>
-
-    <section id="tab-lista" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📋 Lista: Record Utang / Sisingilin</h2>
-        <form id="debtForm" class="space-y-3">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Person / Customer</label>
-              <input type="text" id="debtPerson" required placeholder="e.g. Mark, Friend" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Type / Direction</label>
-              <select id="debtDir" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
-                <option value="Pautang (Sisingilin)">🟢 Pautang (Sisingilin)</option>
-                <option value="Utang (Babayaran)">🔴 Utang (Babayaran)</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
-            <input type="number" step="0.01" id="debtAmount" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Reason / Details</label>
-            <input type="text" id="debtNotes" placeholder="e.g. McDo split, emergency load" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-          <button type="submit" class="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700 transition">Save to Lista</button>
-        </form>
-      </div>
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">My Active Lista Vault</h3>
-        <div id="debtsList" class="space-y-2 text-sm">
-          <p class="text-gray-400 text-center">Loading listahan...</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="tab-kkb" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🍔 KKB Splitter (With Payment Options)</h2>
-        <form id="kkbForm" class="space-y-3">
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Total Receipt Amount (₱)</label>
-            <input type="number" step="0.01" id="kkbTotal" required placeholder="e.g. 1200.00" oninput="calculateKKB()" class="w-full text-xl font-bold p-2.5 border rounded-xl outline-none focus:ring-2 focus:ring-pink-500">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Reason / Place</label>
-            <input type="text" id="kkbReason" required placeholder="e.g. McDonald's, Outing" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500 mb-1 block">Participants & Payments Given On-the-spot:</label>
-            <div id="kkbParticipantsList" class="space-y-2 bg-gray-50 p-2.5 rounded-xl border border-gray-200 max-h-48 overflow-y-auto mb-2"></div>
-            <div class="flex gap-2">
-              <input type="text" id="customFriendInput" placeholder="Add custom name (e.g. Alex)" class="flex-1 p-2 border rounded-xl text-xs outline-none">
-              <button type="button" onclick="addCustomParticipant()" class="bg-pink-100 text-pink-700 font-bold px-3 py-2 rounded-xl text-xs hover:bg-pink-200">Add</button>
-            </div>
-          </div>
-          <div class="bg-pink-50 p-3 rounded-xl border border-pink-200 text-center">
-            <span class="text-xs text-pink-700 block">Equal Share per Person:</span>
-            <span id="kkbSplitResult" class="text-xl font-bold text-pink-900">₱0.00</span>
-          </div>
-          <button type="submit" class="w-full bg-pink-600 text-white font-bold py-3 rounded-xl hover:bg-pink-700 transition">Save & Auto-Add Unpaid Shares to Lista</button>
-        </form>
-      </div>
-    </section>
-
-    <section id="tab-grocery" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🛒 Add Needed Item</h2>
-        <form id="groceryForm" class="space-y-3">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Item Name</label>
-              <input type="text" id="grocItem" required placeholder="e.g. Flour, Sabon" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Qty / Unit</label>
-              <input type="text" id="grocQty" placeholder="e.g. 2 sacks" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
-          <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition">Add to List</button>
-        </form>
-      </div>
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Pending Household Needs</h3>
-        <ul id="groceryList" class="divide-y divide-gray-100 text-sm">
-          <li class="py-2 text-gray-400 text-center">Loading list...</li>
-        </ul>
-      </div>
-    </section>
-
-    <section id="tab-parcels" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📦 Log Delivery / Parcel</h2>
-        <form id="parcelForm" class="space-y-3">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Courier / App</label>
-              <input type="text" id="parcCourier" placeholder="Shopee/Lazada" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">COD Amount (₱)</label>
-              <input type="number" step="0.01" id="parcAmount" placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Payment Status</label>
-            <select id="parcStatus" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-              <option value="Paid by Owner">Paid by Owner</option>
-              <option value="Abono Needed (Unpaid)">Abono Needed (Unpaid)</option>
-            </select>
-          </div>
-          <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3 rounded-xl hover:bg-orange-600 transition">Log Delivery</button>
-        </form>
-      </div>
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">My Parcels</h3>
-        <div id="parcelsList" class="space-y-2 text-sm">
-          <p class="text-gray-400 text-center">Loading parcels...</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="tab-hotspot" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">📶 Log Hotspot Sale / Utang</h2>
-        <form id="hotspotForm" class="space-y-3">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Customer / Device</label>
-              <input type="text" id="hsCustomer" required placeholder="e.g. Neighbor, Mark" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Voucher / Code</label>
-              <input type="text" id="hsVoucher" placeholder="e.g. 1 Day / Code 849" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
-              <input type="number" step="1" id="hsAmount" required placeholder="e.g. 20" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Payment Status</label>
-              <select id="hsStatus" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
-                <option value="Paid">✅ Paid</option>
-                <option value="Utang">🔴 Utang</option>
-              </select>
-            </div>
-          </div>
-          <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save Hotspot Log</button>
-        </form>
-      </div>
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Hotspot Sales & Utang</h3>
-        <div id="hotspotList" class="space-y-2 text-sm">
-          <p class="text-gray-400 text-center">Loading hotspot logs...</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="tab-meter" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">⚡ Sub-Meter Reading Log</h2>
-        <form id="meterForm" class="space-y-3">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Meter / Room Name</label>
-              <input type="text" id="meterName" required value="Baking Room" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Current kWh Reading</label>
-              <input type="number" step="0.1" id="meterReading" required placeholder="e.g. 1450.5" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-blue-600">
-            </div>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Rate (₱ / kWh)</label>
-            <input type="number" step="0.1" id="meterRate" value="12" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-          <button type="submit" class="w-full bg-yellow-500 text-white font-bold py-3 rounded-xl hover:bg-yellow-600 transition">Log Reading</button>
-        </form>
-      </div>
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Sub-meter History</h3>
-        <div id="meterList" class="space-y-2 text-sm">
-          <p class="text-gray-400 text-center">Loading readings...</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="tab-vehicle" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">🛵 Log Vehicle Service / Maintenance</h2>
-        <form id="vehicleForm" class="space-y-3">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Vehicle / Unit</label>
-              <input type="text" id="vehName" required placeholder="e.g. Motorcycle, Car" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Service Type</label>
-              <select id="vehService" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-                <option value="Change Oil">🛢️ Change Oil</option>
-                <option value="Spark Plug / Tune-up">🔧 Tune-up</option>
-                <option value="Tire / Brake Change">🛞 Tires / Brakes</option>
-                <option value="Belt / Chain Maintenance">⚙️ Belt / Chain</option>
-                <option value="General Repair">🛠️ General Repair</option>
-              </select>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Odometer (km)</label>
-              <input type="number" id="vehOdo" required placeholder="e.g. 12500" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Next Service (km/Date)</label>
-              <input type="text" id="vehNext" placeholder="e.g. 15000 km / Dec 2026" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Cost (₱)</label>
-            <input type="number" step="0.01" id="vehCost" placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Notes / Shop Name</label>
-            <input type="text" id="vehNotes" placeholder="e.g. Shell AX7 oil, Motoworld shop" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-          <button type="submit" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition">Save Maintenance Log</button>
-        </form>
-      </div>
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Service History</h3>
-        <div id="vehicleList" class="space-y-2 text-sm">
-          <p class="text-gray-400 text-center">Loading vehicle history...</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="tab-directory" class="module-content hidden space-y-4">
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h2 id="profileFormTitle" class="font-bold text-gray-700 mb-3 text-sm uppercase">👤 Add / Edit My Account Info</h2>
-        <form id="profileForm" class="space-y-3">
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Full Name</label>
-            <input type="text" id="profName" required readonly class="w-full p-2.5 border rounded-xl text-sm bg-gray-100 font-bold outline-none">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Set PIN / Passcode</label>
-            <input type="password" id="profPin" placeholder="Enter new 4-digit PIN" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Primary Phone</label>
-              <input type="text" id="profPhone1" placeholder="09XX-XXX-XXXX" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Secondary Phone</label>
-              <input type="text" id="profPhone2" placeholder="Optional extra SIM" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Primary Email</label>
-              <input type="email" id="profEmail1" placeholder="primary@email.com" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Secondary Email</label>
-              <input type="email" id="profEmail2" placeholder="work/alt@email.com" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Blood Type</label>
-              <input type="text" id="profBlood" placeholder="e.g. O+, A+" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Height / Weight</label>
-              <input type="text" id="profHW" placeholder="e.g. 5'7 / 65kg" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Maintenance Meds / Allergies</label>
-            <input type="text" id="profMeds" placeholder="e.g. Biogesic, Maintenance, Peanut allergy" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-          <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">Save Profile Info</button>
-        </form>
-      </div>
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Family Directory</h3>
-        <div id="familyList" class="space-y-3 text-sm">
-          <p class="text-gray-400 text-center">Loading directory...</p>
-        </div>
-      </div>
-    </section>
-
   </main>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
-    let chartInstance = null;
-    let cachedProfiles = [];
-    let cachedDebts = [];
     let currentUser = localStorage.getItem("household_hub_user") || "";
-    const ADMIN_USER = "Admin"; 
-
-    function getCurrentMonthStr() {
-      const now = new Date();
-      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    }
-
-    function getCurrentMonthLabel() {
-      return new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-    }
+    const ADMIN_USER = "Froilan"; 
 
     function checkAuth() {
       if (!currentUser) {
@@ -647,7 +173,6 @@
         document.getElementById('loginOverlay').classList.add('hidden');
         document.getElementById('activeUserName').innerText = currentUser;
         document.getElementById('summaryUserName').innerText = currentUser;
-        document.getElementById('profName').value = currentUser;
         
         if (currentUser.toLowerCase() === ADMIN_USER.toLowerCase() || currentUser.toLowerCase().includes("admin")) {
           document.getElementById('adminNavBtn').classList.remove('hidden');
@@ -655,8 +180,7 @@
           document.getElementById('adminNavBtn').classList.add('hidden');
         }
 
-        populateStartMonthDropdown();
-        fetchAllData();
+        fetchDashboardData();
       }
     }
 
@@ -673,7 +197,6 @@
       const name = document.getElementById('loginName').value.trim();
       const pin = document.getElementById('loginPin').value.trim();
       const errEl = document.getElementById('loginError');
-
       errEl.classList.add('hidden');
 
       try {
@@ -684,7 +207,6 @@
           body: JSON.stringify({ action: "loginUser", name: name, pin: pin })
         });
         const json = await res.json();
-
         if (json.status === "success") {
           currentUser = name;
           localStorage.setItem("household_hub_user", name);
@@ -700,183 +222,24 @@
       }
     });
 
-    function showHome() {
-      document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById('view-dashboard').classList.remove('hidden');
-      document.getElementById('homeBtn').classList.add('hidden');
-    }
-
-    function openTab(tabName) {
-      document.getElementById('view-dashboard').classList.add('hidden');
-      document.querySelectorAll('.module-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-      document.getElementById('homeBtn').classList.remove('hidden');
-    }
-
-    function populateStartMonthDropdown() {
-      const select = document.getElementById('loanStartMonth');
-      if (!select) return;
-      
-      let options = '';
-      const now = new Date();
-      for (let i = -24; i <= 12; i++) {
-        const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-        const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-        const isCurrent = i === 0 ? ' (Current Month)' : '';
-        options += `<option value="${val}" ${i === 0 ? 'selected' : ''}>${label}${isCurrent}</option>`;
-      }
-      select.innerHTML = options;
-    }
-
-    async function fetchAllData() {
+    async function fetchDashboardData() {
       if (!currentUser) return;
       try {
         const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
         const json = await res.json();
         if (json.status === "success") {
-          cachedProfiles = json.data.profiles || [];
-          cachedDebts = json.data.debts || [];
-          populateProfileDropdowns(cachedProfiles);
-
-          renderLoans(json.data.loans || []);
-          renderBills(json.data.recurring || []);
+          renderDashboardSummary(json.data.debts || []);
           renderDashboardUpcoming(json.data.recurring || [], json.data.loans || []);
-          renderAdminLogs(json.data.auditLogs || []);
-          renderExpensesChart(json.data.transactions);
-          renderGrocery(json.data.grocery);
-          renderParcels(json.data.parcels);
-          renderMeter(json.data.submeter);
-          renderVehicle(json.data.vehicle);
-          renderDebts(cachedDebts);
-          renderProfiles(cachedProfiles);
-          renderHotspot(json.data.hotspot);
-          updateUserSummary();
         }
       } catch (e) {
-        console.error("Data load failed:", e);
+        console.error("Dashboard data load failed:", e);
       }
     }
 
-    function populateProfileDropdowns(profiles) {
-      const kkbContainer = document.getElementById('kkbParticipantsList');
-      const loanSelects = document.querySelectorAll('.loan-profile-select');
-
-      let options = profiles.length 
-        ? profiles.map(p => `<option value="${p.name}">${p.name}</option>`).join('')
-        : `<option value="${currentUser}">${currentUser}</option>`;
-      
-      const payerOptions = options + `<option value="Others">🌐 Others (Custom Name)</option>`;
-
-      loanSelects.forEach(s => {
-        if (s.id === 'loanPayer') {
-          s.innerHTML = payerOptions;
-        } else {
-          s.innerHTML = options;
-        }
-        if (currentUser) s.value = currentUser;
-      });
-
-      if (kkbContainer && profiles.length) {
-        kkbContainer.innerHTML = profiles.map(p => `
-          <div class="p-2 bg-white rounded-xl border border-gray-200 flex flex-col gap-1.5 kkb-row">
-            <div class="flex items-center justify-between">
-              <label class="flex items-center gap-2 text-xs font-semibold text-gray-800">
-                <input type="checkbox" value="${p.name}" class="kkb-check rounded text-pink-600 focus:ring-pink-500" onchange="calculateKKB()" checked>
-                <span>${p.name}</span>
-              </label>
-              <select class="kkb-mode text-[10px] bg-gray-100 p-1 rounded font-semibold" onchange="calculateKKB()">
-                <option value="none">🔴 Unpaid (Utang)</option>
-                <option value="full">✅ Paid Full</option>
-                <option value="half">🌓 Paid Half</option>
-                <option value="custom">💵 Custom Paid</option>
-              </select>
-            </div>
-            <div class="hidden custom-paid-box">
-              <input type="number" step="0.01" placeholder="Paid Amount (₱)" class="kkb-custom-val w-full p-1.5 border rounded-lg text-xs outline-none" oninput="calculateKKB()">
-            </div>
-          </div>
-        `).join('');
-      }
-    }
-
-    function checkCustomPayer() {
-      const sel = document.getElementById('loanPayer');
-      const customInput = document.getElementById('loanCustomPayer');
-      if (sel.value === 'Others') {
-        customInput.classList.remove('hidden');
-        customInput.required = true;
-      } else {
-        customInput.classList.add('hidden');
-        customInput.required = false;
-        customInput.value = '';
-      }
-    }
-
-    function addCustomParticipant() {
-      const input = document.getElementById('customFriendInput');
-      const name = input.value.trim();
-      if (!name) return;
-
-      const kkbContainer = document.getElementById('kkbParticipantsList');
-      const newDiv = document.createElement('div');
-      newDiv.className = 'p-2 bg-pink-50/60 rounded-xl border border-pink-200 flex flex-col gap-1.5 kkb-row';
-      newDiv.innerHTML = `
-        <div class="flex items-center justify-between">
-          <label class="flex items-center gap-2 text-xs font-semibold text-pink-900">
-            <input type="checkbox" value="${name}" class="kkb-check rounded text-pink-600 focus:ring-pink-500" onchange="calculateKKB()" checked>
-            <span>${name} (Guest)</span>
-          </label>
-          <select class="kkb-mode text-[10px] bg-white p-1 rounded font-semibold" onchange="calculateKKB()">
-            <option value="none">🔴 Unpaid (Utang)</option>
-            <option value="full">✅ Paid Full</option>
-            <option value="half">🌓 Paid Half</option>
-            <option value="custom">💵 Custom Paid</option>
-          </select>
-        </div>
-        <div class="hidden custom-paid-box">
-          <input type="number" step="0.01" placeholder="Paid Amount (₱)" class="kkb-custom-val w-full p-1.5 border rounded-lg text-xs outline-none" oninput="calculateKKB()">
-        </div>
-      `;
-      kkbContainer.appendChild(newDiv);
-      input.value = '';
-      calculateKKB();
-    }
-
-    function calculateKKB() {
-      const total = parseFloat(document.getElementById('kkbTotal').value) || 0;
-      const rows = document.querySelectorAll('.kkb-row');
-      let activeCount = 0;
-
-      rows.forEach(r => {
-        const chk = r.querySelector('.kkb-check');
-        const mode = r.querySelector('.kkb-mode');
-        const customBox = r.querySelector('.custom-paid-box');
-
-        if (mode.value === 'custom') {
-          customBox.classList.remove('hidden');
-        } else {
-          customBox.classList.add('hidden');
-        }
-
-        if (chk && chk.checked) activeCount++;
-      });
-
-      const perPerson = activeCount > 0 ? (total / activeCount) : 0;
-      document.getElementById('kkbSplitResult').innerText = `₱${perPerson.toFixed(2)}`;
-    }
-
-    function updateUserSummary() {
-      const card = document.getElementById('userSummaryCard');
-      if (!currentUser) { card.classList.add('hidden'); return; }
-
-      card.classList.remove('hidden');
-      document.getElementById('summaryUserName').innerText = currentUser;
-
+    function renderDashboardSummary(debts) {
       let receivable = 0;
       let payable = 0;
-
-      cachedDebts.forEach(d => {
+      debts.forEach(d => {
         const amt = parseFloat(d.amount) || 0;
         const status = String(d.status || '');
         const personName = String(d.borrowerperson || d.person || '');
@@ -890,7 +253,6 @@
           }
         }
       });
-
       document.getElementById('userReceivable').innerText = `₱${receivable.toFixed(2)}`;
       document.getElementById('userPayable').innerText = `₱${payable.toFixed(2)}`;
     }
@@ -899,7 +261,6 @@
       const container = document.getElementById('dashUpcomingList');
       let combined = [];
 
-      // Add bills (Only if status is NOT Paid)
       if (bills) {
         bills.forEach(b => {
           if (String(b.status || '') !== 'Paid') {
@@ -908,14 +269,13 @@
               amount: parseFloat(b.amount || 0),
               day: parseInt(b.duedatedayofmonth) || 99,
               type: 'Bill',
-              targetTab: 'bills'
+              targetPage: 'bills.html'
             });
           }
         });
       }
 
-      // Add active loans
-      const currMonth = getCurrentMonthStr();
+      const currMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
       if (loans) {
         loans.forEach(l => {
           const remM = Math.max(0, (parseInt(l.totalmonths) || 1) - (parseInt(l.monthspaid) || 0));
@@ -926,13 +286,12 @@
               amount: parseFloat(l.monthlydue || 0),
               day: parseInt(String(l.dueday || '1').replace(/\D/g, '')) || 15,
               type: 'Loan',
-              targetTab: 'loans'
+              targetPage: 'loans.html'
             });
           }
         });
       }
 
-      // Sort by due day (duest first) and take top 5
       combined.sort((a, b) => a.day - b.day);
       const top5 = combined.slice(0, 5);
 
@@ -942,7 +301,7 @@
       }
 
       container.innerHTML = top5.map(item => `
-        <div onclick="openTab('${item.targetTab}')" class="p-2.5 bg-gray-50 hover:bg-blue-50 cursor-pointer rounded-xl border border-gray-100 flex justify-between items-center transition">
+        <div onclick="location.href='${item.targetPage}'" class="p-2.5 bg-gray-50 hover:bg-blue-50 cursor-pointer rounded-xl border border-gray-100 flex justify-between items-center transition">
           <div>
             <div class="font-bold text-gray-800">${item.name} <span class="text-[10px] text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded font-semibold">${item.type}</span></div>
             <div class="text-[10px] text-gray-500">Due day: Every ${item.day}th • Tap to open</div>
@@ -951,469 +310,6 @@
         </div>
       `).join('');
     }
-
-    function renderLoans(data) {
-      const container = document.getElementById('loansList');
-      const currMonth = getCurrentMonthStr();
-      document.getElementById('currentMonthBadge').innerText = getCurrentMonthLabel();
-
-      let dueThisMonth = 0;
-      let totalRemaining = 0;
-
-      if (!data || !data.length) {
-        container.innerHTML = '<p class="text-gray-400 text-center">No active loans or installments found for your account.</p>';
-        document.getElementById('loanDueThisMonth').innerText = "₱0.00";
-        document.getElementById('loanTotalRemaining').innerText = "₱0.00";
-        return;
-      }
-
-      container.innerHTML = data.map(l => {
-        const monthly = parseFloat(l.monthlydue) || 0;
-        const totalM = parseInt(l.totalmonths) || 1;
-        const paidM = parseInt(l.monthspaid) || 0;
-        const remM = Math.max(0, totalM - paidM);
-        const remBalance = remM * monthly;
-        const progressPct = Math.min(100, Math.round((paidM / totalM) * 100));
-        const startM = l.startmonth || currMonth;
-        
-        const isStarted = currMonth >= startM;
-        const isPaidThisMonth = String(l.lastpaidmonth) === currMonth || remM === 0;
-        const loanStatus = l.status || 'Active';
-        const provider = l.loanprovider || l.loanname || 'Loan';
-        const desc = l.itemdescription || '';
-        const holder = l.accountholder || '';
-        const payer = l.actualpayer || '';
-
-        const isHolder = holder.toLowerCase() === currentUser.toLowerCase();
-        const isPayer = payer.toLowerCase() === currentUser.toLowerCase();
-
-        if (remM > 0) {
-          totalRemaining += remBalance;
-          if (isStarted && !isPaidThisMonth && loanStatus !== 'Pending Approval') {
-            dueThisMonth += monthly;
-          }
-        }
-
-        let actionButtonHTML = '';
-        if (remM > 0) {
-          if (!isStarted) {
-            actionButtonHTML = `<div class="text-center text-xs bg-amber-50 text-amber-800 py-1.5 rounded-xl font-bold border border-amber-200">⏳ Upcoming (Starts on ${startM})</div>`;
-          } else if (isPaidThisMonth) {
-            actionButtonHTML = `<div class="text-center text-xs bg-green-100 text-green-800 py-1.5 rounded-xl font-bold">✅ Paid for ${getCurrentMonthLabel()}</div>`;
-          } else if (loanStatus === 'Pending Approval') {
-            if (isHolder) {
-              actionButtonHTML = `
-                <div class="p-2 bg-amber-50 rounded-xl border border-amber-200 space-y-1.5 text-center">
-                  <span class="text-xs text-amber-800 font-bold block">⚠️ ${payer} requested payment confirmation</span>
-                  <div class="flex gap-2">
-                    <button onclick="approveLoan('${l.id}')" class="flex-1 bg-green-600 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-green-700">Accept Payment</button>
-                    <button onclick="rejectLoan('${l.id}')" class="flex-1 bg-red-500 text-white py-1.5 rounded-lg text-xs font-bold hover:bg-red-600">Reject</button>
-                  </div>
-                </div>
-              `;
-            } else {
-              actionButtonHTML = `<div class="text-center text-xs bg-amber-100 text-amber-800 py-1.5 rounded-xl font-bold">⏳ Payment submitted, waiting for ${holder}'s approval</div>`;
-            }
-          } else {
-            if (isPayer || isHolder) {
-              actionButtonHTML = `<button onclick="payLoanMonth('${l.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${getCurrentMonthLabel()} as Paid</button>`;
-            } else {
-              actionButtonHTML = `<div class="text-center text-xs bg-gray-100 text-gray-500 py-1.5 rounded-xl font-semibold">Viewing only</div>`;
-            }
-          }
-        }
-
-        return `
-          <div class="p-3.5 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-2.5">
-            <div class="flex justify-between items-start">
-              <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded font-bold uppercase">${provider}</span>
-                  <span class="font-bold text-indigo-950 text-sm">${desc || provider}</span>
-                </div>
-                <div class="text-[11px] text-gray-600 mt-1">
-                  Account: <strong>${holder}</strong> • Payer: <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-bold">${payer}</span>
-                </div>
-                <div class="text-[10px] text-gray-400 mt-0.5">Start: ${startM} • Due: ${l.dueday || 'Monthly'}</div>
-              </div>
-              <div class="text-right">
-                <div class="font-extrabold text-indigo-700 text-base">₱${monthly.toFixed(2)}<span class="text-[10px] font-normal text-gray-500">/mo</span></div>
-                <div class="text-[10px] font-bold ${remM === 0 ? 'text-green-600' : 'text-amber-600'}">
-                  ${remM === 0 ? '🎉 Fully Paid!' : `${remM} mos left (₱${remBalance.toFixed(2)})`}
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div class="flex justify-between text-[10px] font-semibold text-gray-500 mb-1">
-                <span>Paid: ${paidM} / ${totalM} months</span>
-                <span>${progressPct}%</span>
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: ${progressPct}%"></div>
-              </div>
-            </div>
-
-            ${actionButtonHTML}
-          </div>
-        `;
-      }).join('');
-
-      document.getElementById('loanDueThisMonth').innerText = `₱${dueThisMonth.toFixed(2)}`;
-      document.getElementById('loanTotalRemaining').innerText = `₱${totalRemaining.toFixed(2)}`;
-      document.getElementById('dashLoanSub').innerText = dueThisMonth > 0 
-        ? `₱${dueThisMonth.toFixed(2)} unpaid due this month` 
-        : `All paid for ${getCurrentMonthLabel()}!`;
-    }
-
-    async function payLoanMonth(id) {
-      await postData({ action: "payLoanMonth", id: id, actor: currentUser }, null);
-    }
-
-    async function approveLoan(id) {
-      await postData({ action: "approveLoanPayment", id: id, currentMonthStr: getCurrentMonthStr(), actor: currentUser }, null);
-    }
-
-    async function rejectLoan(id) {
-      await postData({ action: "rejectLoanPayment", id: id, actor: currentUser }, null);
-    }
-
-    function renderBills(data) {
-      const container = document.getElementById('billsList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No recurring bills logged.</p>'; return; }
-      
-      container.innerHTML = data.map(b => {
-        const name = b.billname || 'Bill';
-        const defaultAmt = parseFloat(b.amount || 0);
-        const due = b.duedatedayofmonth || '';
-        const status = b.status || 'Unpaid';
-        const resp = b.responsibleperson || '';
-
-        return `
-          <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 flex justify-between items-center">
-            <div>
-              <div class="font-bold text-gray-800">${name} <span class="text-xs text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded">Due Day: ${due}</span></div>
-              <div class="text-xs text-gray-500">Responsible: ${resp} • Acct: ${b.accountnumber || 'N/A'}</div>
-            </div>
-            <div class="text-right">
-              <div class="font-bold text-indigo-900">₱${defaultAmt.toFixed(2)}</div>
-              ${status === 'Paid'
-                ? `<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Paid</span>`
-                : `<button onclick="promptAndPayBill('${name}', ${defaultAmt})" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Mark Paid</button>`}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function promptAndPayBill(billName, defaultAmount) {
-      const input = prompt(`Magkano ang aktwal na binayaran para sa "${billName}" ngayong buwan?`, defaultAmount);
-      if (input === null) return;
-      const actualAmount = parseFloat(input);
-      if (isNaN(actualAmount) || actualAmount < 0) {
-        alert("Maglagay ng tamang halaga!");
-        return;
-      }
-
-      await postData({ 
-        action: "updateBillStatus", 
-        billName: billName, 
-        amount: actualAmount, 
-        status: "Paid", 
-        actor: currentUser 
-      }, null);
-    }
-
-    function renderAdminLogs(data) {
-      const container = document.getElementById('adminLogsList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No audit logs found.</p>'; return; }
-      
-      container.innerHTML = data.map(log => {
-        const time = new Date(log.timestamp).toLocaleString();
-        return `
-          <div class="p-2.5 bg-purple-50 rounded-lg border border-purple-100 flex justify-between items-center">
-            <div>
-              <span class="font-bold text-purple-900">[${log.actiontype}]</span> <span class="text-gray-700">${log.details}</span>
-              <div class="text-[10px] text-gray-400 mt-0.5">By: ${log.actor || 'System'} • ${time}</div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderDebts(data) {
-      const container = document.getElementById('debtsList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No active listahan logs for your account.</p>'; return; }
-      
-      container.innerHTML = data.map(d => {
-        const personName = d.borrowerperson || d.person || 'Unknown';
-        const direction = d.direction || 'Utang/Pautang';
-        const notes = d.reasonnotes || d.notes || 'No details';
-        const amt = parseFloat(d.amount || 0).toFixed(2);
-        const logged = d.loggedby || 'System';
-        const isSettled = String(d.status) === 'Settled';
-
-        return `
-          <div class="p-3 bg-purple-50/60 rounded-xl border border-purple-100 flex justify-between items-center">
-            <div>
-              <div class="font-bold text-gray-800">${personName} <span class="text-[10px] text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded font-semibold">${direction}</span></div>
-              <div class="text-xs text-gray-500">${notes} • By: ${logged}</div>
-            </div>
-            <div class="text-right">
-              <div class="font-bold text-purple-900">₱${amt}</div>
-              ${!isSettled 
-                ? `<button onclick="markDebtSettled('${personName}', '${notes}')" class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">Mark Settled</button>`
-                : `<span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">Settled</span>`}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function markDebtSettled(person, notes) {
-      await postData({ action: "updateDebtStatus", person: person, notes: notes, actor: currentUser }, null);
-    }
-
-    function renderHotspot(data) {
-      const container = document.getElementById('hotspotList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No hotspot logs yet.</p>'; return; }
-      container.innerHTML = data.map(h => `
-        <div class="p-3 bg-cyan-50/60 rounded-xl border border-cyan-100 flex justify-between items-center">
-          <div>
-            <div class="font-bold text-gray-800">${h.customerdevicename} <span class="text-xs font-normal text-gray-500">(${h.vouchercodeforduration || 'Code'})</span></div>
-            <div class="text-xs text-gray-500">Logged by: ${h.collectedloggedby}</div>
-          </div>
-          <div class="text-right">
-            <div class="font-bold text-cyan-900">₱${parseFloat(h.amount || 0).toFixed(2)}</div>
-            ${h.status === 'Utang' 
-              ? `<button onclick="markHotspotPaid('${h.customerdevicename}')" class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">Mark Paid</button>`
-              : `<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Paid</span>`}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    async function markHotspotPaid(cust) {
-      await postData({ action: "updateHotspotStatus", customer: cust, collectedBy: currentUser, actor: currentUser }, null);
-    }
-
-    function renderExpensesChart(data) {
-      if(!data || !data.length) return;
-      const totals = {};
-      data.forEach(item => {
-        const cat = item.category || 'Others';
-        totals[cat] = (totals[cat] || 0) + (parseFloat(item.amount) || 0);
-      });
-      const ctx = document.getElementById('expenseChart').getContext('2d');
-      if (chartInstance) chartInstance.destroy();
-      chartInstance = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: Object.keys(totals),
-          datasets: [{ data: Object.values(totals), backgroundColor: ['#3B82F6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'] }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      });
-    }
-
-    function renderGrocery(data) {
-      const list = document.getElementById('groceryList');
-      if (!data || !data.length) { list.innerHTML = '<li class="py-2 text-gray-400 text-center">No items needed!</li>'; return; }
-      list.innerHTML = data.map(i => `
-        <li class="py-2 flex justify-between items-center">
-          <div>
-            <span class="font-bold text-gray-800 ${i.status === 'Bought' ? 'line-through text-gray-400' : ''}">${i.item}</span> 
-            <span class="text-xs text-gray-400">(${i.quantity || '1'})</span>
-            <div class="text-xs text-gray-400">Req by: ${i.requestedby}</div>
-          </div>
-          <button onclick="toggleGroceryStatus('${i.id}', '${i.status === 'Bought' ? 'Pending' : 'Bought'}')" class="px-2.5 py-1 ${i.status === 'Bought' ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-800'} rounded-full text-xs font-semibold">
-            ${i.status === 'Bought' ? '✓ Bought' : 'Mark Bought'}
-          </button>
-        </li>
-      `).join('');
-    }
-
-    async function toggleGroceryStatus(id, newStatus) {
-      await postData({ action: "updateGroceryStatus", id: id, status: newStatus, actor: currentUser }, null);
-    }
-
-    function renderParcels(data) {
-      const container = document.getElementById('parcelsList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No parcel logs for your account.</p>'; return; }
-      container.innerHTML = data.map(p => `
-        <div class="p-3 bg-gray-50 rounded-xl border border-gray-100 flex justify-between items-center">
-          <div>
-            <div class="font-bold text-gray-800">For: ${p.recipient}</div>
-            <div class="text-xs text-gray-500">${p.courierstore} • Rcvd by: ${p.receivedby}</div>
-          </div>
-          <div class="text-right">
-            <div class="font-bold text-gray-900">₱${parseFloat(p.amount || 0).toFixed(2)}</div>
-            <span class="text-xs font-semibold ${String(p.paymentstatus).includes('Paid') ? 'text-green-600' : 'text-red-500'}">${p.paymentstatus}</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderMeter(data) {
-      const container = document.getElementById('meterList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No submeter readings yet.</p>'; return; }
-      container.innerHTML = data.map(m => `
-        <div class="p-3 bg-yellow-50 rounded-xl border border-yellow-100 flex justify-between items-center">
-          <div>
-            <div class="font-bold text-gray-800">${m.meternamelocation}</div>
-            <div class="text-xs text-gray-500">Reading: ${m.readingkwh} kWh (Used: ${m.consumptionkwh || 0} kWh)</div>
-            <div class="text-[10px] text-gray-400">Logged by: ${m.loggedby}</div>
-          </div>
-          <div class="text-right">
-            <div class="font-bold text-yellow-700">₱${parseFloat(m.estimatedcost || 0).toFixed(2)}</div>
-            <span class="text-[10px] bg-yellow-200 text-yellow-900 px-2 py-0.5 rounded-full font-semibold">Est. Cost</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderVehicle(data) {
-      const container = document.getElementById('vehicleList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No vehicle service logs yet.</p>'; return; }
-      container.innerHTML = data.map(v => `
-        <div class="p-3 bg-red-50/60 rounded-xl border border-red-100 flex justify-between items-center">
-          <div>
-            <div class="font-bold text-gray-800">${v.servicetype} <span class="text-xs text-gray-500">(${v.vehicleunit})</span></div>
-            <div class="text-xs text-gray-600">Odo: <strong>${v.odometerreadingkm} km</strong> • Next: ${v.nextduekmdate || 'N/A'}</div>
-            <div class="text-[10px] text-gray-400">${v.notes ? v.notes + ' • ' : ''}Logged by: ${v.loggedby}</div>
-          </div>
-          <div class="text-right">
-            <div class="font-bold text-red-700">₱${parseFloat(v.cost || 0).toFixed(2)}</div>
-            <span class="text-[10px] bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-semibold">Log Entry</span>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderProfiles(data) {
-      const container = document.getElementById('familyList');
-      if (!data || !data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No account profiles saved yet.</p>'; return; }
-      container.innerHTML = data.map(p => `
-        <div class="p-4 bg-white rounded-2xl border border-teal-100 shadow-sm space-y-3">
-          <div class="flex justify-between items-center">
-            <span class="font-bold text-teal-900 text-base">${p.name}</span>
-          </div>
-          <div class="space-y-1.5 text-xs">
-            <div class="flex flex-wrap gap-2">
-              ${p.phone1 ? `<a href="tel:${p.phone1}" class="bg-teal-50 text-teal-800 border border-teal-200 px-2.5 py-1 rounded-xl font-bold">📞 ${p.phone1}</a>` : ''}
-              ${p.phone2 ? `<a href="tel:${p.phone2}" class="bg-gray-50 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-xl font-bold">📱 Alt: ${p.phone2}</a>` : ''}
-              ${p.email1 ? `<a href="mailto:${p.email1}" class="bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-xl font-semibold">✉️ ${p.email1}</a>` : ''}
-            </div>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    async function postData(payload, formId, showAlert = true) {
-      try {
-        await fetch(API_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (showAlert) alert("Saved successfully!");
-        if (formId) document.getElementById(formId).reset();
-        setTimeout(fetchAllData, 1500);
-      } catch(e) {
-        if (showAlert) alert("Failed to submit.");
-      }
-    }
-
-    document.getElementById('loanForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const payerSelect = document.getElementById('loanPayer').value;
-      const customPayer = document.getElementById('loanCustomPayer').value.trim();
-      const finalPayer = payerSelect === 'Others' ? customPayer : payerSelect;
-
-      postData({
-        action: "addLoan",
-        loanProvider: document.getElementById('loanProvider').value,
-        itemDesc: document.getElementById('loanItemDesc').value,
-        holder: document.getElementById('loanHolder').value,
-        payer: finalPayer,
-        monthlyDue: document.getElementById('loanMonthly').value,
-        startMonth: document.getElementById('loanStartMonth').value,
-        dueDay: document.getElementById('loanDueDay').value,
-        totalMonths: document.getElementById('loanTotalMonths').value,
-        monthsPaid: document.getElementById('loanMonthsPaid').value,
-        currentMonthStr: getCurrentMonthStr(),
-        actor: currentUser
-      }, 'loanForm');
-    });
-
-    document.getElementById('billForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      postData({
-        action: "addRecurringBill",
-        billName: document.getElementById('billName').value,
-        amount: document.getElementById('billAmount').value,
-        dueDate: document.getElementById('billDueDate').value,
-        responsible: document.getElementById('billResponsible').value,
-        accountNo: document.getElementById('billAccountNo').value,
-        actor: currentUser
-      }, 'billForm');
-    });
-
-    document.getElementById('debtForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      postData({ action: "addDebt", person: document.getElementById('debtPerson').value, direction: document.getElementById('debtDir').value, amount: document.getElementById('debtAmount').value, loggedBy: currentUser, notes: document.getElementById('debtNotes').value, actor: currentUser }, 'debtForm');
-    });
-
-    document.getElementById('hotspotForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      postData({ action: "addHotspotLog", customer: document.getElementById('hsCustomer').value, voucher: document.getElementById('hsVoucher').value, amount: document.getElementById('hsAmount').value, status: document.getElementById('hsStatus').value, collectedBy: currentUser, notes: "", actor: currentUser }, 'hotspotForm');
-    });
-
-    document.getElementById('kkbForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      const total = parseFloat(document.getElementById('kkbTotal').value) || 0;
-      const rows = document.querySelectorAll('.kkb-row');
-      let activeRows = [];
-
-      rows.forEach(r => {
-        const chk = r.querySelector('.kkb-check');
-        if (chk && chk.checked) {
-          activeRows.push({
-            person: chk.value,
-            mode: r.querySelector('.kkb-mode').value,
-            customVal: parseFloat(r.querySelector('.kkb-custom-val').value) || 0
-          });
-        }
-      });
-
-      const count = activeRows.length;
-      const perPerson = count > 0 ? (total / count) : 0;
-      let splits = [];
-
-      activeRows.forEach(item => {
-        let oweAmount = 0;
-        if (item.mode === 'none') {
-          oweAmount = perPerson;
-        } else if (item.mode === 'half') {
-          oweAmount = perPerson / 2;
-        } else if (item.mode === 'custom') {
-          oweAmount = Math.max(0, perPerson - item.customVal);
-        } else if (item.mode === 'full') {
-          oweAmount = 0;
-        }
-        splits.push({ person: item.person, oweAmount: oweAmount });
-      });
-
-      postData({ action: "splitBill", payer: currentUser, reason: document.getElementById('kkbReason').value, splits: splits, actor: currentUser }, 'kkbForm');
-    });
-
-    document.getElementById('parcelForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addParcel", recipient: currentUser, courier: document.getElementById('parcCourier').value, amount: document.getElementById('parcAmount').value, paymentStatus: document.getElementById('parcStatus').value, receivedBy: currentUser, notes: "", actor: currentUser }, 'parcelForm'); });
-    document.getElementById('expenseForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addExpense", date: new Date().toISOString().split('T')[0], amount: document.getElementById('expAmount').value, category: document.getElementById('expCategory').value, loggedBy: currentUser, description: document.getElementById('expDesc').value, paymentMethod: "Cash/Online", actor: currentUser }, 'expenseForm'); });
-    document.getElementById('groceryForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addGrocery", item: document.getElementById('grocItem').value, quantity: document.getElementById('grocQty').value, requestedBy: currentUser, actor: currentUser }, 'groceryForm'); });
-    document.getElementById('meterForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addMeterReading", date: new Date().toISOString().split('T')[0], meterName: document.getElementById('meterName').value, reading: document.getElementById('meterReading').value, rate: document.getElementById('meterRate').value, loggedBy: currentUser, actor: currentUser }, 'meterForm'); });
-    document.getElementById('vehicleForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "addVehicleLog", date: new Date().toISOString().split('T')[0], vehicle: document.getElementById('vehName').value, serviceType: document.getElementById('vehService').value, odometer: document.getElementById('vehOdo').value, nextDue: document.getElementById('vehNext').value, cost: document.getElementById('vehCost').value, loggedBy: currentUser, notes: document.getElementById('vehNotes').value, actor: currentUser }, 'vehicleForm'); });
-    document.getElementById('profileForm').addEventListener('submit', (e) => { e.preventDefault(); postData({ action: "saveProfile", name: currentUser, pin: document.getElementById('profPin').value, phone1: document.getElementById('profPhone1').value, phone2: document.getElementById('profPhone2').value, email1: document.getElementById('profEmail1').value, email2: document.getElementById('profEmail2').value, bloodType: document.getElementById('profBlood').value, heightWeight: document.getElementById('profHW').value, meds: document.getElementById('profMeds').value, actor: currentUser }, 'profileForm'); });
 
     checkAuth();
   </script>
