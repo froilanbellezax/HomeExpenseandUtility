@@ -13,13 +13,23 @@
   </header>
 
   <main class="px-4 flex-1 space-y-4">
-    <!-- TOP SUMMARY BANNER -->
-    <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-4 rounded-2xl shadow-md border border-indigo-700 space-y-2">
-      <div class="flex justify-between items-center">
-        <span class="text-xs font-bold text-indigo-200 uppercase">📅 This Month's Total Dues</span>
+    <!-- TOP SUMMARY BANNER WITH ADMIN/PERSONAL VIEW TOGGLE -->
+    <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-4 rounded-2xl shadow-md border border-indigo-700 space-y-2.5">
+      <div class="flex justify-between items-center gap-2">
+        <span class="text-xs font-bold text-indigo-200 uppercase">📅 This Month's Dues</span>
         <span id="currentMonthBadge" class="text-[10px] bg-indigo-700 px-2 py-0.5 rounded-full font-bold">---</span>
       </div>
-      <div class="grid grid-cols-2 gap-3 pt-1">
+
+      <!-- View Mode Indicator / Admin Switcher -->
+      <div class="flex justify-between items-center bg-white/10 px-2.5 py-1.5 rounded-xl border border-white/10">
+        <span id="viewModeBadge" class="text-[11px] font-bold text-cyan-300">👤 Personal View</span>
+        <div id="adminViewToggle" class="hidden flex bg-slate-950/60 p-0.5 rounded-lg text-[10px] font-bold">
+          <button id="btnViewAll" onclick="setAdminScope('all')" class="px-2 py-0.5 rounded-md bg-indigo-600 text-white transition">👑 Overall Family</button>
+          <button id="btnViewMine" onclick="setAdminScope('mine')" class="px-2 py-0.5 rounded-md text-gray-300 hover:text-white transition">👤 Mine Only</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
         <div class="bg-white/10 p-2.5 rounded-xl">
           <span class="text-[10px] text-amber-300 block font-semibold">Unpaid Due This Month:</span>
           <span id="loanDueThisMonth" class="text-lg font-extrabold text-amber-400">₱0.00</span>
@@ -179,6 +189,63 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     const currentUser = localStorage.getItem("household_hub_user") || "";
+    const isAdminUser = currentUser.toLowerCase() === 'froilan' || currentUser.toLowerCase() === 'admin';
+
+    let rawLoansCache = [];
+    let rawCardsCache = [];
+    let adminScope = 'all'; // 'all' (Overall Family) | 'mine' (Personal Only)
+
+    // Comma & 2-decimal formatter (e.g., 32,071.04)
+    function formatMoney(val) {
+      const num = parseFloat(val) || 0;
+      return num.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function setupViewIndicator() {
+      const badge = document.getElementById('viewModeBadge');
+      const toggleBox = document.getElementById('adminViewToggle');
+      if (isAdminUser) {
+        toggleBox.classList.remove('hidden');
+        badge.innerText = adminScope === 'all' ? '👑 Admin View (Overall)' : `👤 ${currentUser}'s Dues Only`;
+      } else {
+        toggleBox.classList.add('hidden');
+        badge.innerText = `👤 Personal View (${currentUser})`;
+      }
+    }
+
+    function setAdminScope(scope) {
+      adminScope = scope;
+      const btnAll = document.getElementById('btnViewAll');
+      const btnMine = document.getElementById('btnViewMine');
+      if (scope === 'all') {
+        btnAll.className = "px-2 py-0.5 rounded-md bg-indigo-600 text-white transition";
+        btnMine.className = "px-2 py-0.5 rounded-md text-gray-300 hover:text-white transition";
+      } else {
+        btnMine.className = "px-2 py-0.5 rounded-md bg-cyan-600 text-white transition";
+        btnAll.className = "px-2 py-0.5 rounded-md text-gray-300 hover:text-white transition";
+      }
+      setupViewIndicator();
+      applyScopeAndRender();
+    }
+
+    function applyScopeAndRender() {
+      if (isAdminUser && adminScope === 'mine') {
+        const u = currentUser.toLowerCase();
+        const myLoans = rawLoansCache.filter(l =>
+          String(l.accountholder || '').toLowerCase() === u ||
+          String(l.actualpayer || '').toLowerCase() === u
+        );
+        const myCards = rawCardsCache.filter(c =>
+          String(c.cardholder || '').toLowerCase() === u
+        );
+        renderAllDues(myLoans, myCards);
+      } else {
+        renderAllDues(rawLoansCache, rawCardsCache);
+      }
+    }
 
     function getCurrentMonthStr() {
       const now = new Date();
@@ -248,7 +315,9 @@
         const json = await res.json();
         if (json.status === "success") {
           populateProfileDropdowns(json.data.profiles || []);
-          renderAllDues(json.data.loans || [], json.data.creditCards || []);
+          rawLoansCache = json.data.loans || [];
+          rawCardsCache = json.data.creditCards || [];
+          applyScopeAndRender();
         }
       } catch (e) {
         console.error("Failed to load loans:", e);
@@ -332,7 +401,7 @@
                   ${c.notes ? `<div class="text-[10px] text-gray-500 italic">"${c.notes}"</div>` : ''}
                 </div>
                 <div class="text-right">
-                  <div class="font-extrabold text-rose-800 text-base">₱${amt.toFixed(2)}</div>
+                  <div class="font-extrabold text-rose-800 text-base">₱${formatMoney(amt)}</div>
                   <span class="text-[10px] font-bold ${isPaid ? 'text-green-600' : 'text-rose-600'}">${isPaid ? '✅ Paid' : '⏳ Unpaid'}</span>
                 </div>
               </div>
@@ -350,7 +419,7 @@
       if (!loans || !loans.length) {
         container.innerHTML = '<p class="text-gray-400 text-center">No active installment plans found.</p>';
         document.getElementById('consolidatedBnplCard').classList.add('hidden');
-        document.getElementById('loanDueThisMonth').innerText = `₱${dueThisMonth.toFixed(2)}`;
+        document.getElementById('loanDueThisMonth').innerText = `₱${formatMoney(dueThisMonth)}`;
         document.getElementById('loanTotalRemaining').innerText = "₱0.00";
         return;
       }
@@ -378,14 +447,12 @@
 
         const isHolder = holder.toLowerCase() === currentUser.toLowerCase();
         const isPayer = payer.toLowerCase() === currentUser.toLowerCase();
-        const isAdmin = currentUser.toLowerCase() === 'froilan' || currentUser.toLowerCase() === 'admin';
 
         if (remM > 0) {
           totalRemaining += remBalance;
           if (isStarted && !isPaidThisMonth && loanStatus !== 'Pending Approval') {
             dueThisMonth += monthly;
 
-            // I-group sa Consolidated BNPL kung PayLater item siya at hindi pa bayad ngayong buwan
             if (isBnpl) {
               const groupKey = `${provider.toLowerCase()}_${holder.toLowerCase()}_${String(dueDay).toLowerCase()}`;
               if (!bnplGroups[groupKey]) {
@@ -399,7 +466,7 @@
                 };
               }
               bnplGroups[groupKey].totalDue += monthly;
-              bnplGroups[groupKey].items.push(`${desc} (₱${monthly.toFixed(2)})`);
+              bnplGroups[groupKey].items.push(`${desc} (₱${formatMoney(monthly)})`);
               bnplGroups[groupKey].ids.push(String(l.id));
             }
           }
@@ -412,7 +479,7 @@
           } else if (isPaidThisMonth) {
             actionButtonHTML = `<div class="text-center text-xs bg-green-100 text-green-800 py-1.5 rounded-xl font-bold">✅ Paid for ${getCurrentMonthLabel()}</div>`;
           } else {
-            if (isPayer || isHolder || isAdmin) {
+            if (isPayer || isHolder || isAdminUser) {
               actionButtonHTML = `<button onclick="payLoanMonth('${l.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${getCurrentMonthLabel()} as Paid</button>`;
             } else {
               actionButtonHTML = `<div class="text-center text-xs bg-gray-100 text-gray-500 py-1.5 rounded-xl font-semibold">Viewing only</div>`;
@@ -436,9 +503,9 @@
                 </div>
               </div>
               <div class="text-right">
-                <div class="font-extrabold text-indigo-700 text-base">₱${monthly.toFixed(2)}<span class="text-[10px] font-normal text-gray-500">/mo</span></div>
+                <div class="font-extrabold text-indigo-700 text-base">₱${formatMoney(monthly)}<span class="text-[10px] font-normal text-gray-500">/mo</span></div>
                 <div class="text-[10px] font-bold ${remM === 0 ? 'text-green-600' : 'text-amber-600'}">
-                  ${remM === 0 ? '🎉 Fully Paid!' : `${remM} mos left (₱${remBalance.toFixed(2)})`}
+                  ${remM === 0 ? '🎉 Fully Paid!' : `${remM} mos left (₱${formatMoney(remBalance)})`}
                 </div>
               </div>
             </div>
@@ -474,9 +541,9 @@
                   <div class="text-[11px] text-purple-700 font-semibold">Fixed Due: Every ${g.dueDay} (${g.items.length} item${g.items.length > 1 ? 's' : ''})</div>
                   <div class="text-[10px] text-gray-600 mt-1">${g.items.join(' • ')}</div>
                 </div>
-                <div class="text-right font-extrabold text-purple-900 text-base">₱${g.totalDue.toFixed(2)}</div>
+                <div class="text-right font-extrabold text-purple-900 text-base">₱${formatMoney(g.totalDue)}</div>
               </div>
-              <button onclick="payBnplGroup(${idsJson}, '${g.provider} - ${g.holder}')" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-1.5 rounded-lg text-[11px] transition">✅ Pay All ${g.provider} Dues (₱${g.totalDue.toFixed(2)})</button>
+              <button onclick="payBnplGroup(${idsJson}, '${g.provider} - ${g.holder}')" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-1.5 rounded-lg text-[11px] transition">✅ Pay All ${g.provider} Dues (₱${formatMoney(g.totalDue)})</button>
             </div>
           `;
         }).join('');
@@ -484,8 +551,8 @@
         bnplCard.classList.add('hidden');
       }
 
-      document.getElementById('loanDueThisMonth').innerText = `₱${dueThisMonth.toFixed(2)}`;
-      document.getElementById('loanTotalRemaining').innerText = `₱${totalRemaining.toFixed(2)}`;
+      document.getElementById('loanDueThisMonth').innerText = `₱${formatMoney(dueThisMonth)}`;
+      document.getElementById('loanTotalRemaining').innerText = `₱${formatMoney(totalRemaining)}`;
     }
 
     async function payLoanMonth(id) {
@@ -588,6 +655,7 @@
       setTimeout(fetchLoansData, 1500);
     });
 
+    setupViewIndicator();
     handlePlanCategoryChange();
     fetchLoansData();
   </script>
