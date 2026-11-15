@@ -20,7 +20,6 @@
         <span id="currentMonthBadge" class="text-[10px] bg-indigo-700 px-2 py-0.5 rounded-full font-bold">---</span>
       </div>
 
-      <!-- View Mode Indicator / Admin Switcher -->
       <div class="flex justify-between items-center bg-white/10 px-2.5 py-1.5 rounded-xl border border-white/10">
         <span id="viewModeBadge" class="text-[11px] font-bold text-cyan-300">👤 Personal View</span>
         <div id="adminViewToggle" class="hidden flex bg-slate-950/60 p-0.5 rounded-lg text-[10px] font-bold">
@@ -41,7 +40,7 @@
       </div>
     </div>
 
-    <!-- CONSOLIDATED BNPL SUMMARY (AUTO-GROUPED BY PROVIDER + ACCOUNT + DUE DAY) -->
+    <!-- CONSOLIDATED BNPL SUMMARY -->
     <div id="consolidatedBnplCard" class="bg-white p-4 rounded-2xl shadow-sm border-2 border-purple-200 space-y-2.5 hidden">
       <div class="flex justify-between items-center">
         <h3 class="font-bold text-purple-900 text-xs uppercase">🛍️ Consolidated BNPL / PayLater Dues</h3>
@@ -50,10 +49,10 @@
       <div id="consolidatedBnplList" class="space-y-2 text-xs"></div>
     </div>
 
-    <!-- TAB SWITCHER FOR FORMS -->
+    <!-- MAIN TAB SWITCHER -->
     <div class="grid grid-cols-2 gap-2 bg-gray-200 p-1 rounded-xl text-xs font-bold">
       <button id="tabBtnInstallment" onclick="switchFormTab('installment')" class="py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition">➕ Add BNPL / Loan</button>
-      <button id="tabBtnCard" onclick="switchFormTab('card')" class="py-2 rounded-lg text-gray-600 hover:text-gray-900 transition">💳 Add Credit Card Due</button>
+      <button id="tabBtnCard" onclick="switchFormTab('card')" class="py-2 rounded-lg text-gray-600 hover:text-gray-900 transition">💳 Credit Cards & Enroll</button>
     </div>
 
     <!-- FORM 1: ADD LOAN / BNPL INSTALLMENT + LIVE CALCULATOR -->
@@ -135,7 +134,7 @@
           </div>
         </div>
 
-        <!-- LIVE CALCULATOR PREVIEW BOX WITH INTEREST BREAKDOWN -->
+        <!-- LIVE CALCULATOR PREVIEW BOX -->
         <div class="bg-slate-900 text-white p-3 rounded-xl border border-indigo-500/40 space-y-2">
           <div class="flex justify-between items-center border-b border-white/10 pb-1">
             <span class="text-[10px] font-bold text-indigo-300 uppercase">🧮 Live Installment Calculator</span>
@@ -155,8 +154,6 @@
               <span id="calcRemainingBal" class="text-xs font-extrabold text-amber-400">₱0.00</span>
             </div>
           </div>
-
-          <!-- Interest Details Row -->
           <div class="grid grid-cols-3 gap-2 text-center pt-1 border-t border-white/10">
             <div class="bg-rose-500/10 border border-rose-500/20 p-1.5 rounded-lg">
               <span class="text-[9px] text-rose-300 block">Total Interest</span>
@@ -168,7 +165,7 @@
             </div>
             <div class="bg-indigo-500/15 border border-indigo-400/20 p-1.5 rounded-lg">
               <span class="text-[9px] text-indigo-200 block">Add-on Rate</span>
-              <span id="calcInterestRate" class="text-xs font-extrabold text-indigo-300">0.00%/mo</span>
+              <span id="calcInterestRate" class="text-xs font-extrabold text-indigo-300">—</span>
             </div>
           </div>
         </div>
@@ -177,42 +174,107 @@
       </form>
     </div>
 
-    <!-- FORM 2: ADD CREDIT CARD STATEMENT DUE -->
-    <div id="cardFormBox" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 hidden">
-      <h2 class="font-bold text-gray-700 mb-3 text-xs uppercase">💳 Add Monthly Credit Card Statement</h2>
+    <!-- FORM 2: CREDIT CARDS HUB (RECONCILE STATEMENT + ENROLL NEW CARD) -->
+    <div id="cardFormBox" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-3 hidden">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h2 class="font-bold text-rose-900 text-xs uppercase">💳 Credit Card Management</h2>
+        <div class="flex bg-rose-100 p-0.5 rounded-lg text-[10px] font-bold">
+          <button type="button" id="subTabStmtBtn" onclick="switchCcSubTab('stmt')" class="px-2 py-1 rounded-md bg-rose-600 text-white">📄 Statement / SOA</button>
+          <button type="button" id="subTabEnrollBtn" onclick="switchCcSubTab('enroll')" class="px-2 py-1 rounded-md text-rose-900">➕ Enroll Card</button>
+        </div>
+      </div>
+
+      <!-- SUB-FORM A: RECONCILE / ADD MONTHLY STATEMENT BILL -->
       <form id="ccForm" class="space-y-3">
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="text-xs font-semibold text-gray-500">Credit Card / Bank</label>
-            <input type="text" id="ccName" required placeholder="e.g. UnionBank" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Card Holder</label>
-            <select id="ccHolder" class="w-full p-2.5 border rounded-xl text-sm outline-none loan-profile-select"></select>
-          </div>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Statement Due (₱)</label>
-            <input type="number" step="0.01" id="ccAmount" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-rose-700">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Due Day</label>
-            <input type="text" id="ccDueDay" required placeholder="e.g. 20th" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+            <label class="text-xs font-semibold text-gray-500">Select Enrolled Card</label>
+            <select id="ccCardDropdown" onchange="onEnrolledCardSelect()" class="w-full p-2.5 border rounded-xl text-xs outline-none font-bold text-rose-950"></select>
           </div>
           <div>
             <label class="text-xs font-semibold text-gray-500">Billing Month</label>
-            <select id="ccBillingMonth" class="w-full p-2.5 border rounded-xl text-xs outline-none font-semibold"></select>
+            <select id="ccBillingMonth" onchange="updateSurchargePreview()" class="w-full p-2.5 border rounded-xl text-xs outline-none font-semibold"></select>
+          </div>
+        </div>
+
+        <div id="unenrolledCardInputs" class="grid grid-cols-2 gap-2 hidden bg-gray-50 p-2.5 rounded-xl border">
+          <div>
+            <label class="text-[11px] font-semibold text-gray-600">Card Name</label>
+            <input type="text" id="ccCustomName" oninput="updateSurchargePreview()" placeholder="e.g. BDO Gold" class="w-full p-2 border rounded-lg text-xs outline-none font-bold">
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-gray-600">Card Holder</label>
+            <select id="ccCustomHolder" onchange="updateSurchargePreview()" class="w-full p-2 border rounded-lg text-xs outline-none loan-profile-select"></select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Actual Statement Due (₱)</label>
+            <input type="number" step="0.01" id="ccAmount" oninput="updateSurchargePreview()" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-rose-700">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Due Day (Auto-Filled)</label>
+            <input type="text" id="ccDueDay" required value="8th" placeholder="e.g. 20th" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+          </div>
+        </div>
+
+        <!-- SURCHARGE / RECONCILIATION COMPARISON BOX -->
+        <div class="bg-slate-900 text-white p-3 rounded-xl border border-rose-500/40 space-y-1.5">
+          <div class="flex justify-between items-center border-b border-white/10 pb-1">
+            <span class="text-[10px] font-bold text-rose-300 uppercase">🔍 SOA vs. Tracked Expenses</span>
+            <span id="ccReconcileStatus" class="text-[10px] font-bold text-gray-400">Waiting for SOA amount...</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center pt-0.5">
+            <div class="bg-white/5 p-1.5 rounded-lg">
+              <span class="text-[9px] text-gray-400 block">Tracked Swipes</span>
+              <span id="ccPreviewTracked" class="text-xs font-extrabold text-cyan-300">₱0.00</span>
+            </div>
+            <div class="bg-white/5 p-1.5 rounded-lg">
+              <span class="text-[9px] text-gray-400 block">Actual SOA Bill</span>
+              <span id="ccPreviewActual" class="text-xs font-extrabold text-white">₱0.00</span>
+            </div>
+            <div class="bg-white/5 p-1.5 rounded-lg">
+              <span class="text-[9px] text-amber-300 block">Surcharges / Diff</span>
+              <span id="ccPreviewDiff" class="text-xs font-extrabold text-amber-400">₱0.00</span>
+            </div>
           </div>
         </div>
 
         <div>
           <label class="text-xs font-semibold text-gray-500">Notes (Optional)</label>
-          <input type="text" id="ccNotes" placeholder="e.g. Full payment, Groceries + Gas" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          <input type="text" id="ccNotes" placeholder="e.g. Finance charge, Annual fee, Full payment" class="w-full p-2.5 border rounded-xl text-sm outline-none">
         </div>
 
-        <button type="submit" class="w-full bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 transition">Save Credit Card Statement</button>
+        <button type="submit" class="w-full bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 transition">Save / Reconcile Statement</button>
+      </form>
+
+      <!-- SUB-FORM B: ENROLL NEW CREDIT CARD -->
+      <form id="enrollCardForm" class="space-y-3 hidden">
+        <p class="text-[11px] text-gray-500 bg-rose-50 p-2 rounded-lg border border-rose-100">
+          I-enroll ang card dito para lumabas na siya sa dropdown ng <strong>Loans & Cards</strong> at <strong>Daily Expenses</strong> kasama ang fixed due date nito.
+        </p>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Card Name</label>
+            <input type="text" id="enrollCardName" required placeholder="e.g. UB Rewards Visa" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Card Holder</label>
+            <select id="enrollCardHolder" class="w-full p-2.5 border rounded-xl text-sm outline-none loan-profile-select"></select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Fixed Due Day</label>
+            <input type="text" id="enrollCardDueDay" required placeholder="e.g. 8th" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Credit Limit (Optional)</label>
+            <input type="number" step="0.01" id="enrollCardLimit" placeholder="e.g. 30000" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-900 transition">💾 Enroll Card to System</button>
       </form>
     </div>
 
@@ -238,6 +300,7 @@
 
     let rawLoansCache = [];
     let rawCardsCache = [];
+    let enrolledCardsCache = [];
     let adminScope = 'all';
 
     function formatMoney(val) {
@@ -246,6 +309,152 @@
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       });
+    }
+
+    function switchCcSubTab(mode) {
+      const stmtForm = document.getElementById('ccForm');
+      const enrollForm = document.getElementById('enrollCardForm');
+      const btnStmt = document.getElementById('subTabStmtBtn');
+      const btnEnroll = document.getElementById('subTabEnrollBtn');
+
+      if (mode === 'stmt') {
+        stmtForm.classList.remove('hidden');
+        enrollForm.classList.add('hidden');
+        btnStmt.className = "px-2 py-1 rounded-md bg-rose-600 text-white";
+        btnEnroll.className = "px-2 py-1 rounded-md text-rose-900";
+      } else {
+        stmtForm.classList.add('hidden');
+        enrollForm.classList.remove('hidden');
+        btnEnroll.className = "px-2 py-1 rounded-md bg-slate-800 text-white";
+        btnStmt.className = "px-2 py-1 rounded-md text-rose-900";
+      }
+    }
+
+    function populateEnrolledCardsDropdown() {
+      const dropdown = document.getElementById('ccCardDropdown');
+      const map = new Map();
+
+      map.set("UB Rewards Visa|Froilan", { cardName: "UB Rewards Visa", cardHolder: "Froilan", dueDay: "8th" });
+
+      enrolledCardsCache.forEach(c => {
+        if (c.cardname && c.cardholder) {
+          const key = `${String(c.cardname).trim()}|${String(c.cardholder).trim()}`;
+          map.set(key, {
+            cardName: String(c.cardname).trim(),
+            cardHolder: String(c.cardholder).trim(),
+            dueDay: String(c.dueday || "20th").trim()
+          });
+        }
+      });
+
+      rawCardsCache.forEach(c => {
+        if (c.cardname && c.cardholder) {
+          const key = `${String(c.cardname).trim()}|${String(c.cardholder).trim()}`;
+          if (!map.has(key)) {
+            map.set(key, {
+              cardName: String(c.cardname).trim(),
+              cardHolder: String(c.cardholder).trim(),
+              dueDay: String(c.dueday || "20th").trim()
+            });
+          }
+        }
+      });
+
+      let html = '';
+      map.forEach((info, key) => {
+        html += `<option value="${key}" data-due="${info.dueDay}">${info.cardName} - ${info.cardHolder}</option>`;
+      });
+      html += `<option value="CUSTOM">➕ Other / Unenrolled Card...</option>`;
+      dropdown.innerHTML = html;
+      onEnrolledCardSelect();
+    }
+
+    function onEnrolledCardSelect() {
+      const dropdown = document.getElementById('ccCardDropdown');
+      const val = dropdown.value;
+      const customBox = document.getElementById('unenrolledCardInputs');
+      const dueInput = document.getElementById('ccDueDay');
+
+      if (val === 'CUSTOM') {
+        customBox.classList.remove('hidden');
+        document.getElementById('ccCustomName').required = true;
+      } else {
+        customBox.classList.add('hidden');
+        document.getElementById('ccCustomName').required = false;
+        const selectedOpt = dropdown.options[dropdown.selectedIndex];
+        if (selectedOpt && selectedOpt.dataset.due) {
+          dueInput.value = selectedOpt.dataset.due;
+        }
+      }
+      updateSurchargePreview();
+    }
+
+    function updateSurchargePreview() {
+      const dropdown = document.getElementById('ccCardDropdown');
+      const val = dropdown.value;
+      const bMonth = document.getElementById('ccBillingMonth').value;
+      const actualVal = parseFloat(document.getElementById('ccAmount').value) || 0;
+
+      let cardName = "";
+      let cardHolder = "";
+      if (val === 'CUSTOM') {
+        cardName = document.getElementById('ccCustomName').value.trim();
+        cardHolder = document.getElementById('ccCustomHolder').value;
+      } else if (val.includes('|')) {
+        [cardName, cardHolder] = val.split('|');
+      }
+
+      let tracked = 0;
+      const existing = rawCardsCache.find(c =>
+        String(c.cardname || '').trim().toLowerCase() === cardName.toLowerCase() &&
+        String(c.cardholder || '').trim().toLowerCase() === cardHolder.toLowerCase() &&
+        String(c.billingmonth || '').replace(/'/g, '').trim() === bMonth &&
+        String(c.status || '').toLowerCase() !== 'paid'
+      );
+
+      if (existing) {
+        tracked = parseFloat(existing.trackedamount) || parseFloat(existing.statementamount) || 0;
+      }
+
+      document.getElementById('ccPreviewTracked').innerText = `₱${formatMoney(tracked)}`;
+      document.getElementById('ccPreviewActual').innerText = `₱${formatMoney(actualVal)}`;
+
+      const diffEl = document.getElementById('ccPreviewDiff');
+      const statusEl = document.getElementById('ccReconcileStatus');
+
+      if (actualVal <= 0) {
+        diffEl.innerText = "₱0.00";
+        diffEl.className = "text-xs font-extrabold text-gray-400";
+        statusEl.innerText = tracked > 0 ? "Enter SOA to check surcharges" : "No tracked swipes yet";
+        statusEl.className = "text-[10px] font-bold text-gray-400";
+        return;
+      }
+
+      if (tracked === 0) {
+        diffEl.innerText = "—";
+        diffEl.className = "text-xs font-extrabold text-gray-300";
+        statusEl.innerText = "Direct SOA Entry";
+        statusEl.className = "text-[10px] font-bold text-cyan-300";
+        return;
+      }
+
+      const diff = actualVal - tracked;
+      if (Math.abs(diff) < 0.01) {
+        diffEl.innerText = "₱0.00";
+        diffEl.className = "text-xs font-extrabold text-emerald-400";
+        statusEl.innerText = "✅ Exact Match!";
+        statusEl.className = "text-[10px] font-bold text-emerald-400";
+      } else if (diff > 0) {
+        diffEl.innerText = `+₱${formatMoney(diff)}`;
+        diffEl.className = "text-xs font-extrabold text-rose-400";
+        statusEl.innerText = "⚠️ Surcharges / Unlogged!";
+        statusEl.className = "text-[10px] font-bold text-rose-400";
+      } else {
+        diffEl.innerText = `-₱${formatMoney(Math.abs(diff))}`;
+        diffEl.className = "text-xs font-extrabold text-amber-300";
+        statusEl.innerText = "💡 Less than tracked (Rebate/Refund?)";
+        statusEl.className = "text-[10px] font-bold text-amber-300";
+      }
     }
 
     function calculateInstallmentPreview() {
@@ -259,7 +468,6 @@
       const alreadyPaid = monthly * paidMos;
       const remainingBal = monthly * remMos;
 
-      // Interest calculations (kung may nilagay na Principal / Cash Price)
       let totalInterest = 0;
       let monthlyInterest = 0;
       let monthlyRatePct = 0;
@@ -355,6 +563,7 @@
         cardBox.classList.remove('hidden');
         btnCard.className = "py-2 rounded-lg bg-white text-rose-700 shadow-sm transition";
         btnInst.className = "py-2 rounded-lg text-gray-600 hover:text-gray-900 transition";
+        populateEnrolledCardsDropdown();
       }
     }
 
@@ -401,6 +610,8 @@
           populateProfileDropdowns(json.data.profiles || []);
           rawLoansCache = json.data.loans || [];
           rawCardsCache = json.data.creditCards || [];
+          enrolledCardsCache = json.data.enrolledCards || [];
+          populateEnrolledCardsDropdown();
           applyScopeAndRender();
           calculateInstallmentPreview();
         }
@@ -463,17 +674,48 @@
       let dueThisMonth = 0;
       let totalRemaining = 0;
 
-      // 1. RENDER CREDIT CARDS
+      // 1. RENDER CREDIT CARDS WITH SURCHARGE & EXACT PAYMENT BADGES
       const ccSection = document.getElementById('ccTrackerSection');
       const ccList = document.getElementById('ccList');
       if (cards && cards.length > 0) {
         ccSection.classList.remove('hidden');
         ccList.innerHTML = cards.map(c => {
           const amt = parseFloat(c.statementamount) || 0;
-          const isPaid = String(c.status || '').toLowerCase() === 'paid';
+          const paidAmt = parseFloat(c.amountpaid) || 0;
+          const remAmt = c.remainingbalance !== undefined && c.remainingbalance !== ""
+            ? parseFloat(c.remainingbalance)
+            : (String(c.status || '').toLowerCase() === 'paid' ? 0 : amt);
+          const tracked = parseFloat(c.trackedamount) || 0;
+          const surcharge = parseFloat(c.surcharges) || 0;
+          const isPaid = String(c.status || '').toLowerCase() === 'paid' || remAmt <= 0;
+          const isPartial = paidAmt > 0 && !isPaid;
           const bMonth = String(c.billingmonth || '').replace(/'/g, '');
+          const datePaid = String(c.datepaid || '').replace(/'/g, '');
+
           if (!isPaid && bMonth === currMonth) {
-            dueThisMonth += amt;
+            dueThisMonth += remAmt;
+          }
+
+          let surchargeHTML = '';
+          if (tracked > 0 && Math.abs(surcharge) >= 0.01) {
+            const sign = surcharge > 0 ? '+' : '-';
+            const badgeColor = surcharge > 0 ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300';
+            surchargeHTML = `
+              <div class="text-[10px] px-2 py-1 rounded-lg border ${badgeColor} font-semibold flex justify-between">
+                <span>Tracked Swipes: ₱${formatMoney(tracked)}</span>
+                <span>Surcharges/Diff: <strong>${sign}₱${formatMoney(Math.abs(surcharge))}</strong></span>
+              </div>
+            `;
+          }
+
+          let paymentLogHTML = '';
+          if (paidAmt > 0) {
+            paymentLogHTML = `
+              <div class="text-[10px] bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-1 rounded-lg font-semibold flex justify-between">
+                <span>Paid: <strong>₱${formatMoney(paidAmt)}</strong> ${datePaid ? `(${datePaid})` : ''}</span>
+                <span>Rem. Bal: <strong>₱${formatMoney(remAmt)}</strong></span>
+              </div>
+            `;
           }
 
           return `
@@ -483,14 +725,18 @@
                   <span class="text-[10px] bg-rose-600 text-white px-2 py-0.5 rounded font-bold uppercase">💳 ${c.cardname}</span>
                   <span class="text-xs font-bold text-gray-800 ml-1">(${c.cardholder})</span>
                   <div class="text-[11px] text-gray-500 mt-1">Billing: <strong>${bMonth}</strong> • Due every <strong>${c.dueday}</strong></div>
-                  ${c.notes ? `<div class="text-[10px] text-gray-500 italic">"${c.notes}"</div>` : ''}
+                  ${c.notes ? `<div class="text-[10px] text-gray-500 italic mt-0.5">"${c.notes}"</div>` : ''}
                 </div>
                 <div class="text-right">
                   <div class="font-extrabold text-rose-800 text-base">₱${formatMoney(amt)}</div>
-                  <span class="text-[10px] font-bold ${isPaid ? 'text-green-600' : 'text-rose-600'}">${isPaid ? '✅ Paid' : '⏳ Unpaid'}</span>
+                  <span class="text-[10px] font-bold ${isPaid ? 'text-green-600' : (isPartial ? 'text-amber-600' : 'text-rose-600')}">
+                    ${isPaid ? '✅ Fully Paid' : (isPartial ? '🌓 Partially Paid' : '⏳ Unpaid')}
+                  </span>
                 </div>
               </div>
-              ${!isPaid ? `<button onclick="payCard('${c.id}')" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-1.5 rounded-lg transition">✅ Mark Card Statement Paid</button>` : ''}
+              ${surchargeHTML}
+              ${paymentLogHTML}
+              ${!isPaid ? `<button onclick="payCard('${c.id}', ${remAmt}, '${c.cardname} - ${c.cardholder}')" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-1.5 rounded-lg transition">💵 Record Payment (₱${formatMoney(remAmt)} left)</button>` : ''}
             </div>
           `;
         }).join('');
@@ -608,7 +854,6 @@
         `;
       }).join('');
 
-      // 3. RENDER CONSOLIDATED BNPL CARD
       const groupKeys = Object.keys(bnplGroups);
       const bnplCard = document.getElementById('consolidatedBnplCard');
       const bnplList = document.getElementById('consolidatedBnplList');
@@ -663,15 +908,27 @@
       setTimeout(fetchLoansData, 1500);
     }
 
-    async function payCard(id) {
-      if (!confirm("Mark this Credit Card statement as Paid?")) return;
+    async function payCard(id, defaultAmount, cardLabel) {
+      const input = prompt(`Enter actual amount paid for ${cardLabel} (₱):`, defaultAmount);
+      if (input === null) return;
+      const amtPaid = parseFloat(input);
+      if (isNaN(amtPaid) || amtPaid <= 0) {
+        alert("Please enter a valid payment amount.");
+        return;
+      }
+
       await fetch(API_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "payCreditCard", id: id, actor: currentUser })
+        body: JSON.stringify({
+          action: "payCreditCard",
+          id: id,
+          amountPaid: amtPaid,
+          actor: currentUser
+        })
       });
-      alert("Credit Card statement marked as Paid!");
+      alert(`Recorded ₱${formatMoney(amtPaid)} payment for ${cardLabel}!`);
       setTimeout(fetchLoansData, 1500);
     }
 
@@ -721,14 +978,25 @@
 
     document.getElementById('ccForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const dropdownVal = document.getElementById('ccCardDropdown').value;
+      let cardName = "";
+      let cardHolder = "";
+
+      if (dropdownVal === 'CUSTOM') {
+        cardName = document.getElementById('ccCustomName').value.trim();
+        cardHolder = document.getElementById('ccCustomHolder').value;
+      } else {
+        [cardName, cardHolder] = dropdownVal.split('|');
+      }
+
       await fetch(API_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addCreditCardDue",
-          cardName: document.getElementById('ccName').value.trim(),
-          cardHolder: document.getElementById('ccHolder').value,
+          cardName: cardName,
+          cardHolder: cardHolder,
           amount: document.getElementById('ccAmount').value,
           dueDay: document.getElementById('ccDueDay').value.trim(),
           billingMonth: document.getElementById('ccBillingMonth').value,
@@ -736,8 +1004,30 @@
           actor: currentUser
         })
       });
-      alert("Credit card statement saved!");
+      alert("Credit card statement saved & reconciled!");
       document.getElementById('ccForm').reset();
+      onEnrolledCardSelect();
+      setTimeout(fetchLoansData, 1500);
+    });
+
+    document.getElementById('enrollCardForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "enrollCard",
+          cardName: document.getElementById('enrollCardName').value.trim(),
+          cardHolder: document.getElementById('enrollCardHolder').value,
+          dueDay: document.getElementById('enrollCardDueDay').value.trim(),
+          creditLimit: document.getElementById('enrollCardLimit').value,
+          actor: currentUser
+        })
+      });
+      alert("Card enrolled! It will now appear in all dropdowns.");
+      document.getElementById('enrollCardForm').reset();
+      switchCcSubTab('stmt');
       setTimeout(fetchLoansData, 1500);
     });
 
