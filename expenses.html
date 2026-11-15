@@ -65,7 +65,7 @@
           </div>
         </div>
 
-        <!-- Custom Card Setup (Only shown if "Add / Use Other Credit Card..." is chosen) -->
+        <!-- Custom Card Setup -->
         <div id="customCcBox" class="hidden bg-rose-50 p-3 rounded-xl border border-rose-200 space-y-2">
           <div class="grid grid-cols-2 gap-2">
             <div>
@@ -129,8 +129,7 @@
       return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    function populateDropdowns(profiles, existingCards) {
-      // Populate custom card owner dropdown
+    function populateDropdowns(profiles, existingCards, enrolledCards) {
       const ownerSel = document.getElementById('customCcOwner');
       if (profiles && profiles.length) {
         ownerSel.innerHTML = profiles.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
@@ -139,8 +138,14 @@
       }
       if (currentUser) ownerSel.value = currentUser;
 
-      // Build unique list of "Card Name - Card Holder" options
       const uniqueCards = new Set(["UB Rewards Visa - Froilan"]);
+      if (enrolledCards && enrolledCards.length) {
+        enrolledCards.forEach(c => {
+          if (c.cardname && c.cardholder) {
+            uniqueCards.add(`${String(c.cardname).trim()} - ${String(c.cardholder).trim()}`);
+          }
+        });
+      }
       if (existingCards && existingCards.length) {
         existingCards.forEach(c => {
           if (c.cardname && c.cardholder) {
@@ -187,7 +192,7 @@
         const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
         const json = await res.json();
         if (json.status === "success") {
-          populateDropdowns(json.data.profiles || [], json.data.creditCards || []);
+          populateDropdowns(json.data.profiles || [], json.data.creditCards || [], json.data.enrolledCards || []);
           const allTx = json.data.transactions || [];
           renderExpensesSummary(allTx);
           renderExpensesChart(allTx);
