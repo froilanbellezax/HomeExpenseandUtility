@@ -115,32 +115,91 @@
     function renderBills(data) {
       const container = document.getElementById('billsList');
       if (!data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No bills logged.</p>'; return; }
-      container.innerHTML = data.map(b => `
-        <div class="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 flex justify-between items-center">
-          <div>
-            <div class="font-bold text-gray-800">${b.billname} <span class="text-xs text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded">Due: ${b.duedatedayofmonth}</span></div>
-            <div class="text-xs text-gray-500">Responsible: ${b.responsibleperson}</div>
+
+      const todayDay = new Date().getDate();
+
+      const sortedBills = [...data].sort((a, b) => {
+        const aPaid = String(a.status || '').toLowerCase() === 'paid';
+        const bPaid = String(b.status || '').toLowerCase() === 'paid';
+        if (aPaid !== bPaid) return aPaid ? 1 : -1;
+
+        const dayA = parseInt(String(a.duedatedayofmonth || '').replace(/\D/g, '')) || 99;
+        const dayB = parseInt(String(b.duedatedayofmonth || '').replace(/\D/g, '')) || 99;
+
+        const distA = dayA - todayDay;
+        const distB = dayB - todayDay;
+
+        return distA - distB;
+      });
+
+      container.innerHTML = sortedBills.map(b => {
+        const cleanDue = String(b.duedatedayofmonth || '').replace(/'/g, '');
+        const isPaid = String(b.status || '').toLowerCase() === 'paid';
+        return `
+          <div class="p-3 ${isPaid ? 'bg-gray-50 border-gray-200' : 'bg-indigo-50/50 border-indigo-100'} rounded-xl border flex justify-between items-center">
+            <div>
+              <div class="font-bold text-gray-800">${b.billname} <span class="text-xs text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded">Due: ${cleanDue}</span></div>
+              <div class="text-xs text-gray-500">Responsible: ${b.responsibleperson}</div>
+            </div>
+            <div class="text-right">
+              <div class="font-bold text-indigo-900">₱${parseFloat(b.amount || 0).toFixed(2)}</div>
+              ${isPaid 
+                ? `<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Paid</span>`
+                : `<button onclick="payBill('${b.billname}', ${b.amount})" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Mark Paid</button>`}
+            </div>
           </div>
-          <div class="text-right">
-            <div class="font-bold text-indigo-900">₱${parseFloat(b.amount || 0).toFixed(2)}</div>
-            ${b.status === 'Paid' 
-              ? `<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Paid</span>`
-              : `<button onclick="payBill('${b.billname}', ${b.amount})" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Mark Paid</button>`}
-          </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function renderEvents(data) {
       const container = document.getElementById('eventsList');
       if (!data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No events logged.</p>'; return; }
-      container.innerHTML = data.map(ev => `
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const currentYear = today.getFullYear();
+
+      const sortedEvents = data
+        .map(ev => {
+          const cleanStr = String(ev.date || '').replace(/'/g, '').trim();
+          let monthIdx, dayNum;
+
+          if (/^\d{1,2}-\d{1,2}$/.test(cleanStr)) {
+            const [m, d] = cleanStr.split('-').map(Number);
+            monthIdx = m - 1;
+            dayNum = d;
+          } else {
+            const parsed = new Date(cleanStr);
+            if (isNaN(parsed.getTime())) return { ...ev, nextDate: new Date(8640000000000000), displayDate: cleanStr };
+            monthIdx = parsed.getMonth();
+            dayNum = parsed.getDate();
+          }
+
+          let nextOccurrence = new Date(currentYear, monthIdx, dayNum);
+          nextOccurrence.setHours(0, 0, 0, 0);
+
+          if (nextOccurrence < today) {
+            nextOccurrence.setFullYear(currentYear + 1);
+          }
+
+          const displayDate = nextOccurrence.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          });
+
+          return { ...ev, nextDate: nextOccurrence, displayDate };
+        })
+        .sort((a, b) => a.nextDate - b.nextDate);
+
+      container.innerHTML = sortedEvents.map(ev => `
         <div class="p-3 bg-pink-50/50 rounded-xl border border-pink-100 flex justify-between items-center">
           <div>
             <div class="font-bold text-gray-800">${ev.eventname} <span class="text-[10px] text-pink-700 bg-pink-100 px-1.5 py-0.5 rounded">${ev.category}</span></div>
             <div class="text-xs text-gray-500">${ev.notes || ''}</div>
           </div>
-          <div class="text-right text-xs font-bold bg-white px-2 py-1 rounded-lg border border-pink-200 text-pink-900">${ev.date}</div>
+          <div class="text-right text-xs font-bold bg-white px-2 py-1 rounded-lg border border-pink-200 text-pink-900 whitespace-nowrap">${ev.displayDate}</div>
         </div>
       `).join('');
     }
