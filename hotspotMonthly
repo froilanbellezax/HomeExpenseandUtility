@@ -3,66 +3,84 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monthly Wi-Fi Subscribers - BelPan House Hub</title>
+  <title>Hotspot & Monthly Matrix - BelPan House Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col relative">
-  <header class="bg-cyan-700 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
-    <h1 class="text-lg font-bold">📅 Monthly Wi-Fi Subscribers</h1>
+<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-4xl mx-auto min-h-screen flex flex-col relative px-2">
+  <header class="bg-cyan-700 text-white p-4 shadow-md rounded-b-2xl mb-4 flex justify-between items-center sticky top-0 z-50">
+    <h1 class="text-lg font-bold">📶 Hotspot & Monthly Matrix Tracker</h1>
     <button onclick="location.href='index.html'" class="bg-cyan-900 hover:bg-cyan-950 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">⬅️ Menu</button>
   </header>
 
-  <main class="px-4 flex-1 space-y-4">
+  <main class="space-y-6">
+    <!-- ADD FORM -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Add Monthly Subscriber</h2>
+      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Add Subscriber / Monthly Record</h2>
       <form id="monthlyForm" class="space-y-3">
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div>
-            <label class="text-xs font-semibold text-gray-500">Category Table</label>
+            <label class="text-xs font-semibold text-gray-500">Category Group</label>
             <select id="mthTable" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-cyan-800">
               <option value="Students">🎓 Students</option>
               <option value="Adults">👔 Adults</option>
             </select>
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-500">Full Name</label>
-            <input type="text" id="mthName" required placeholder="e.g. Juan Dela Cruz" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            <label class="text-xs font-semibold text-gray-500">Full Name (User)</label>
+            <input type="text" id="mthName" required placeholder="e.g. Ma Ana" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Due Day (e.g. 5)</label>
+            <input type="number" min="1" max="31" id="mthDue" required placeholder="5" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div>
-            <label class="text-xs font-semibold text-gray-500">Last Paid Month</label>
-            <input type="text" id="mthMonth" required placeholder="e.g. November 2026" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            <label class="text-xs font-semibold text-gray-500">Target Month</label>
+            <input type="text" id="mthMonth" required placeholder="e.g. March 2026" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
           <div>
             <label class="text-xs font-semibold text-gray-500">Amount Paid (₱)</label>
-            <input type="number" step="1" id="mthAmount" required placeholder="300" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+            <input type="number" step="1" id="mthAmount" required placeholder="200" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Status</label>
+            <select id="mthStatus" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+              <option value="Paid">✅ Paid</option>
+              <option value="Unpaid">🔴 Unpaid</option>
+            </select>
           </div>
         </div>
-        <div>
-          <label class="text-xs font-semibold text-gray-500">Status</label>
-          <select id="mthStatus" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
-            <option value="Paid">✅ Paid (Updated)</option>
-            <option value="Unpaid / Due">🔴 Unpaid / Due</option>
-          </select>
-        </div>
-        <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save Subscriber</button>
+        <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save to Matrix</button>
       </form>
     </div>
 
-    <!-- STUDENTS TABLE -->
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-3">
-      <h3 class="font-bold text-cyan-800 text-sm uppercase border-b pb-1">🎓 Students List</h3>
-      <div id="studentsList" class="space-y-2 text-sm">
-        <p class="text-gray-400 text-center text-xs">Loading students...</p>
+    <!-- MATRIX TABLE VIEW (LUMANG STYLE NG SPREADSHEET) -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-cyan-900 text-sm uppercase">📊 Monthly Matrix Tracking (Students & Adults)</h3>
+        <span class="text-xs text-gray-400">Scroll horizontally to view months ➡️</span>
       </div>
-    </div>
 
-    <!-- ADULTS TABLE -->
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-3">
-      <h3 class="font-bold text-cyan-800 text-sm uppercase border-b pb-1">👔 Adults List</h3>
-      <div id="adultsList" class="space-y-2 text-sm">
-        <p class="text-gray-400 text-center text-xs">Loading adults...</p>
+      <div class="overflow-x-auto border rounded-xl shadow-inner">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-cyan-800 text-white text-center">
+              <th class="p-2 border border-cyan-700">Due</th>
+              <th class="p-2 border border-cyan-700 bg-cyan-900">USER (NAME)</th>
+              <th class="p-2 border border-cyan-700">Jan 2026</th>
+              <th class="p-2 border border-cyan-700">Feb 2026</th>
+              <th class="p-2 border border-cyan-700">March 2026</th>
+              <th class="p-2 border border-cyan-700">April 2026</th>
+              <th class="p-2 border border-cyan-700">May 2026</th>
+              <th class="p-2 border border-cyan-700">June 2026</th>
+              <th class="p-2 border border-cyan-700">July 2026</th>
+            </tr>
+          </thead>
+          <tbody id="matrixTableBody" class="divide-y divide-gray-200 text-center">
+            <tr><td colspan="9" class="p-4 text-gray-400 text-center">Loading matrix records...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </main>
@@ -71,32 +89,63 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     const currentUser = localStorage.getItem("household_hub_user") || "";
 
-    async function fetchMonthlyData() {
+    async function fetchMatrixData() {
       try {
         const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
         const json = await res.json();
         if (json.status === "success") {
-          renderList('studentsList', json.data.hotspotStudents || []);
-          renderList('adultsList', json.data.hotspotAdults || []);
+          // Pagsamahin ang students at adults para sa matrix view
+          const combined = [
+            ...(json.data.hotspotStudents || []), 
+            ...(json.data.hotspotAdults || [])
+          ];
+          renderMatrix(combined);
         }
       } catch (e) { console.error(e); }
     }
 
-    function renderList(containerId, data) {
-      const container = document.getElementById(containerId);
-      if (!data.length) { container.innerHTML = '<p class="text-gray-400 text-center text-xs">No records found.</p>'; return; }
-      container.innerHTML = data.map(m => `
-        <div class="p-2.5 bg-cyan-50/50 rounded-xl border border-cyan-100 flex justify-between items-center text-xs">
-          <div>
-            <div class="font-bold text-gray-800">${m.name}</div>
-            <div class="text-gray-500">Last Paid: <span class="font-semibold text-cyan-900">${m.lastpaidmonth || 'N/A'}</span></div>
-          </div>
-          <div class="text-right">
-            <div class="font-bold text-cyan-900">₱${parseFloat(m.amountpaid || 0).toFixed(2)}</div>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${m.status === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${m.status}</span>
-          </div>
-        </div>
-      `).join('');
+    function renderMatrix(data) {
+      const tbody = document.getElementById('matrixTableBody');
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-gray-400 text-center">No monthly records yet.</td></tr>';
+        return;
+      }
+
+      // Group by user name to structure the matrix rows
+      const usersMap = {};
+      data.forEach(item => {
+        const name = item.name || 'Unknown';
+        if (!usersMap[name]) {
+          usersMap[name] = { due: item.duedate || '5', months: {} };
+        }
+        if (item.lastpaidmonth) {
+          usersMap[name].months[item.lastpaidmonth.trim()] = item.amountpaid || 0;
+        }
+      });
+
+      const monthsList = ["Jan 2026", "Feb 2026", "March 2026", "April 2026", "May 2026", "June 2026", "July 2026"];
+
+      tbody.innerHTML = Object.keys(usersMap).map((name, idx) => {
+        const user = usersMap[name];
+        const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+        
+        let monthsCols = monthsList.map(m => {
+          const val = user.months[m];
+          if (val !== undefined) {
+            return `<td class="p-2 border border-gray-200 font-bold text-cyan-900 bg-cyan-50/50">₱${val}</td>`;
+          } else {
+            return `<td class="p-2 border border-gray-200 text-gray-300">-</td>`;
+          }
+        }).join('');
+
+        return `
+          <tr class="${rowBg} hover:bg-cyan-100/30 transition">
+            <td class="p-2 border border-gray-200 font-semibold text-gray-600">${user.due}</td>
+            <td class="p-2 border border-gray-200 font-bold text-left bg-blue-50/60 pl-3">${name}</td>
+            ${monthsCols}
+          </tr>
+        `;
+      }).join('');
     }
 
     document.getElementById('monthlyForm').addEventListener('submit', async (e) => {
@@ -109,18 +158,19 @@
           action: "addMonthlyHotspotMember",
           targetTable: document.getElementById('mthTable').value,
           name: document.getElementById('mthName').value,
+          dueDate: document.getElementById('mthDue').value,
           lastPaidMonth: document.getElementById('mthMonth').value,
           amountPaid: document.getElementById('mthAmount').value,
           status: document.getElementById('mthStatus').value,
           actor: currentUser
         })
       });
-      alert("Subscriber saved successfully!");
+      alert("Subscriber added to matrix!");
       document.getElementById('monthlyForm').reset();
-      setTimeout(fetchMonthlyData, 1500);
+      setTimeout(fetchMatrixData, 1500);
     });
 
-    fetchMonthlyData();
+    fetchMatrixData();
   </script>
 </body>
 </html>
