@@ -66,7 +66,7 @@
     <!-- MATRIX TABLE VIEW -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-4">
       <div class="flex justify-between items-center">
-        <h3 class="font-bold text-cyan-900 text-sm uppercase">📊 Monthly Matrix Tracking</h3>
+        <h3 class="font-bold text-cyan-900 text-sm uppercase">📊 Monthly Matrix Tracking (Students & Adults)</h3>
         <span class="text-xs text-gray-400">Scroll horizontally ➡️</span>
       </div>
 
@@ -102,6 +102,7 @@
         const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
         const json = await res.json();
         if (json.status === "success") {
+          // Pagsamahin ang data galing sa Students at Adults tabs
           const combined = [
             ...(json.data.hotspotStudents || []), 
             ...(json.data.hotspotAdults || [])
@@ -120,23 +121,24 @@
 
       const usersMap = {};
       data.forEach(item => {
-        // Kunin ang pangalan mula sa iba't ibang posibleng property name
+        // Kunin ang exact values batay sa column indexes o lowercase property names
         const name = item.name || item.borrowerperson || item.person || 'Unknown';
+        const due = item.due || item.duedate || '5';
+        
         if (!usersMap[name]) {
-          usersMap[name] = { due: item.duedate || item.due || '5', months: {} };
+          usersMap[name] = { due: due, months: {} };
         }
         
-        // Suriin ang buwan mula sa lastpaidmonth o katulad na fields
         const rawMonth = String(item.lastpaidmonth || item.targetmonth || "").trim();
         const amount = parseFloat(item.amountpaid || item.amount || 0);
+        const status = String(item.status || "Paid").trim();
 
         if (rawMonth) {
-          // I-check kung aling buwan sa listahan ang tumutugma
           const monthsList = ["Jan 2026", "Feb 2026", "March 2026", "April 2026", "May 2026", "June 2026", "July 2026"];
           let matchedMonth = monthsList.find(m => rawMonth.toLowerCase().includes(m.toLowerCase().split(' ')[0]));
           
           if (matchedMonth) {
-            usersMap[name].months[matchedMonth] = amount;
+            usersMap[name].months[matchedMonth] = { amount, status };
           }
         }
       });
@@ -148,9 +150,13 @@
         const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
         
         let monthsCols = monthsList.map(m => {
-          const val = user.months[m];
-          if (val !== undefined && val > 0) {
-            return `<td class="p-2 border border-gray-200 font-bold text-cyan-900 bg-cyan-50/50">₱${val}</td>`;
+          const entry = user.months[m];
+          if (entry !== undefined) {
+            // Kulay berde kung Paid, pula kung Unpaid
+            const isPaid = entry.status.toLowerCase().includes('paid');
+            const bgClass = isPaid ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200';
+            const icon = isPaid ? '✅' : '🔴';
+            return `<td class="p-2 border border-gray-200 font-bold ${bgClass} text-[11px]">${icon} ₱${entry.amount}</td>`;
           } else {
             return `<td class="p-2 border border-gray-200 text-gray-300">-</td>`;
           }
