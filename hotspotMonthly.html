@@ -69,11 +69,11 @@
       </form>
     </div>
 
-    <!-- MATRIX TABLE VIEW WITH FROZEN LEFT COLUMNS -->
+    <!-- MATRIX TABLE VIEW WITH FROZEN LEFT COLUMNS & ALPHABETICAL SORTING -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-3">
       <div class="flex flex-wrap justify-between items-center gap-2">
         <div>
-          <h3 class="font-bold text-cyan-900 text-sm uppercase">📊 Monthly Matrix Tracking (2026)</h3>
+          <h3 class="font-bold text-cyan-900 text-sm uppercase">📊 Monthly Matrix Tracking (2026 — A to Z)</h3>
           <p class="text-[11px] text-gray-500">✅ Paid &nbsp;|&nbsp; <span class="text-gray-400">-</span> Unpaid &nbsp;|&nbsp; <span class="inline-block w-2.5 h-2.5 bg-gray-900 align-middle rounded-xs"></span> Cut / Inactive</p>
         </div>
         <span class="text-xs text-gray-400">Scroll months ➡️</span>
@@ -119,7 +119,6 @@
       }
     }
 
-    // Auto-fill due date and category when selecting an existing user from datalist
     document.getElementById('mthName').addEventListener('input', (e) => {
       const val = e.target.value.trim();
       if (subscriberDirectory[val]) {
@@ -142,7 +141,6 @@
 
     function renderMatrix(data) {
       const headerRow = document.getElementById('matrixHeaderRow');
-      // Naka-sticky left ang Due at USER (NAME)
       headerRow.innerHTML = `
         <th class="p-2.5 border border-cyan-700 sticky left-0 z-20 bg-cyan-800 w-12 min-w-[3rem]">Due</th>
         <th class="p-2.5 border border-cyan-700 sticky left-12 z-20 bg-cyan-900 min-w-[130px] text-left pl-3 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">USER (NAME)</th>
@@ -158,7 +156,6 @@
       const usersMap = {};
       subscriberDirectory = {};
 
-      // Baliktarin ang array para mula pinakaluma hanggang pinakabago ang pagbasa (latest entry overwrites same month)
       const chronologicalData = [...data].reverse();
 
       chronologicalData.forEach(item => {
@@ -200,11 +197,16 @@
         }
       });
 
-      // Populate datalist para madaling piliin ang existing subscriber pag mag-eedit o magdadagdag ng buwan
-      const datalist = document.getElementById('existingSubscribers');
-      datalist.innerHTML = Object.keys(subscriberDirectory).map(n => `<option value="${n}">`).join('');
+      // I-sort ang mga pangalan nang alphabetical (A-Z, case-insensitive)
+      const sortedNames = Object.keys(usersMap).sort((a, b) => 
+        a.localeCompare(b, undefined, { sensitivity: 'base' })
+      );
 
-      tbody.innerHTML = Object.keys(usersMap).map((name, idx) => {
+      // Populate datalist nang naka-sort din
+      const datalist = document.getElementById('existingSubscribers');
+      datalist.innerHTML = sortedNames.map(n => `<option value="${n}">`).join('');
+
+      tbody.innerHTML = sortedNames.map((name, idx) => {
         const user = usersMap[name];
         const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
         const stickyNameBg = idx % 2 === 0 ? 'bg-blue-50' : 'bg-blue-100/80';
@@ -213,13 +215,11 @@
           const entry = user.months[m];
           if (entry !== undefined) {
             const st = entry.status.toLowerCase();
-            // Eksaktong check para hindi malito ang 'paid' sa 'unpaid'
             if (st === 'inactive' || st === 'cut' || st === 'hold') {
               return `<td class="p-2 border border-gray-300 bg-gray-900 text-gray-400 font-bold text-[10px] tracking-wider" title="Cut / Inactive">CUT</td>`;
             } else if (st === 'paid') {
               return `<td class="p-2 border border-gray-200 font-bold bg-green-50 text-green-800 text-[11px] whitespace-nowrap">✅ ₱${entry.amount}</td>`;
             } else {
-              // Kung may lumang 'Unpaid' record sa sheet, blangko/dash na lang ang ipapakita
               return `<td class="p-2 border border-gray-200 text-gray-300">-</td>`;
             }
           } else {
