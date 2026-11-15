@@ -1,1 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grocery List - BelPan House Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col relative">
+  <header class="bg-green-600 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
+    <h1 class="text-lg font-bold">🛒 Grocery List</h1>
+    <button onclick="location.href='index.html'" class="bg-green-800 hover:bg-green-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">⬅️ Menu</button>
+  </header>
 
+  <main class="px-4 flex-1 space-y-4">
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Add Needed Item</h2>
+      <form id="groceryForm" class="space-y-3">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Item Name</label>
+            <input type="text" id="grocItem" required placeholder="e.g. Flour, Sabon" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Qty / Unit</label>
+            <input type="text" id="grocQty" placeholder="e.g. 2 sacks" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition">Add to List</button>
+      </form>
+    </div>
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+      <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Pending Household Needs</h3>
+      <ul id="groceryList" class="divide-y divide-gray-100 text-sm">
+        <li class="py-2 text-gray-400 text-center">Loading list...</li>
+      </ul>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
+    const currentUser = localStorage.getItem("household_hub_user") || "";
+
+    async function fetchGrocery() {
+      try {
+        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const json = await res.json();
+        if (json.status === "success") {
+          renderGrocery(json.data.grocery || []);
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function renderGrocery(data) {
+      const list = document.getElementById('groceryList');
+      if (!data.length) { list.innerHTML = '<li class="py-2 text-gray-400 text-center">No items needed!</li>'; return; }
+      list.innerHTML = data.map(i => `
+        <li class="py-2 flex justify-between items-center">
+          <div>
+            <span class="font-bold text-gray-800 ${i.status === 'Bought' ? 'line-through text-gray-400' : ''}">${i.item}</span> 
+            <span class="text-xs text-gray-400">(${i.quantity || '1'})</span>
+            <div class="text-xs text-gray-400">Req by: ${i.requestedby}</div>
+          </div>
+          <button onclick="toggleGroceryStatus('${i.id}', '${i.status === 'Bought' ? 'Pending' : 'Bought'}')" class="px-2.5 py-1 ${i.status === 'Bought' ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-800'} rounded-full text-xs font-semibold">
+            ${i.status === 'Bought' ? '✓ Bought' : 'Mark Bought'}
+          </button>
+        </li>
+      `).join('');
+    }
+
+    async function toggleGroceryStatus(id, newStatus) {
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "updateGroceryStatus", id: id, status: newStatus, actor: currentUser })
+      });
+      setTimeout(fetchGrocery, 1500);
+    }
+
+    document.getElementById('groceryForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "addGrocery", item: document.getElementById('grocItem').value, quantity: document.getElementById('grocQty').value, requestedBy: currentUser, actor: currentUser })
+      });
+      alert("Added to grocery list!");
+      document.getElementById('groceryForm').reset();
+      setTimeout(fetchGrocery, 1500);
+    });
+
+    fetchGrocery();
+  </script>
+</body>
+</html>
