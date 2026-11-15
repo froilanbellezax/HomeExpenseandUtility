@@ -3,19 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loans & Installments - BelPan House Hub</title>
+  <title>Loans, BNPL & Credit Cards - BelPan House Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col relative">
   <header class="bg-indigo-600 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
-    <h1 class="text-lg font-bold">🏦 Loans & Installments</h1>
+    <h1 class="text-lg font-bold">🏦 Loans, BNPL & Cards</h1>
     <button onclick="location.href='index.html'" class="bg-indigo-800 hover:bg-indigo-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">⬅️ Menu</button>
   </header>
 
   <main class="px-4 flex-1 space-y-4">
+    <!-- TOP SUMMARY BANNER -->
     <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-4 rounded-2xl shadow-md border border-indigo-700 space-y-2">
       <div class="flex justify-between items-center">
-        <span class="text-xs font-bold text-indigo-200 uppercase">📅 This Month's Loan Dues</span>
+        <span class="text-xs font-bold text-indigo-200 uppercase">📅 This Month's Total Dues</span>
         <span id="currentMonthBadge" class="text-[10px] bg-indigo-700 px-2 py-0.5 rounded-full font-bold">---</span>
       </div>
       <div class="grid grid-cols-2 gap-3 pt-1">
@@ -24,25 +25,61 @@
           <span id="loanDueThisMonth" class="text-lg font-extrabold text-amber-400">₱0.00</span>
         </div>
         <div class="bg-white/10 p-2.5 rounded-xl">
-          <span class="text-[10px] text-indigo-200 block font-semibold">Total Remaining Balance:</span>
+          <span class="text-[10px] text-indigo-200 block font-semibold">Installment Rem. Bal:</span>
           <span id="loanTotalRemaining" class="text-lg font-extrabold text-white">₱0.00</span>
         </div>
       </div>
     </div>
 
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Add Loan / Installment</h2>
+    <!-- CONSOLIDATED BNPL SUMMARY (AUTO-GROUPED BY PROVIDER + ACCOUNT + DUE DAY) -->
+    <div id="consolidatedBnplCard" class="bg-white p-4 rounded-2xl shadow-sm border-2 border-purple-200 space-y-2.5 hidden">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-purple-900 text-xs uppercase">🛍️ Consolidated BNPL / PayLater Dues</h3>
+        <span class="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold">Auto-Grouped</span>
+      </div>
+      <div id="consolidatedBnplList" class="space-y-2 text-xs"></div>
+    </div>
+
+    <!-- TAB SWITCHER FOR FORMS -->
+    <div class="grid grid-cols-2 gap-2 bg-gray-200 p-1 rounded-xl text-xs font-bold">
+      <button id="tabBtnInstallment" onclick="switchFormTab('installment')" class="py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition">➕ Add BNPL / Loan</button>
+      <button id="tabBtnCard" onclick="switchFormTab('card')" class="py-2 rounded-lg text-gray-600 hover:text-gray-900 transition">💳 Add Credit Card Due</button>
+    </div>
+
+    <!-- FORM 1: ADD LOAN / BNPL INSTALLMENT -->
+    <div id="installmentFormBox" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+      <h2 class="font-bold text-gray-700 mb-3 text-xs uppercase">Add BNPL / Installment Plan</h2>
       <form id="loanForm" class="space-y-3">
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="text-xs font-semibold text-gray-500">Loan Provider / App</label>
-            <input type="text" id="loanProvider" required placeholder="e.g. SPayLater" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+            <label class="text-xs font-semibold text-gray-500">Plan Category</label>
+            <select id="planCategory" onchange="handlePlanCategoryChange()" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-purple-800">
+              <option value="BNPL">🛍️ BNPL / PayLater</option>
+              <option value="Loan">🏦 Cash / Regular Loan</option>
+            </select>
           </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Item / Description</label>
-            <input type="text" id="loanItemDesc" required placeholder="e.g. Oven, Phone" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          <div id="bnplProviderBox">
+            <label class="text-xs font-semibold text-gray-500">PayLater App</label>
+            <select id="bnplSelect" onchange="handleBnplPresetChange()" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+              <option value="TikTok PayLater">TikTok PayLater (15th)</option>
+              <option value="SPayLater">SPayLater (5th/15th)</option>
+              <option value="LazPayLater">LazPayLater (16th)</option>
+              <option value="Atome">Atome</option>
+              <option value="GCash GGives">GCash GGives</option>
+              <option value="Custom">Other / Custom...</option>
+            </select>
+          </div>
+          <div id="customProviderBox" class="hidden">
+            <label class="text-xs font-semibold text-gray-500">Provider / App Name</label>
+            <input type="text" id="loanProvider" placeholder="e.g. Maya Loan, SLoan" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
           </div>
         </div>
+
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Item / Description</label>
+          <input type="text" id="loanItemDesc" required placeholder="e.g. Insulation Foam, Wire, Phone" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+        </div>
+
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="text-xs font-semibold text-gray-500">Account Holder</label>
@@ -54,36 +91,85 @@
             <input type="text" id="loanCustomPayer" placeholder="Enter Payer Name" class="w-full p-2 border rounded-xl text-xs outline-none mt-1 hidden">
           </div>
         </div>
+
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="text-xs font-semibold text-gray-500">Monthly Due (₱)</label>
             <input type="number" step="0.01" id="loanMonthly" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-500">Start Month</label>
-            <select id="loanStartMonth" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-indigo-700"></select>
+            <label class="text-xs font-semibold text-gray-500">Fixed Due Day</label>
+            <input type="text" id="loanDueDay" required value="15th" placeholder="e.g. 15th" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-indigo-900">
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-2">
+
+        <div class="grid grid-cols-3 gap-2">
           <div>
-            <label class="text-xs font-semibold text-gray-500">Total Term (Mos)</label>
-            <input type="number" id="loanTotalMonths" required placeholder="12" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            <label class="text-xs font-semibold text-gray-500">Start Month</label>
+            <select id="loanStartMonth" class="w-full p-2.5 border rounded-xl text-xs outline-none font-semibold text-indigo-700"></select>
           </div>
           <div>
-            <label class="text-xs font-semibold text-gray-500">Already Paid (Mos)</label>
+            <label class="text-xs font-semibold text-gray-500">Total Mos</label>
+            <input type="number" id="loanTotalMonths" required value="3" min="1" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Paid Mos</label>
             <input type="number" id="loanMonthsPaid" value="0" min="0" class="w-full p-2.5 border rounded-xl text-sm outline-none">
           </div>
         </div>
-        <div>
-          <label class="text-xs font-semibold text-gray-500">Due Day / Schedule Notes</label>
-          <input type="text" id="loanDueDay" placeholder="e.g. Every 15th" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-        </div>
+
         <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition">Save Installment Plan</button>
       </form>
     </div>
 
+    <!-- FORM 2: ADD CREDIT CARD STATEMENT DUE -->
+    <div id="cardFormBox" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 hidden">
+      <h2 class="font-bold text-gray-700 mb-3 text-xs uppercase">💳 Add Monthly Credit Card Statement</h2>
+      <form id="ccForm" class="space-y-3">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Credit Card / Bank</label>
+            <input type="text" id="ccName" required placeholder="e.g. UnionBank" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Card Holder</label>
+            <select id="ccHolder" class="w-full p-2.5 border rounded-xl text-sm outline-none loan-profile-select"></select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Statement Due (₱)</label>
+            <input type="number" step="0.01" id="ccAmount" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-rose-700">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Due Day</label>
+            <input type="text" id="ccDueDay" required placeholder="e.g. 20th" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Billing Month</label>
+            <select id="ccBillingMonth" class="w-full p-2.5 border rounded-xl text-xs outline-none font-semibold"></select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Notes (Optional)</label>
+          <input type="text" id="ccNotes" placeholder="e.g. Full payment, Groceries + Gas" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+        </div>
+
+        <button type="submit" class="w-full bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 transition">Save Credit Card Statement</button>
+      </form>
+    </div>
+
+    <!-- CREDIT CARDS TRACKER LIST -->
+    <div id="ccTrackerSection" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 hidden">
+      <h3 class="font-bold text-rose-800 text-xs uppercase mb-3">💳 Credit Card Statements</h3>
+      <div id="ccList" class="space-y-2.5 text-sm"></div>
+    </div>
+
+    <!-- INDIVIDUAL INSTALLMENT TRACKER & PROGRESS -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-      <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Installment Tracker & Progress</h3>
+      <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">📋 Individual Item Breakdown</h3>
       <div id="loansList" class="space-y-3 text-sm">
         <p class="text-gray-400 text-center">Loading loans...</p>
       </div>
@@ -102,13 +188,67 @@
       return new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     }
 
+    function switchFormTab(tab) {
+      const instBox = document.getElementById('installmentFormBox');
+      const cardBox = document.getElementById('cardFormBox');
+      const btnInst = document.getElementById('tabBtnInstallment');
+      const btnCard = document.getElementById('tabBtnCard');
+
+      if (tab === 'installment') {
+        instBox.classList.remove('hidden');
+        cardBox.classList.add('hidden');
+        btnInst.className = "py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition";
+        btnCard.className = "py-2 rounded-lg text-gray-600 hover:text-gray-900 transition";
+      } else {
+        instBox.classList.add('hidden');
+        cardBox.classList.remove('hidden');
+        btnCard.className = "py-2 rounded-lg bg-white text-rose-700 shadow-sm transition";
+        btnInst.className = "py-2 rounded-lg text-gray-600 hover:text-gray-900 transition";
+      }
+    }
+
+    function handlePlanCategoryChange() {
+      const cat = document.getElementById('planCategory').value;
+      const bnplBox = document.getElementById('bnplProviderBox');
+      const customBox = document.getElementById('customProviderBox');
+      const dueInput = document.getElementById('loanDueDay');
+
+      if (cat === 'BNPL') {
+        bnplBox.classList.remove('hidden');
+        handleBnplPresetChange();
+      } else {
+        bnplBox.classList.add('hidden');
+        customBox.classList.remove('hidden');
+        document.getElementById('loanProvider').required = true;
+        dueInput.value = "";
+        dueInput.placeholder = "e.g. Every 9th";
+      }
+    }
+
+    function handleBnplPresetChange() {
+      const preset = document.getElementById('bnplSelect').value;
+      const customBox = document.getElementById('customProviderBox');
+      const dueInput = document.getElementById('loanDueDay');
+
+      if (preset === 'Custom') {
+        customBox.classList.remove('hidden');
+        document.getElementById('loanProvider').required = true;
+      } else {
+        customBox.classList.add('hidden');
+        document.getElementById('loanProvider').required = false;
+        if (preset === 'TikTok PayLater') dueInput.value = '15th';
+        else if (preset === 'SPayLater') dueInput.value = '5th';
+        else if (preset === 'LazPayLater') dueInput.value = '16th';
+      }
+    }
+
     async function fetchLoansData() {
       try {
         const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
         const json = await res.json();
         if (json.status === "success") {
           populateProfileDropdowns(json.data.profiles || []);
-          renderLoans(json.data.loans || []);
+          renderAllDues(json.data.loans || [], json.data.creditCards || []);
         }
       } catch (e) {
         console.error("Failed to load loans:", e);
@@ -127,18 +267,16 @@
         if (currentUser) s.value = currentUser;
       });
 
-      const select = document.getElementById('loanStartMonth');
-      if (select) {
-        let optHtml = '';
-        const now = new Date();
-        for (let i = -24; i <= 12; i++) {
-          const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
-          const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-          const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-          optHtml += `<option value="${val}" ${i === 0 ? 'selected' : ''}>${label}</option>`;
-        }
-        select.innerHTML = optHtml;
+      const monthSelects = [document.getElementById('loanStartMonth'), document.getElementById('ccBillingMonth')];
+      let optHtml = '';
+      const now = new Date();
+      for (let i = -12; i <= 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        optHtml += `<option value="${val}" ${i === 0 ? 'selected' : ''}>${label}</option>`;
       }
+      monthSelects.forEach(sel => { if (sel) sel.innerHTML = optHtml; });
     }
 
     function checkCustomPayer() {
@@ -154,7 +292,16 @@
       }
     }
 
-    function renderLoans(data) {
+    function isBnplItem(providerName) {
+      const p = String(providerName || '').toLowerCase();
+      return p.startsWith('bnpl') || p.includes('paylater') || p.includes('atome') || p.includes('ggives');
+    }
+
+    function cleanProviderLabel(providerName) {
+      return String(providerName || '').replace(/^BNPL\s*-\s*/i, '').trim();
+    }
+
+    function renderAllDues(loans, cards) {
       const container = document.getElementById('loansList');
       const currMonth = getCurrentMonthStr();
       document.getElementById('currentMonthBadge').innerText = getCurrentMonthLabel();
@@ -162,29 +309,72 @@
       let dueThisMonth = 0;
       let totalRemaining = 0;
 
-      if (!data || !data.length) {
-        container.innerHTML = '<p class="text-gray-400 text-center">No active loans found.</p>';
-        document.getElementById('loanDueThisMonth').innerText = "₱0.00";
+      // 1. RENDER CREDIT CARDS
+      const ccSection = document.getElementById('ccTrackerSection');
+      const ccList = document.getElementById('ccList');
+      if (cards && cards.length > 0) {
+        ccSection.classList.remove('hidden');
+        ccList.innerHTML = cards.map(c => {
+          const amt = parseFloat(c.statementamount) || 0;
+          const isPaid = String(c.status || '').toLowerCase() === 'paid';
+          const bMonth = String(c.billingmonth || '').replace(/'/g, '');
+          if (!isPaid && bMonth === currMonth) {
+            dueThisMonth += amt;
+          }
+
+          return `
+            <div class="p-3 rounded-xl border ${isPaid ? 'bg-gray-50 border-gray-200' : 'bg-rose-50/70 border-rose-200'} space-y-2">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-[10px] bg-rose-600 text-white px-2 py-0.5 rounded font-bold uppercase">💳 ${c.cardname}</span>
+                  <span class="text-xs font-bold text-gray-800 ml-1">(${c.cardholder})</span>
+                  <div class="text-[11px] text-gray-500 mt-1">Billing: <strong>${bMonth}</strong> • Due every <strong>${c.dueday}</strong></div>
+                  ${c.notes ? `<div class="text-[10px] text-gray-500 italic">"${c.notes}"</div>` : ''}
+                </div>
+                <div class="text-right">
+                  <div class="font-extrabold text-rose-800 text-base">₱${amt.toFixed(2)}</div>
+                  <span class="text-[10px] font-bold ${isPaid ? 'text-green-600' : 'text-rose-600'}">${isPaid ? '✅ Paid' : '⏳ Unpaid'}</span>
+                </div>
+              </div>
+              ${!isPaid ? `<button onclick="payCard('${c.id}')" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-1.5 rounded-lg transition">✅ Mark Card Statement Paid</button>` : ''}
+            </div>
+          `;
+        }).join('');
+      } else {
+        ccSection.classList.add('hidden');
+      }
+
+      // 2. GROUP BNPL / PAYLATER ACCOUNTS & RENDER LOANS
+      const bnplGroups = {};
+
+      if (!loans || !loans.length) {
+        container.innerHTML = '<p class="text-gray-400 text-center">No active installment plans found.</p>';
+        document.getElementById('consolidatedBnplCard').classList.add('hidden');
+        document.getElementById('loanDueThisMonth').innerText = `₱${dueThisMonth.toFixed(2)}`;
         document.getElementById('loanTotalRemaining').innerText = "₱0.00";
         return;
       }
 
-      container.innerHTML = data.map(l => {
+      container.innerHTML = loans.map(l => {
         const monthly = parseFloat(l.monthlydue) || 0;
         const totalM = parseInt(l.totalmonths) || 1;
         const paidM = parseInt(l.monthspaid) || 0;
         const remM = Math.max(0, totalM - paidM);
         const remBalance = remM * monthly;
         const progressPct = Math.min(100, Math.round((paidM / totalM) * 100));
-        const startM = l.startmonth || currMonth;
+        const startM = String(l.startmonth || currMonth).replace(/'/g, '');
+        const lastPaid = String(l.lastpaidmonth || '').replace(/'/g, '');
         
-        const isStarted = currMonth >= startM;
-        const isPaidThisMonth = String(l.lastpaidmonth) === currMonth || remM === 0;
+        const isStarted = !startM || currMonth >= startM;
+        const isPaidThisMonth = lastPaid === currMonth || remM === 0;
         const loanStatus = l.status || 'Active';
-        const provider = l.loanprovider || 'Loan';
+        const rawProvider = l.loanprovider || 'Loan';
+        const isBnpl = isBnplItem(rawProvider);
+        const provider = cleanProviderLabel(rawProvider);
         const desc = l.itemdescription || '';
         const holder = l.accountholder || '';
         const payer = l.actualpayer || '';
+        const dueDay = l.dueday || '15th';
 
         const isHolder = holder.toLowerCase() === currentUser.toLowerCase();
         const isPayer = payer.toLowerCase() === currentUser.toLowerCase();
@@ -194,6 +384,24 @@
           totalRemaining += remBalance;
           if (isStarted && !isPaidThisMonth && loanStatus !== 'Pending Approval') {
             dueThisMonth += monthly;
+
+            // I-group sa Consolidated BNPL kung PayLater item siya at hindi pa bayad ngayong buwan
+            if (isBnpl) {
+              const groupKey = `${provider.toLowerCase()}_${holder.toLowerCase()}_${String(dueDay).toLowerCase()}`;
+              if (!bnplGroups[groupKey]) {
+                bnplGroups[groupKey] = {
+                  provider,
+                  holder,
+                  dueDay,
+                  totalDue: 0,
+                  items: [],
+                  ids: []
+                };
+              }
+              bnplGroups[groupKey].totalDue += monthly;
+              bnplGroups[groupKey].items.push(`${desc} (₱${monthly.toFixed(2)})`);
+              bnplGroups[groupKey].ids.push(String(l.id));
+            }
           }
         }
 
@@ -212,16 +420,19 @@
           }
         }
 
+        const badgeBg = isBnpl ? 'bg-purple-600' : 'bg-indigo-600';
+        const cardBg = isBnpl ? 'bg-purple-50/50 border-purple-100' : 'bg-indigo-50/60 border-indigo-100';
+
         return `
-          <div class="p-3.5 bg-indigo-50/60 rounded-2xl border border-indigo-100 space-y-2.5">
+          <div class="p-3.5 ${cardBg} rounded-2xl border space-y-2.5">
             <div class="flex justify-between items-start">
               <div>
-                <div class="flex items-center gap-1.5">
-                  <span class="text-[10px] bg-indigo-600 text-white px-2 py-0.5 rounded font-bold uppercase">${provider}</span>
-                  <span class="font-bold text-indigo-950 text-sm">${desc || provider}</span>
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-[10px] ${badgeBg} text-white px-2 py-0.5 rounded font-bold uppercase">${provider}</span>
+                  <span class="font-bold text-gray-900 text-sm">${desc || provider}</span>
                 </div>
                 <div class="text-[11px] text-gray-600 mt-1">
-                  Account: <strong>${holder}</strong> • Payer: <span class="bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded font-bold">${payer}</span>
+                  Account: <strong>${holder}</strong> • Payer: <span class="bg-white border px-1.5 py-0.5 rounded font-bold">${payer}</span> • Due: <strong>${dueDay}</strong>
                 </div>
               </div>
               <div class="text-right">
@@ -237,13 +448,41 @@
                 <span>${progressPct}%</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: ${progressPct}%"></div>
+                <div class="${badgeBg} h-2 rounded-full transition-all" style="width: ${progressPct}%"></div>
               </div>
             </div>
             ${actionButtonHTML}
           </div>
         `;
       }).join('');
+
+      // 3. RENDER CONSOLIDATED BNPL CARD
+      const groupKeys = Object.keys(bnplGroups);
+      const bnplCard = document.getElementById('consolidatedBnplCard');
+      const bnplList = document.getElementById('consolidatedBnplList');
+
+      if (groupKeys.length > 0) {
+        bnplCard.classList.remove('hidden');
+        bnplList.innerHTML = groupKeys.map(k => {
+          const g = bnplGroups[k];
+          const idsJson = JSON.stringify(g.ids).replace(/"/g, '&quot;');
+          return `
+            <div class="p-3 bg-purple-50 rounded-xl border border-purple-200 space-y-2">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="font-bold text-purple-950 text-sm">${g.provider} <span class="text-[10px] bg-purple-200 text-purple-900 px-1.5 py-0.5 rounded">${g.holder}</span></div>
+                  <div class="text-[11px] text-purple-700 font-semibold">Fixed Due: Every ${g.dueDay} (${g.items.length} item${g.items.length > 1 ? 's' : ''})</div>
+                  <div class="text-[10px] text-gray-600 mt-1">${g.items.join(' • ')}</div>
+                </div>
+                <div class="text-right font-extrabold text-purple-900 text-base">₱${g.totalDue.toFixed(2)}</div>
+              </div>
+              <button onclick="payBnplGroup(${idsJson}, '${g.provider} - ${g.holder}')" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-1.5 rounded-lg text-[11px] transition">✅ Pay All ${g.provider} Dues (₱${g.totalDue.toFixed(2)})</button>
+            </div>
+          `;
+        }).join('');
+      } else {
+        bnplCard.classList.add('hidden');
+      }
 
       document.getElementById('loanDueThisMonth').innerText = `₱${dueThisMonth.toFixed(2)}`;
       document.getElementById('loanTotalRemaining').innerText = `₱${totalRemaining.toFixed(2)}`;
@@ -260,8 +499,44 @@
       setTimeout(fetchLoansData, 1500);
     }
 
+    async function payBnplGroup(ids, label) {
+      if (!confirm(`Mark all ${ids.length} items under ${label} as paid for ${getCurrentMonthLabel()}?`)) return;
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "payConsolidatedBnpl", ids: ids, groupLabel: label, actor: currentUser })
+      });
+      alert("All consolidated BNPL dues marked as paid!");
+      setTimeout(fetchLoansData, 1500);
+    }
+
+    async function payCard(id) {
+      if (!confirm("Mark this Credit Card statement as Paid?")) return;
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "payCreditCard", id: id, actor: currentUser })
+      });
+      alert("Credit Card statement marked as Paid!");
+      setTimeout(fetchLoansData, 1500);
+    }
+
     document.getElementById('loanForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const cat = document.getElementById('planCategory').value;
+      const bnplPreset = document.getElementById('bnplSelect').value;
+      const customProv = document.getElementById('loanProvider').value.trim();
+      
+      let finalProvider = "";
+      if (cat === 'BNPL') {
+        const baseName = bnplPreset === 'Custom' ? customProv : bnplPreset;
+        finalProvider = `BNPL - ${baseName}`;
+      } else {
+        finalProvider = customProv;
+      }
+
       const payerSelect = document.getElementById('loanPayer').value;
       const customPayer = document.getElementById('loanCustomPayer').value.trim();
       const finalPayer = payerSelect === 'Others' ? customPayer : payerSelect;
@@ -272,24 +547,48 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addLoan",
-          loanProvider: document.getElementById('loanProvider').value,
-          itemDesc: document.getElementById('loanItemDesc').value,
+          loanProvider: finalProvider,
+          itemDesc: document.getElementById('loanItemDesc').value.trim(),
           holder: document.getElementById('loanHolder').value,
           payer: finalPayer,
           monthlyDue: document.getElementById('loanMonthly').value,
           startMonth: document.getElementById('loanStartMonth').value,
-          dueDay: document.getElementById('loanDueDay').value,
+          dueDay: document.getElementById('loanDueDay').value.trim(),
           totalMonths: document.getElementById('loanTotalMonths').value,
           monthsPaid: document.getElementById('loanMonthsPaid').value,
           currentMonthStr: getCurrentMonthStr(),
           actor: currentUser
         })
       });
-      alert("Loan saved successfully!");
+      alert("Plan saved successfully!");
       document.getElementById('loanForm').reset();
+      handlePlanCategoryChange();
       setTimeout(fetchLoansData, 1500);
     });
 
+    document.getElementById('ccForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "addCreditCardDue",
+          cardName: document.getElementById('ccName').value.trim(),
+          cardHolder: document.getElementById('ccHolder').value,
+          amount: document.getElementById('ccAmount').value,
+          dueDay: document.getElementById('ccDueDay').value.trim(),
+          billingMonth: document.getElementById('ccBillingMonth').value,
+          notes: document.getElementById('ccNotes').value.trim(),
+          actor: currentUser
+        })
+      });
+      alert("Credit card statement saved!");
+      document.getElementById('ccForm').reset();
+      setTimeout(fetchLoansData, 1500);
+    });
+
+    handlePlanCategoryChange();
     fetchLoansData();
   </script>
 </body>
