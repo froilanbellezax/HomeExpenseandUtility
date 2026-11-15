@@ -226,33 +226,91 @@
 
     function renderDashboardUpcoming(bills, loans) {
       const container = document.getElementById('dashUpcomingList');
+      const today = new Date();
+      const todayDay = today.getDate();
+      const currMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+      
       let combined = [];
+
       if (bills) {
         bills.forEach(b => {
-          if (String(b.status || '') !== 'Paid') {
-            combined.push({ name: b.billname, amount: parseFloat(b.amount || 0), day: parseInt(b.duedatedayofmonth) || 99, type: 'Bill' });
+          if (String(b.status || '').toLowerCase() !== 'paid') {
+            const dueDay = parseInt(b.duedatedayofmonth) || 99;
+            combined.push({ 
+              name: b.billname, 
+              amount: parseFloat(b.amount || 0), 
+              day: dueDay, 
+              type: 'Bill' 
+            });
           }
         });
       }
-      const currMonth = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+
       if (loans) {
         loans.forEach(l => {
           const remM = Math.max(0, (parseInt(l.totalmonths) || 1) - (parseInt(l.monthspaid) || 0));
           if (remM > 0 && String(l.lastpaidmonth) !== currMonth && l.status !== 'Pending Approval') {
-            combined.push({ name: `${l.loanprovider} (${l.itemdescription || ''})`, amount: parseFloat(l.monthlydue || 0), day: parseInt(String(l.dueday || '1').replace(/\D/g, '')) || 15, type: 'Loan' });
+            const dueDay = parseInt(String(l.dueday || '1').replace(/\D/g, '')) || 15;
+            combined.push({ 
+              name: `${l.loanprovider} (${l.itemdescription || ''})`, 
+              amount: parseFloat(l.monthlydue || 0), 
+              day: dueDay, 
+              type: 'Loan' 
+            });
           }
         });
       }
-      combined.sort((a, b) => a.day - b.day);
+
+      // I-calculate ang status (Past Due, Due Today, Near Due, Upcoming) at i-sort mula pinaka-urgent
+      combined = combined.map(item => {
+        const diff = item.day - todayDay;
+        let urgencyRank = 3;
+        let badge = '';
+        let cardStyle = 'bg-gray-50 border-gray-100';
+        let subText = `Due every ${item.day}th`;
+
+        if (diff < 0) {
+          urgencyRank = 1; // Pinaka-urgent: Past Due
+          badge = `<span class="text-[9px] font-bold bg-red-600 text-white px-1.5 py-0.5 rounded uppercase animate-pulse">🚨 Past Due (${Math.abs(diff)}d ago)</span>`;
+          cardStyle = 'bg-red-50/80 border-red-200';
+        } else if (diff === 0) {
+          urgencyRank = 2; // Due Today
+          badge = `<span class="text-[9px] font-bold bg-amber-500 text-white px-1.5 py-0.5 rounded uppercase">⚠️ Due Today</span>`;
+          cardStyle = 'bg-amber-50/80 border-amber-200';
+        } else if (diff <= 3) {
+          urgencyRank = 2; // Near Due (within 3 days)
+          badge = `<span class="text-[9px] font-bold bg-orange-500 text-white px-1.5 py-0.5 rounded uppercase">⏳ Near Due (${diff}d left)</span>`;
+          cardStyle = 'bg-orange-50/70 border-orange-200';
+        } else {
+          subText = `Due every ${item.day}th (in ${diff} days)`;
+        }
+
+        return { ...item, urgencyRank, diff, badge, cardStyle, subText };
+      });
+
+      // I-sort by urgency (Past Due -> Near Due -> Upcoming) tapos by due day
+      combined.sort((a, b) => {
+        if (a.urgencyRank !== b.urgencyRank) return a.urgencyRank - b.urgencyRank;
+        return a.day - b.day;
+      });
+
       const top5 = combined.slice(0, 5);
-      if (!top5.length) { container.innerHTML = '<p class="text-gray-400 text-center py-1">No upcoming dues! 🎉</p>'; return; }
+      if (!top5.length) { 
+        container.innerHTML = '<p class="text-gray-400 text-center py-1">No upcoming dues! 🎉</p>'; 
+        return; 
+      }
+
       container.innerHTML = top5.map(item => `
-        <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100 flex justify-between items-center">
-          <div>
-            <div class="font-bold text-gray-800">${item.name} <span class="text-[10px] text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded font-semibold">${item.type}</span></div>
-            <div class="text-[10px] text-gray-500">Due every ${item.day}th</div>
+        <div class="p-2.5 ${item.cardStyle} rounded-xl border flex justify-between items-center gap-2">
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-1 mb-0.5">
+              <span class="font-bold text-gray-800 truncate">${item.name}</span>
+              <span class="text-[9px] text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded font-semibold">${item.type}</span>
+              ${item.badge}
+            </div>
+            <div class="text-[10px] text-gray-500">${item.subText}</div>
           </div>
-          <div class="text-right font-bold text-gray-900">₱${item.amount.toFixed(2)}</div>
+          <div class="text-right font-bold text-gray-900 whitespace-nowrap">₱${item.amount.toFixed(2)}</div>
         </div>
       `).join('');
     }
