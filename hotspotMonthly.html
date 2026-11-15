@@ -45,7 +45,6 @@
               <option value="May 2026">May 2026</option>
               <option value="June 2026">June 2026</option>
               <option value="July 2026">July 2026</option>
-              <option value="December 2026">December 2026</option>
             </select>
           </div>
           <div>
@@ -121,19 +120,22 @@
 
       const usersMap = {};
       data.forEach(item => {
+        // Kunin ang mga tamang field names kasama ang variations nito sa Apps Script
         const name = item.name || item.borrowerperson || item.person || 'Unknown';
-        const due = item.due || item.duedate || '5';
+        const due = item.duedate || item.due || item['due day'] || '5';
         
         if (!usersMap[name]) {
           usersMap[name] = { due: due, months: {} };
+        } else {
+          // Kung may bago o mas bagong due date, i-update
+          if (due && due !== '5') usersMap[name].due = due;
         }
         
-        const rawMonth = String(item.lastpaidmonth || item.targetmonth || "").trim();
-        const amount = parseFloat(item.amountpaid || item.amount || 0);
+        const rawMonth = String(item.lastpaidmonth || item.targetmonth || item['last paid month'] || "").trim();
+        const amount = parseFloat(item.amountpaid || item.amount || item['amount paid'] || 0);
         const status = String(item.status || "Paid").trim();
 
         if (rawMonth) {
-          // Listahan ng mga kolum sa table natin
           const tableColumns = [
             { colName: "Jan 2026", keywords: ["jan"] },
             { colName: "Feb 2026", keywords: ["feb"] },
