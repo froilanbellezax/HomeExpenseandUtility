@@ -6,16 +6,16 @@
   <title>Monthly Wi-Fi Matrix - BelPan House Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-6xl mx-auto min-h-screen flex flex-col relative px-2">
+<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-7xl mx-auto min-h-screen flex flex-col relative px-2">
   <header class="bg-cyan-700 text-white p-4 shadow-md rounded-b-2xl mb-4 flex justify-between items-center sticky top-0 z-50">
     <h1 class="text-lg font-bold">📅 Monthly Wi-Fi Subscribers & Matrix</h1>
     <button onclick="location.href='index.html'" class="bg-cyan-900 hover:bg-cyan-950 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">⬅️ Menu</button>
   </header>
 
-  <main class="space-y-6">
-    <!-- ADD FORM -->
+  <main class="space-y-5">
+    <!-- LOG PAYMENT / CUT STATUS FORM -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Add Monthly Subscriber (Student / Adult)</h2>
+      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Log Payment or Set Inactive/Cut Month</h2>
       <form id="monthlyForm" class="space-y-3">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div>
@@ -27,7 +27,8 @@
           </div>
           <div>
             <label class="text-xs font-semibold text-gray-500">Full Name (User)</label>
-            <input type="text" id="mthName" required placeholder="e.g. Moises" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+            <input type="text" id="mthName" list="existingSubscribers" required placeholder="Type or select name" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+            <datalist id="existingSubscribers"></datalist>
           </div>
           <div>
             <label class="text-xs font-semibold text-gray-500">Due Day (e.g. 5)</label>
@@ -53,35 +54,36 @@
             </select>
           </div>
           <div>
+            <label class="text-xs font-semibold text-gray-500">Record Action / Status</label>
+            <select id="mthStatus" onchange="toggleAmountField()" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+              <option value="Paid">✅ Paid (Active)</option>
+              <option value="Inactive">⬛ Cut / Inactive (Hold)</option>
+            </select>
+          </div>
+          <div id="amountContainer">
             <label class="text-xs font-semibold text-gray-500">Amount Paid (₱)</label>
             <input type="number" step="1" id="mthAmount" required value="200" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
           </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Status</label>
-            <select id="mthStatus" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
-              <option value="Paid">✅ Paid</option>
-              <option value="Unpaid">🔴 Unpaid</option>
-            </select>
-          </div>
         </div>
-        <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save to Matrix & Sheet</button>
+        <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save Record to Matrix</button>
       </form>
     </div>
 
-    <!-- MATRIX TABLE VIEW -->
-    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-4">
-      <div class="flex justify-between items-center">
-        <h3 class="font-bold text-cyan-900 text-sm uppercase">📊 Monthly Matrix Tracking (Jan - Dec 2026)</h3>
-        <span class="text-xs text-gray-400">Scroll horizontally to view all months ➡️</span>
+    <!-- MATRIX TABLE VIEW WITH FROZEN LEFT COLUMNS -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-3">
+      <div class="flex flex-wrap justify-between items-center gap-2">
+        <div>
+          <h3 class="font-bold text-cyan-900 text-sm uppercase">📊 Monthly Matrix Tracking (2026)</h3>
+          <p class="text-[11px] text-gray-500">✅ Paid &nbsp;|&nbsp; <span class="text-gray-400">-</span> Unpaid &nbsp;|&nbsp; <span class="inline-block w-2.5 h-2.5 bg-gray-900 align-middle rounded-xs"></span> Cut / Inactive</p>
+        </div>
+        <span class="text-xs text-gray-400">Scroll months ➡️</span>
       </div>
 
-      <div class="overflow-x-auto border rounded-xl shadow-inner">
+      <div class="overflow-x-auto border rounded-xl shadow-inner relative">
         <table class="w-full text-left border-collapse text-xs">
           <thead>
             <tr id="matrixHeaderRow" class="bg-cyan-800 text-white text-center">
-              <th class="p-2 border border-cyan-700">Due</th>
-              <th class="p-2 border border-cyan-700 bg-cyan-900">USER (NAME)</th>
-              <!-- Dito kusang i-lalagay ang mga buwan mula Jan hanggang Dec -->
+              <!-- Populated by JS -->
             </tr>
           </thead>
           <tbody id="matrixTableBody" class="divide-y divide-gray-200 text-center">
@@ -96,34 +98,55 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     const currentUser = localStorage.getItem("household_hub_user") || "";
 
-    // Listahan ng buwan mula January hanggang December 2026
     const monthsList = [
       "January 2026", "February 2026", "March 2026", "April 2026", 
       "May 2026", "June 2026", "July 2026", "August 2026", 
       "September 2026", "October 2026", "November 2026", "December 2026"
     ];
 
+    let subscriberDirectory = {};
+
+    function toggleAmountField() {
+      const status = document.getElementById('mthStatus').value;
+      const amtInput = document.getElementById('mthAmount');
+      const amtContainer = document.getElementById('amountContainer');
+      if (status === 'Inactive') {
+        amtInput.value = 0;
+        amtContainer.classList.add('opacity-40', 'pointer-events-none');
+      } else {
+        if (amtInput.value == 0) amtInput.value = 200;
+        amtContainer.classList.remove('opacity-40', 'pointer-events-none');
+      }
+    }
+
+    // Auto-fill due date and category when selecting an existing user from datalist
+    document.getElementById('mthName').addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (subscriberDirectory[val]) {
+        document.getElementById('mthDue').value = subscriberDirectory[val].due;
+        document.getElementById('mthTable').value = subscriberDirectory[val].category;
+      }
+    });
+
     async function fetchMatrixData() {
       try {
         const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
         const json = await res.json();
         if (json.status === "success") {
-          const combined = [
-            ...(json.data.hotspotStudents || []), 
-            ...(json.data.hotspotAdults || [])
-          ];
-          renderMatrix(combined);
+          const students = (json.data.hotspotStudents || []).map(s => ({ ...s, _cat: 'Students' }));
+          const adults = (json.data.hotspotAdults || []).map(a => ({ ...a, _cat: 'Adults' }));
+          renderMatrix([...students, ...adults]);
         }
       } catch (e) { console.error(e); }
     }
 
     function renderMatrix(data) {
-      // Dynamic Header Generation para sa Jan-Dec
       const headerRow = document.getElementById('matrixHeaderRow');
+      // Naka-sticky left ang Due at USER (NAME)
       headerRow.innerHTML = `
-        <th class="p-2 border border-cyan-700">Due</th>
-        <th class="p-2 border border-cyan-700 bg-cyan-900">USER (NAME)</th>
-        ${monthsList.map(m => `<th class="p-2 border border-cyan-700">${m.replace(' 2026', '')}</th>`).join('')}
+        <th class="p-2.5 border border-cyan-700 sticky left-0 z-20 bg-cyan-800 w-12 min-w-[3rem]">Due</th>
+        <th class="p-2.5 border border-cyan-700 sticky left-12 z-20 bg-cyan-900 min-w-[130px] text-left pl-3 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.3)]">USER (NAME)</th>
+        ${monthsList.map(m => `<th class="p-2.5 border border-cyan-700 min-w-[85px]">${m.replace(' 2026', '')}</th>`).join('')}
       `;
 
       const tbody = document.getElementById('matrixTableBody');
@@ -133,24 +156,31 @@
       }
 
       const usersMap = {};
-      data.forEach(item => {
+      subscriberDirectory = {};
+
+      // Baliktarin ang array para mula pinakaluma hanggang pinakabago ang pagbasa (latest entry overwrites same month)
+      const chronologicalData = [...data].reverse();
+
+      chronologicalData.forEach(item => {
         let name = 'Unknown', due = '5', rawMonth = '', amount = 0, status = 'Paid';
 
         Object.keys(item).forEach(k => {
           const lk = k.toLowerCase().replace(/[^a-z0-9]/g, '');
           const val = item[k];
-          if (lk === 'name' || lk === 'borrowerperson' || lk === 'person') name = val;
+          if (lk === 'name' || lk === 'borrowerperson' || lk === 'person') name = String(val).trim();
           if (lk === 'duedate' || lk === 'due' || lk === 'duedays') due = val;
           if (lk === 'lastpaidmonth' || lk === 'targetmonth' || lk === 'month') rawMonth = String(val);
           if (lk === 'amountpaid' || lk === 'amount') amount = parseFloat(val) || 0;
-          if (lk === 'status') status = String(val);
+          if (lk === 'status') status = String(val).trim();
         });
 
         if (!usersMap[name]) {
-          usersMap[name] = { due: due || '5', months: {} };
+          usersMap[name] = { due: due || '5', months: {}, category: item._cat || 'Students' };
         } else {
-          if (due && due !== '5') usersMap[name].due = due;
+          if (due) usersMap[name].due = due;
         }
+
+        subscriberDirectory[name] = { due: usersMap[name].due, category: usersMap[name].category };
 
         if (rawMonth) {
           let monthStr = rawMonth.replace(/'/g, '').trim();
@@ -162,7 +192,6 @@
             }
           }
 
-          // I-match nang eksakto sa buong buwan (Jan, Feb, March, atbp.)
           let matchedCol = monthsList.find(m => m.toLowerCase() === monthStr.toLowerCase() || monthStr.toLowerCase().includes(m.toLowerCase().split(' ')[0]));
 
           if (matchedCol) {
@@ -171,26 +200,37 @@
         }
       });
 
+      // Populate datalist para madaling piliin ang existing subscriber pag mag-eedit o magdadagdag ng buwan
+      const datalist = document.getElementById('existingSubscribers');
+      datalist.innerHTML = Object.keys(subscriberDirectory).map(n => `<option value="${n}">`).join('');
+
       tbody.innerHTML = Object.keys(usersMap).map((name, idx) => {
         const user = usersMap[name];
         const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+        const stickyNameBg = idx % 2 === 0 ? 'bg-blue-50' : 'bg-blue-100/80';
         
         let monthsCols = monthsList.map(m => {
           const entry = user.months[m];
           if (entry !== undefined) {
-            const isPaid = entry.status.toLowerCase().includes('paid');
-            const bgClass = isPaid ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200';
-            const icon = isPaid ? '✅' : '🔴';
-            return `<td class="p-2 border border-gray-200 font-bold ${bgClass} text-[11px] whitespace-nowrap">${icon} ₱${entry.amount}</td>`;
+            const st = entry.status.toLowerCase();
+            // Eksaktong check para hindi malito ang 'paid' sa 'unpaid'
+            if (st === 'inactive' || st === 'cut' || st === 'hold') {
+              return `<td class="p-2 border border-gray-300 bg-gray-900 text-gray-400 font-bold text-[10px] tracking-wider" title="Cut / Inactive">CUT</td>`;
+            } else if (st === 'paid') {
+              return `<td class="p-2 border border-gray-200 font-bold bg-green-50 text-green-800 text-[11px] whitespace-nowrap">✅ ₱${entry.amount}</td>`;
+            } else {
+              // Kung may lumang 'Unpaid' record sa sheet, blangko/dash na lang ang ipapakita
+              return `<td class="p-2 border border-gray-200 text-gray-300">-</td>`;
+            }
           } else {
             return `<td class="p-2 border border-gray-200 text-gray-300">-</td>`;
           }
         }).join('');
 
         return `
-          <tr class="${rowBg} hover:bg-cyan-100/30 transition">
-            <td class="p-2 border border-gray-200 font-semibold text-gray-600">${user.due}</td>
-            <td class="p-2 border border-gray-200 font-bold text-left bg-blue-50/60 pl-3 whitespace-nowrap">${name}</td>
+          <tr class="${rowBg} hover:bg-cyan-50/40 transition">
+            <td class="p-2 border border-gray-200 font-semibold text-gray-600 sticky left-0 z-10 ${rowBg}">${user.due}</td>
+            <td class="p-2 border border-gray-200 font-bold text-left pl-3 whitespace-nowrap sticky left-12 z-10 ${stickyNameBg} shadow-[2px_0_5px_-2px_rgba(0,0,0,0.15)]">${name}</td>
             ${monthsCols}
           </tr>
         `;
@@ -206,7 +246,7 @@
         body: JSON.stringify({
           action: "addMonthlyHotspotMember",
           targetTable: document.getElementById('mthTable').value,
-          name: document.getElementById('mthName').value,
+          name: document.getElementById('mthName').value.trim(),
           dueDate: document.getElementById('mthDue').value,
           lastPaidMonth: document.getElementById('mthMonth').value,
           amountPaid: document.getElementById('mthAmount').value,
@@ -214,8 +254,9 @@
           actor: currentUser
         })
       });
-      alert("Subscriber saved to Matrix & Sheet!");
+      alert("Saved to Matrix & Sheet!");
       document.getElementById('monthlyForm').reset();
+      toggleAmountField();
       setTimeout(fetchMatrixData, 1500);
     });
 
