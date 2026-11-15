@@ -3,23 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hotspot & Monthly Matrix - BelPan House Hub</title>
+  <title>Monthly Wi-Fi Matrix - BelPan House Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-4xl mx-auto min-h-screen flex flex-col relative px-2">
+<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-5xl mx-auto min-h-screen flex flex-col relative px-2">
   <header class="bg-cyan-700 text-white p-4 shadow-md rounded-b-2xl mb-4 flex justify-between items-center sticky top-0 z-50">
-    <h1 class="text-lg font-bold">📶 Hotspot & Monthly Matrix Tracker</h1>
+    <h1 class="text-lg font-bold">📅 Monthly Wi-Fi Subscribers & Matrix</h1>
     <button onclick="location.href='index.html'" class="bg-cyan-900 hover:bg-cyan-950 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">⬅️ Menu</button>
   </header>
 
   <main class="space-y-6">
-    <!-- ADD FORM -->
+    <!-- ADD FORM NA MAY STUDENT/ADULT DROPDOWN -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Add Subscriber / Monthly Record</h2>
+      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Add Monthly Subscriber (Student / Adult)</h2>
       <form id="monthlyForm" class="space-y-3">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div>
-            <label class="text-xs font-semibold text-gray-500">Category Group</label>
+            <label class="text-xs font-semibold text-gray-500">Category Table</label>
             <select id="mthTable" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-cyan-800">
               <option value="Students">🎓 Students</option>
               <option value="Adults">👔 Adults</option>
@@ -51,15 +51,15 @@
             </select>
           </div>
         </div>
-        <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save to Matrix</button>
+        <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save to Matrix & Sheet</button>
       </form>
     </div>
 
-    <!-- MATRIX TABLE VIEW (LUMANG STYLE NG SPREADSHEET) -->
+    <!-- MATRIX TABLE VIEW -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-4">
       <div class="flex justify-between items-center">
-        <h3 class="font-bold text-cyan-900 text-sm uppercase">📊 Monthly Matrix Tracking (Students & Adults)</h3>
-        <span class="text-xs text-gray-400">Scroll horizontally to view months ➡️</span>
+        <h3 class="font-bold text-cyan-900 text-sm uppercase">📊 Monthly Matrix Tracking (Spreadsheet View)</h3>
+        <span class="text-xs text-gray-400">Scroll horizontally ➡️</span>
       </div>
 
       <div class="overflow-x-auto border rounded-xl shadow-inner">
@@ -94,7 +94,6 @@
         const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
         const json = await res.json();
         if (json.status === "success") {
-          // Pagsamahin ang students at adults para sa matrix view
           const combined = [
             ...(json.data.hotspotStudents || []), 
             ...(json.data.hotspotAdults || [])
@@ -107,11 +106,10 @@
     function renderMatrix(data) {
       const tbody = document.getElementById('matrixTableBody');
       if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-gray-400 text-center">No monthly records yet.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="p-4 text-gray-400 text-center">No monthly records in Google Sheet yet.</td></tr>';
         return;
       }
 
-      // Group by user name to structure the matrix rows
       const usersMap = {};
       data.forEach(item => {
         const name = item.name || 'Unknown';
@@ -165,7 +163,7 @@
           actor: currentUser
         })
       });
-      alert("Subscriber added to matrix!");
+      alert("Subscriber saved to Students/Adults sheet!");
       document.getElementById('monthlyForm').reset();
       setTimeout(fetchMatrixData, 1500);
     });
