@@ -136,7 +136,7 @@
         </div>
       </div>
 
-      <!-- IMPORTANT EVENTS PREVIEW (SORTED EARLIEST FIRST, TOP 5) -->
+      <!-- IMPORTANT EVENTS PREVIEW (UPCOMING FROM TODAY, TOP 5) -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-2">
         <div class="flex justify-between items-center">
           <h3 class="font-bold text-pink-700 text-xs uppercase">🎉 Upcoming Family Events (Top 5)</h3>
@@ -264,23 +264,28 @@
         return; 
       }
 
-      // I-sort ang events mula pinakamaaga (earliest) papunta sa pinakamatagal
-      const sortedEvents = [...events].sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        if (isNaN(dateA.getTime())) return 1;
-        if (isNaN(dateB.getTime())) return -1;
-        return dateA - dateB;
-      });
+      // Simula ngayong araw (00:00:00) para kasama ang events today
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-      // Kunin ang Top 5 earliest events
-      container.innerHTML = sortedEvents.slice(0, 5).map(ev => {
+      // I-filter ang events na today o paparating pa lang, tapos i-sort mula pinakamaaga
+      const upcomingEvents = events
+        .filter(ev => {
+          const d = new Date(ev.date);
+          return !isNaN(d.getTime()) && d >= today;
+        })
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+      if (!upcomingEvents.length) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-1">No upcoming events from today.</p>';
+        return;
+      }
+
+      container.innerHTML = upcomingEvents.slice(0, 5).map(ev => {
         let cleanDate = ev.date;
-        if (cleanDate && (String(cleanDate).includes("T") || !isNaN(Date.parse(cleanDate)))) {
-          const d = new Date(cleanDate);
-          if (!isNaN(d.getTime())) {
-            cleanDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-          }
+        const d = new Date(cleanDate);
+        if (!isNaN(d.getTime())) {
+          cleanDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         }
         return `
           <div class="p-2.5 bg-pink-50/60 rounded-xl border border-pink-100 flex justify-between items-center">
