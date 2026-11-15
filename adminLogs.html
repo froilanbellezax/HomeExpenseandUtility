@@ -1,1 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Audit Logs - BelPan House Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col relative">
+  <header class="bg-purple-700 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
+    <h1 class="text-lg font-bold">🛡️ Admin Audit Logs</h1>
+    <button onclick="location.href='index.html'" class="bg-purple-900 hover:bg-purple-950 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">⬅️ Menu</button>
+  </header>
 
+  <main class="px-4 flex-1 space-y-4">
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+      <h2 class="font-bold text-purple-900 mb-1 text-sm uppercase">Household Activities</h2>
+      <p class="text-xs text-gray-500 mb-3">Complete tracking of all household transactions.</p>
+      <div id="adminLogsList" class="space-y-2 text-xs">
+        <p class="text-gray-400 text-center">Loading audit logs...</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
+    const currentUser = localStorage.getItem("household_hub_user") || "";
+
+    async function fetchLogs() {
+      try {
+        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const json = await res.json();
+        if (json.status === "success") {
+          renderAdminLogs(json.data.auditLogs || []);
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function renderAdminLogs(data) {
+      const container = document.getElementById('adminLogsList');
+      if (!data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No audit logs found.</p>'; return; }
+      container.innerHTML = data.map(log => {
+        const time = new Date(log.timestamp).toLocaleString();
+        return `
+          <div class="p-2.5 bg-purple-50 rounded-lg border border-purple-100 flex justify-between items-center">
+            <div>
+              <span class="font-bold text-purple-900">[${log.actiontype}]</span> <span class="text-gray-700">${log.details}</span>
+              <div class="text-[10px] text-gray-400 mt-0.5">By: ${log.actor || 'System'} • ${time}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    fetchLogs();
+  </script>
+</body>
+</html>
