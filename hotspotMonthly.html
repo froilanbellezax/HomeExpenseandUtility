@@ -120,22 +120,36 @@
 
       const usersMap = {};
       data.forEach(item => {
-        // Kunin ang mga tamang field names kasama ang variations nito sa Apps Script
-        const name = item.name || item.borrowerperson || item.person || 'Unknown';
-        const due = item.duedate || item.due || item['due day'] || '5';
-        
+        let name = 'Unknown', due = '5', rawMonth = '', amount = 0, status = 'Paid';
+
+        // Kunin ang values anuman ang format ng object keys
+        Object.keys(item).forEach(k => {
+          const lk = k.toLowerCase().replace(/[^a-z0-9]/g, '');
+          const val = item[k];
+          if (lk === 'name' || lk === 'borrowerperson' || lk === 'person') name = val;
+          if (lk === 'duedate' || lk === 'due' || lk === 'duedays') due = val;
+          if (lk === 'lastpaidmonth' || lk === 'targetmonth' || lk === 'month') rawMonth = String(val);
+          if (lk === 'amountpaid' || lk === 'amount') amount = parseFloat(val) || 0;
+          if (lk === 'status') status = String(val);
+        });
+
         if (!usersMap[name]) {
-          usersMap[name] = { due: due, months: {} };
+          usersMap[name] = { due: due || '5', months: {} };
         } else {
-          // Kung may bago o mas bagong due date, i-update
           if (due && due !== '5') usersMap[name].due = due;
         }
-        
-        const rawMonth = String(item.lastpaidmonth || item.targetmonth || item['last paid month'] || "").trim();
-        const amount = parseFloat(item.amountpaid || item.amount || item['amount paid'] || 0);
-        const status = String(item.status || "Paid").trim();
 
         if (rawMonth) {
+          // Kung sakaling naging date string (halimbawa '3/1/2026' o katulad nito), i-convert natin sa pangalan ng buwan
+          let monthStr = rawMonth;
+          if (rawMonth.includes('/') || !isNaN(Date.parse(rawMonth))) {
+            const d = new Date(rawMonth);
+            if (!isNaN(d.getTime())) {
+              const monthsNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+              monthStr = `${monthsNames[d.getMonth()]} ${d.getFullYear()}`;
+            }
+          }
+
           const tableColumns = [
             { colName: "Jan 2026", keywords: ["jan"] },
             { colName: "Feb 2026", keywords: ["feb"] },
@@ -147,7 +161,7 @@
           ];
 
           let matchedCol = tableColumns.find(tc => 
-            tc.keywords.some(kw => rawMonth.toLowerCase().includes(kw))
+            tc.keywords.some(kw => monthStr.toLowerCase().includes(kw))
           );
 
           if (matchedCol) {
