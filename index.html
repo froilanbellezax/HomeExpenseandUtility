@@ -334,14 +334,23 @@
       // I-map ang bawat event sa susunod nitong occurrence (ngayong taon o next year kung tapos na)
       const wrappedEvents = events
         .map(ev => {
-          const parsed = new Date(ev.date);
-          if (isNaN(parsed.getTime())) return null;
+          const cleanStr = String(ev.date || '').replace(/'/g, '').trim();
+          let monthIdx, dayNum;
 
-          // Gamitin ang month at day ng event para sa kasalukuyang taon
-          let nextOccurrence = new Date(currentYear, parsed.getMonth(), parsed.getDate());
+          if (/^\d{1,2}-\d{1,2}$/.test(cleanStr)) {
+            const [m, d] = cleanStr.split('-').map(Number);
+            monthIdx = m - 1;
+            dayNum = d;
+          } else {
+            const parsed = new Date(cleanStr);
+            if (isNaN(parsed.getTime())) return null;
+            monthIdx = parsed.getMonth();
+            dayNum = parsed.getDate();
+          }
+
+          let nextOccurrence = new Date(currentYear, monthIdx, dayNum);
           nextOccurrence.setHours(0, 0, 0, 0);
 
-          // Kung lumipas na ang petsang ito ngayong taon, i-move sa susunod na taon (wrap-around)
           if (nextOccurrence < today) {
             nextOccurrence.setFullYear(currentYear + 1);
           }
