@@ -130,7 +130,6 @@
           <span class="text-3xl mb-1">🛵</span>
           <span class="font-bold text-gray-800 text-sm">Vehicle Care</span>
         </button>
-        
       </div>
 
       <!-- UPCOMING DUES & BILLS PREVIEW -->
@@ -240,7 +239,7 @@
       if (bills) {
         bills.forEach(b => {
           if (String(b.status || '').toLowerCase() !== 'paid') {
-            const dueDay = parseInt(b.duedatedayofmonth) || 99;
+            const dueDay = parseInt(String(b.duedatedayofmonth || '').replace(/\D/g, '')) || 99;
             combined.push({ 
               name: b.billname, 
               amount: parseFloat(b.amount || 0), 
@@ -266,7 +265,6 @@
         });
       }
 
-      // I-calculate ang status (Past Due, Due Today, Near Due, Upcoming) at i-sort mula pinaka-urgent
       combined = combined.map(item => {
         const diff = item.day - todayDay;
         let urgencyRank = 3;
@@ -275,15 +273,15 @@
         let subText = `Due every ${item.day}th`;
 
         if (diff < 0) {
-          urgencyRank = 1; // Pinaka-urgent: Past Due
+          urgencyRank = 1;
           badge = `<span class="text-[9px] font-bold bg-red-600 text-white px-1.5 py-0.5 rounded uppercase animate-pulse">🚨 Past Due (${Math.abs(diff)}d ago)</span>`;
           cardStyle = 'bg-red-50/80 border-red-200';
         } else if (diff === 0) {
-          urgencyRank = 2; // Due Today
+          urgencyRank = 2;
           badge = `<span class="text-[9px] font-bold bg-amber-500 text-white px-1.5 py-0.5 rounded uppercase">⚠️ Due Today</span>`;
           cardStyle = 'bg-amber-50/80 border-amber-200';
         } else if (diff <= 3) {
-          urgencyRank = 2; // Near Due (within 3 days)
+          urgencyRank = 2;
           badge = `<span class="text-[9px] font-bold bg-orange-500 text-white px-1.5 py-0.5 rounded uppercase">⏳ Near Due (${diff}d left)</span>`;
           cardStyle = 'bg-orange-50/70 border-orange-200';
         } else {
@@ -293,7 +291,6 @@
         return { ...item, urgencyRank, diff, badge, cardStyle, subText };
       });
 
-      // I-sort by urgency (Past Due -> Near Due -> Upcoming) tapos by due day
       combined.sort((a, b) => {
         if (a.urgencyRank !== b.urgencyRank) return a.urgencyRank - b.urgencyRank;
         return a.day - b.day;
@@ -331,7 +328,6 @@
       today.setHours(0, 0, 0, 0);
       const currentYear = today.getFullYear();
 
-      // I-map ang bawat event sa susunod nitong occurrence (ngayong taon o next year kung tapos na)
       const wrappedEvents = events
         .map(ev => {
           const cleanStr = String(ev.date || '').replace(/'/g, '').trim();
@@ -368,7 +364,6 @@
         return;
       }
 
-      // Kunin ang Top 5 susunod na events (tuloy-tuloy hanggang January/February next year)
       container.innerHTML = wrappedEvents.slice(0, 5).map(ev => {
         const cleanDate = ev.nextDate.toLocaleDateString('en-US', { 
           month: 'short', 
