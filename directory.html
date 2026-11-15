@@ -1,1 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contacts Directory - BelPan House Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col relative">
+  <header class="bg-teal-700 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
+    <h1 class="text-lg font-bold">🎴 Contacts Directory</h1>
+    <button onclick="location.href='index.html'" class="bg-teal-900 hover:bg-teal-950 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">⬅️ Menu</button>
+  </header>
 
+  <main class="px-4 flex-1 space-y-4">
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Add / Edit My Profile Info</h2>
+      <form id="profileForm" class="space-y-3">
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Full Name</label>
+          <input type="text" id="profName" required readonly class="w-full p-2.5 border rounded-xl text-sm bg-gray-100 font-bold outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Set PIN / Passcode</label>
+          <input type="password" id="profPin" placeholder="New PIN" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Primary Phone</label>
+            <input type="text" id="profPhone1" placeholder="09XX-XXX-XXXX" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Secondary Phone</label>
+            <input type="text" id="profPhone2" placeholder="Alt SIM" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Primary Email</label>
+            <input type="email" id="profEmail1" placeholder="email@com" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Secondary Email</label>
+            <input type="email" id="profEmail2" placeholder="alt@email.com" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Blood Type</label>
+            <input type="text" id="profBlood" placeholder="e.g. O+" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Height / Weight</label>
+            <input type="text" id="profHW" placeholder="e.g. 5'7 / 65kg" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Meds / Allergies</label>
+          <input type="text" id="profMeds" placeholder="e.g. Biogesic" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+        </div>
+        <button type="submit" class="w-full bg-teal-600 text-white font-bold py-3 rounded-xl hover:bg-teal-700 transition">Save Profile Info</button>
+      </form>
+    </div>
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+      <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Family Directory</h3>
+      <div id="familyList" class="space-y-3 text-sm">
+        <p class="text-gray-400 text-center">Loading directory...</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
+    const currentUser = localStorage.getItem("household_hub_user") || "";
+    document.getElementById('profName').value = currentUser;
+
+    async function fetchDirectory() {
+      try {
+        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const json = await res.json();
+        if (json.status === "success") {
+          renderProfiles(json.data.profiles || []);
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    function renderProfiles(data) {
+      const container = document.getElementById('familyList');
+      if (!data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No profiles saved.</p>'; return; }
+      container.innerHTML = data.map(p => `
+        <div class="p-4 bg-white rounded-2xl border border-teal-100 shadow-sm space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="font-bold text-teal-900 text-base">${p.name}</span>
+          </div>
+          <div class="space-y-1.5 text-xs">
+            <div class="flex flex-wrap gap-2">
+              ${p.phone1 ? `<a href="tel:${p.phone1}" class="bg-teal-50 text-teal-800 border border-teal-200 px-2.5 py-1 rounded-xl font-bold">📞 ${p.phone1}</a>` : ''}
+              ${p.phone2 ? `<a href="tel:${p.phone2}" class="bg-gray-50 text-gray-700 border border-gray-200 px-2.5 py-1 rounded-xl font-bold">📱 Alt: ${p.phone2}</a>` : ''}
+              ${p.email1 ? `<a href="mailto:${p.email1}" class="bg-blue-50 text-blue-800 border border-blue-200 px-2.5 py-1 rounded-xl font-semibold">✉️ ${p.email1}</a>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('profileForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "saveProfile", name: currentUser, pin: document.getElementById('profPin').value, phone1: document.getElementById('profPhone1').value, phone2: document.getElementById('profPhone2').value, email1: document.getElementById('profEmail1').value, email2: document.getElementById('profEmail2').value, bloodType: document.getElementById('profBlood').value, heightWeight: document.getElementById('profHW').value, meds: document.getElementById('profMeds').value, actor: currentUser })
+      });
+      alert("Profile saved!");
+      setTimeout(fetchDirectory, 1500);
+    });
+
+    fetchDirectory();
+  </script>
+</body>
+</html>
