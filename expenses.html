@@ -14,34 +14,106 @@
   </header>
 
   <main class="px-4 flex-1 space-y-4">
+    <!-- THIS MONTH'S SPENDING SUMMARY -->
+    <div class="bg-gradient-to-r from-blue-900 to-slate-900 text-white p-4 rounded-2xl shadow-md flex justify-between items-center">
+      <div>
+        <span class="text-[11px] font-bold text-blue-200 uppercase block">📊 This Month's Total Expenses</span>
+        <span id="monthlyTotalSpend" class="text-2xl font-extrabold text-white">₱0.00</span>
+      </div>
+      <span id="expenseMonthLabel" class="text-[10px] bg-blue-700 px-2.5 py-1 rounded-full font-bold">---</span>
+    </div>
+
+    <!-- LOG DAILY EXPENSE FORM -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
       <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Log Daily Expense</h2>
       <form id="expenseForm" class="space-y-3">
-        <div>
-          <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
-          <input type="number" step="0.01" id="expAmount" required placeholder="0.00" class="w-full text-lg font-bold p-2.5 border rounded-xl outline-none">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
+            <input type="number" step="0.01" id="expAmount" required placeholder="0.00" class="w-full text-lg font-bold p-2.5 border rounded-xl outline-none text-blue-900">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Date</label>
+            <input type="date" id="expDate" required class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+          </div>
         </div>
-        <div>
-          <label class="text-xs font-semibold text-gray-500">Category</label>
-          <select id="expCategory" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            <option value="Groceries">🛒 Groceries</option>
-            <option value="Food & Dining">🍔 Food & Dining</option>
-            <option value="Transportation">🚗 Transportation</option>
-            <option value="Utilities">💡 Utilities</option>
-            <option value="Maintenance">🛠️ Maintenance</option>
-            <option value="Others">📦 Others</option>
-          </select>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Category</label>
+            <select id="expCategory" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+              <option value="Groceries">🛒 Groceries</option>
+              <option value="Food & Dining">🍔 Food & Dining</option>
+              <option value="Transportation">⛽ Gas / Transport</option>
+              <option value="Utilities">💡 Utilities</option>
+              <option value="Maintenance">🛠️ Maintenance</option>
+              <option value="Shopping">🛍️ Shopping</option>
+              <option value="Others">📦 Others</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Payment Method</label>
+            <select id="expPayment" onchange="toggleCcFields()" class="w-full p-2.5 border rounded-xl text-xs outline-none font-bold text-indigo-900">
+              <option value="Cash">💵 Cash</option>
+              <option value="GCash">📱 GCash</option>
+              <option value="Maya">💚 Maya</option>
+              <optgroup id="savedCardsGroup" label="💳 Credit Cards">
+                <option value="UB Rewards Visa - Froilan">💳 UB Rewards Visa - Froilan</option>
+                <option value="NEW_CC">➕ Add / Use Other Credit Card...</option>
+              </optgroup>
+            </select>
+          </div>
         </div>
+
+        <!-- Custom Card Setup (Only shown if "Add / Use Other Credit Card..." is chosen) -->
+        <div id="customCcBox" class="hidden bg-rose-50 p-3 rounded-xl border border-rose-200 space-y-2">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-[11px] font-semibold text-rose-800">Card Name</label>
+              <input type="text" id="customCcName" placeholder="e.g. UB Rewards Visa" class="w-full p-2 border rounded-lg text-xs outline-none font-bold bg-white">
+            </div>
+            <div>
+              <label class="text-[11px] font-semibold text-rose-800">Card Owner</label>
+              <select id="customCcOwner" class="w-full p-2 border rounded-lg text-xs outline-none font-bold bg-white"></select>
+            </div>
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-rose-800">Statement Due Day</label>
+            <input type="text" id="customCcDueDay" value="20th" placeholder="e.g. 20th" class="w-full p-2 border rounded-lg text-xs outline-none font-bold bg-white">
+          </div>
+        </div>
+
+        <!-- Auto-Sync CC Notice -->
+        <div id="ccAutoSyncNotice" class="hidden text-[11px] bg-rose-50 text-rose-800 px-3 py-2 rounded-xl border border-rose-200 font-semibold">
+          💳 Auto-Sync: Idadagdag ito sa statement bill ng <strong id="noticeCardLabel">UB Rewards Visa - Froilan</strong>!
+        </div>
+
         <div>
           <label class="text-xs font-semibold text-gray-500">Notes / Details</label>
-          <input type="text" id="expDesc" placeholder="e.g. Palengke, Gas" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          <input type="text" id="expDesc" required placeholder="e.g. Palengke, Gas, Jollibee" class="w-full p-2.5 border rounded-xl text-sm outline-none">
         </div>
-        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition">Save Daily Expense</button>
+
+        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition shadow-sm">Save Daily Expense</button>
       </form>
     </div>
+
+    <!-- SPENDING BREAKDOWN CHART -->
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
       <h3 class="font-semibold text-gray-700 text-xs uppercase mb-2">Spending Breakdown</h3>
-      <canvas id="expenseChart" class="max-h-48"></canvas>
+      <div class="h-44 flex items-center justify-center">
+        <canvas id="expenseChart"></canvas>
+      </div>
+    </div>
+
+    <!-- RECENT EXPENSE LOGS -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-2.5">
+      <div class="flex justify-between items-center">
+        <h3 class="font-semibold text-gray-700 text-xs uppercase">🧾 Recent Expense Logs</h3>
+        <button onclick="fetchExpenses()" class="text-[11px] text-blue-600 font-semibold">🔄 Refresh</button>
+      </div>
+      <div id="recentExpensesList" class="space-y-2 text-xs">
+        <p class="text-gray-400 text-center py-3">Loading expenses...</p>
+      </div>
     </div>
   </main>
 
@@ -50,18 +122,97 @@
     const currentUser = localStorage.getItem("household_hub_user") || "";
     let chartInstance = null;
 
+    document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+
+    function formatMoney(val) {
+      const num = parseFloat(val) || 0;
+      return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function populateDropdowns(profiles, existingCards) {
+      // Populate custom card owner dropdown
+      const ownerSel = document.getElementById('customCcOwner');
+      if (profiles && profiles.length) {
+        ownerSel.innerHTML = profiles.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+      } else {
+        ownerSel.innerHTML = `<option value="${currentUser}">${currentUser}</option>`;
+      }
+      if (currentUser) ownerSel.value = currentUser;
+
+      // Build unique list of "Card Name - Card Holder" options
+      const uniqueCards = new Set(["UB Rewards Visa - Froilan"]);
+      if (existingCards && existingCards.length) {
+        existingCards.forEach(c => {
+          if (c.cardname && c.cardholder) {
+            uniqueCards.add(`${String(c.cardname).trim()} - ${String(c.cardholder).trim()}`);
+          }
+        });
+      }
+
+      const cardsGroup = document.getElementById('savedCardsGroup');
+      let optionsHtml = '';
+      uniqueCards.forEach(label => {
+        optionsHtml += `<option value="${label}">💳 ${label}</option>`;
+      });
+      optionsHtml += `<option value="NEW_CC">➕ Add / Use Other Credit Card...</option>`;
+      cardsGroup.innerHTML = optionsHtml;
+    }
+
+    function toggleCcFields() {
+      const pay = document.getElementById('expPayment').value;
+      const notice = document.getElementById('ccAutoSyncNotice');
+      const noticeLabel = document.getElementById('noticeCardLabel');
+      const customBox = document.getElementById('customCcBox');
+      const customInput = document.getElementById('customCcName');
+
+      if (pay === 'NEW_CC') {
+        customBox.classList.remove('hidden');
+        customInput.required = true;
+        notice.classList.remove('hidden');
+        noticeLabel.innerText = "new Credit Card";
+      } else if (pay.includes(' - ')) {
+        customBox.classList.add('hidden');
+        customInput.required = false;
+        notice.classList.remove('hidden');
+        noticeLabel.innerText = pay;
+      } else {
+        customBox.classList.add('hidden');
+        customInput.required = false;
+        notice.classList.add('hidden');
+      }
+    }
+
     async function fetchExpenses() {
       try {
         const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
         const json = await res.json();
         if (json.status === "success") {
-          renderExpensesChart(json.data.transactions || []);
+          populateDropdowns(json.data.profiles || [], json.data.creditCards || []);
+          const allTx = json.data.transactions || [];
+          renderExpensesSummary(allTx);
+          renderExpensesChart(allTx);
+          renderRecentExpenses(allTx);
         }
       } catch (e) { console.error(e); }
     }
 
+    function renderExpensesSummary(data) {
+      const now = new Date();
+      const currMonthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      document.getElementById('expenseMonthLabel').innerText = now.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+      let totalThisMonth = 0;
+      data.forEach(item => {
+        const dStr = String(item.date || '').replace(/'/g, '');
+        if (dStr.startsWith(currMonthPrefix)) {
+          totalThisMonth += parseFloat(item.amount) || 0;
+        }
+      });
+      document.getElementById('monthlyTotalSpend').innerText = `₱${formatMoney(totalThisMonth)}`;
+    }
+
     function renderExpensesChart(data) {
-      if(!data.length) return;
+      if (!data.length) return;
       const totals = {};
       data.forEach(item => {
         const cat = item.category || 'Others';
@@ -73,31 +224,90 @@
         type: 'doughnut',
         data: {
           labels: Object.keys(totals),
-          datasets: [{ data: Object.values(totals), backgroundColor: ['#3B82F6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'] }]
+          datasets: [{ data: Object.values(totals), backgroundColor: ['#3B82F6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'] }]
         },
         options: { responsive: true, maintainAspectRatio: false }
       });
     }
 
+    function renderRecentExpenses(data) {
+      const container = document.getElementById('recentExpensesList');
+      if (!data.length) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-3">No expense records yet.</p>';
+        return;
+      }
+
+      container.innerHTML = data.slice(0, 15).map(item => {
+        const amt = parseFloat(item.amount) || 0;
+        const cat = item.category || 'Others';
+        const desc = item.description || cat;
+        const pay = item.paymentmethod || 'Cash';
+        const by = item.loggedby || '';
+        let dateStr = String(item.date || '').replace(/'/g, '');
+        if (dateStr.includes('T')) {
+          dateStr = dateStr.split('T')[0];
+        }
+
+        const isCc = pay.includes(' - ') || pay.toLowerCase().includes('credit card');
+        const payBadge = isCc
+          ? `<span class="text-[9px] bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded font-bold">💳 ${pay}</span>`
+          : `<span class="text-[9px] bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded font-semibold">${pay}</span>`;
+
+        return `
+          <div class="p-2.5 bg-gray-50 rounded-xl border border-gray-100 flex justify-between items-center gap-2">
+            <div class="min-w-0 flex-1">
+              <div class="font-bold text-gray-800 truncate">${desc}</div>
+              <div class="flex flex-wrap items-center gap-1 mt-0.5">
+                <span class="text-[9px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-semibold">${cat}</span>
+                ${payBadge}
+                <span class="text-[9px] text-gray-400">• ${dateStr} (${by})</span>
+              </div>
+            </div>
+            <div class="font-extrabold text-gray-900 whitespace-nowrap">₱${formatMoney(amt)}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
     document.getElementById('expenseForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      let selectedPay = document.getElementById('expPayment').value;
+      let isCreditCard = false;
+
+      if (selectedPay === 'NEW_CC') {
+        const customCard = document.getElementById('customCcName').value.trim();
+        const customOwner = document.getElementById('customCcOwner').value || currentUser;
+        selectedPay = `${customCard} - ${customOwner}`;
+        isCreditCard = true;
+      } else if (selectedPay.includes(' - ')) {
+        isCreditCard = true;
+      }
+
       await fetch(API_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addExpense",
-          date: new Date().toISOString().split('T')[0],
+          date: document.getElementById('expDate').value,
           amount: document.getElementById('expAmount').value,
           category: document.getElementById('expCategory').value,
           loggedBy: currentUser,
-          description: document.getElementById('expDesc').value,
-          paymentMethod: "Cash/Online",
+          description: document.getElementById('expDesc').value.trim(),
+          paymentMethod: selectedPay,
+          isCreditCard: isCreditCard,
+          ccDueDay: document.getElementById('customCcDueDay').value.trim() || "20th",
           actor: currentUser
         })
       });
-      alert("Expense saved!");
+
+      alert(isCreditCard
+        ? `Expense saved & added to ${selectedPay}!`
+        : "Expense saved!");
+      
       document.getElementById('expenseForm').reset();
+      document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+      toggleCcFields();
       setTimeout(fetchExpenses, 1500);
     });
 
