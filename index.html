@@ -181,17 +181,35 @@
 
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const submitBtn = e.target.querySelector('button[type="submit"]');
       const name = document.getElementById('loginName').value.trim();
-      const pin = document.getElementById('loginPin').value.trim();
-      await fetch(API_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "loginUser", name: name, pin: pin })
-      });
-      currentUser = name;
-      localStorage.setItem("household_hub_user", name);
-      checkAuth();
+      const pin = document.getElementById('loginPin').value.trim() || "1234";
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Verifying...";
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "loginUser", name: name, pin: pin })
+        });
+        const json = await res.json();
+
+        if (json.status === "success") {
+          currentUser = json.user || name;
+          localStorage.setItem("household_hub_user", currentUser);
+          checkAuth();
+        } else {
+          alert(json.message || "Invalid Name or PIN!");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Connection error while logging in. Try again.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Log In";
+      }
     });
 
     async function fetchDashboardData() {
