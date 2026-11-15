@@ -74,7 +74,7 @@
             <label class="text-xs font-semibold text-gray-500">PayLater App</label>
             <select id="bnplSelect" onchange="handleBnplPresetChange()" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
               <option value="TikTok PayLater">TikTok PayLater (15th)</option>
-              <option value="SPayLater">SPayLater (5th/15th)</option>
+              <option value="SPayLater">SPayLater (15th)</option>
               <option value="LazPayLater">LazPayLater (16th)</option>
               <option value="Atome">Atome</option>
               <option value="GCash GGives">GCash GGives</option>
@@ -597,7 +597,7 @@
         customBox.classList.add('hidden');
         document.getElementById('loanProvider').required = false;
         if (preset === 'TikTok PayLater') dueInput.value = '15th';
-        else if (preset === 'SPayLater') dueInput.value = '5th';
+        else if (preset === 'SPayLater') dueInput.value = '15th';
         else if (preset === 'LazPayLater') dueInput.value = '16th';
       }
     }
