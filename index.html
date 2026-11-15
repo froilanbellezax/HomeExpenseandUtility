@@ -264,36 +264,53 @@
         return; 
       }
 
-      // Simula ngayong araw (00:00:00) para kasama ang events today
       const today = new Date();
       today.setHours(0, 0, 0, 0);
+      const currentYear = today.getFullYear();
 
-      // I-filter ang events na today o paparating pa lang, tapos i-sort mula pinakamaaga
-      const upcomingEvents = events
-        .filter(ev => {
-          const d = new Date(ev.date);
-          return !isNaN(d.getTime()) && d >= today;
+      // I-map ang bawat event sa susunod nitong occurrence (ngayong taon o next year kung tapos na)
+      const wrappedEvents = events
+        .map(ev => {
+          const parsed = new Date(ev.date);
+          if (isNaN(parsed.getTime())) return null;
+
+          // Gamitin ang month at day ng event para sa kasalukuyang taon
+          let nextOccurrence = new Date(currentYear, parsed.getMonth(), parsed.getDate());
+          nextOccurrence.setHours(0, 0, 0, 0);
+
+          // Kung lumipas na ang petsang ito ngayong taon, i-move sa susunod na taon (wrap-around)
+          if (nextOccurrence < today) {
+            nextOccurrence.setFullYear(currentYear + 1);
+          }
+
+          return {
+            ...ev,
+            nextDate: nextOccurrence
+          };
         })
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
+        .filter(ev => ev !== null)
+        .sort((a, b) => a.nextDate - b.nextDate);
 
-      if (!upcomingEvents.length) {
-        container.innerHTML = '<p class="text-gray-400 text-center py-1">No upcoming events from today.</p>';
+      if (!wrappedEvents.length) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-1">No upcoming events.</p>';
         return;
       }
 
-      container.innerHTML = upcomingEvents.slice(0, 5).map(ev => {
-        let cleanDate = ev.date;
-        const d = new Date(cleanDate);
-        if (!isNaN(d.getTime())) {
-          cleanDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        }
+      // Kunin ang Top 5 susunod na events (tuloy-tuloy hanggang January/February next year)
+      container.innerHTML = wrappedEvents.slice(0, 5).map(ev => {
+        const cleanDate = ev.nextDate.toLocaleDateString('en-US', { 
+          month: 'short', 
+          day: 'numeric', 
+          year: 'numeric' 
+        });
+
         return `
           <div class="p-2.5 bg-pink-50/60 rounded-xl border border-pink-100 flex justify-between items-center">
             <div>
               <div class="font-bold text-gray-800">${ev.eventname} <span class="text-[10px] text-pink-700 bg-pink-100 px-1.5 py-0.5 rounded">${ev.category || 'Event'}</span></div>
               <div class="text-[10px] text-gray-500">${ev.notes || ''}</div>
             </div>
-            <div class="text-xs font-bold text-pink-900 bg-white px-2 py-1 rounded-lg border border-pink-200 whitespace-nowrap">${cleanDate || ''}</div>
+            <div class="text-xs font-bold text-pink-900 bg-white px-2 py-1 rounded-lg border border-pink-200 whitespace-nowrap">${cleanDate}</div>
           </div>
         `;
       }).join('');
