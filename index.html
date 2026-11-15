@@ -107,10 +107,17 @@
           <span class="text-3xl mb-1">📦</span>
           <span class="font-bold text-gray-800 text-sm">My Parcels</span>
         </button>
+
+        <!-- HETO ANG DALAWANG MAGHIWALAY NA HOTSPOT TILES -->
         <button onclick="location.href='hotspot.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">📶</span>
-          <span class="font-bold text-gray-800 text-sm">Hotspot Wi-Fi</span>
+          <span class="text-3xl mb-1">🎫</span>
+          <span class="font-bold text-gray-800 text-sm">Hotspot Vouchers</span>
         </button>
+        <button onclick="location.href='hotspotMonthly.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
+          <span class="text-3xl mb-1">📊</span>
+          <span class="font-bold text-gray-800 text-sm">Monthly Matrix</span>
+        </button>
+
         <button onclick="location.href='meter.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
           <span class="text-3xl mb-1">⚡</span>
           <span class="font-bold text-gray-800 text-sm">Sub-Meter</span>
@@ -129,7 +136,7 @@
         </div>
       </div>
 
-      <!-- IMPORTANT EVENTS PREVIEW (Nakalagay na sa ibaba ng Dues) -->
+      <!-- IMPORTANT EVENTS PREVIEW -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-2">
         <div class="flex justify-between items-center">
           <h3 class="font-bold text-pink-700 text-xs uppercase">🎉 Upcoming Family Events</h3>
@@ -253,15 +260,24 @@
     function renderDashboardEvents(events) {
       const container = document.getElementById('dashEventsList');
       if (!events || !events.length) { container.innerHTML = '<p class="text-gray-400 text-center py-1">No upcoming events.</p>'; return; }
-      container.innerHTML = events.slice(0, 3).map(ev => `
-        <div class="p-2.5 bg-pink-50/60 rounded-xl border border-pink-100 flex justify-between items-center">
-          <div>
-            <div class="font-bold text-gray-800">${ev.eventname} <span class="text-[10px] text-pink-700 bg-pink-100 px-1.5 py-0.5 rounded">${ev.category}</span></div>
-            <div class="text-[10px] text-gray-500">${ev.notes || ''}</div>
+      container.innerHTML = events.slice(0, 3).map(ev => {
+        let cleanDate = ev.date;
+        if (cleanDate && cleanDate.includes("T")) {
+          const d = new Date(cleanDate);
+          if (!isNaN(d.getTime())) {
+            cleanDate = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          }
+        }
+        return `
+          <div class="p-2.5 bg-pink-50/60 rounded-xl border border-pink-100 flex justify-between items-center">
+            <div>
+              <div class="font-bold text-gray-800">${ev.eventname} <span class="text-[10px] text-pink-700 bg-pink-100 px-1.5 py-0.5 rounded">${ev.category}</span></div>
+              <div class="text-[10px] text-gray-500">${ev.notes || ''}</div>
+            </div>
+            <div class="text-xs font-bold text-pink-900 bg-white px-2 py-1 rounded-lg border border-pink-200">${cleanDate || ''}</div>
           </div>
-          <div class="text-xs font-bold text-pink-900">${ev.date}</div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     checkAuth();
