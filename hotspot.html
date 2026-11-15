@@ -3,55 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hotspot Wi-Fi - BelPan House Hub</title>
+  <title>Hotspot Wi-Fi Vouchers - BelPan House Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col relative">
   <header class="bg-cyan-600 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
-    <h1 class="text-lg font-bold">📶 Hotspot Wi-Fi & Monthly</h1>
+    <h1 class="text-lg font-bold">📶 Hotspot Wi-Fi Vouchers</h1>
     <button onclick="location.href='index.html'" class="bg-cyan-800 hover:bg-cyan-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">⬅️ Menu</button>
   </header>
   
   <main class="px-4 flex-1 space-y-4">
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Log Hotspot / Monthly Plan</h2>
+      <h2 class="font-bold text-gray-700 mb-3 text-sm uppercase">Log Hotspot Voucher / Sale</h2>
       <form id="hotspotForm" class="space-y-3">
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Plan Type</label>
-            <select id="hsType" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-cyan-700" onchange="togglePlanType()">
-              <option value="Voucher">🎫 Voucher (One-time)</option>
-              <option value="Monthly">📅 Monthly Subscription</option>
-            </select>
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Customer Name</label>
-            <input type="text" id="hsCustomer" required placeholder="e.g. Kuya Mark" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Customer Name</label>
+          <input type="text" id="hsCustomer" required placeholder="e.g. Kuya Mark" class="w-full p-2.5 border rounded-xl text-sm outline-none">
         </div>
 
-        <div id="voucherFields">
+        <div>
           <label class="text-xs font-semibold text-gray-500">Voucher Code / Duration</label>
-          <input type="text" id="hsVoucher" placeholder="e.g. 1 Day / Code 849" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-        </div>
-
-        <div id="monthlyFields" class="space-y-3 hidden">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Due Day (Every month)</label>
-              <input type="number" min="1" max="31" id="hsDueDate" value="25" placeholder="e.g. 25" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-            <div>
-              <label class="text-xs font-semibold text-gray-500">Target Month</label>
-              <input type="text" id="hsTargetMonth" placeholder="e.g. November 2026" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-            </div>
-          </div>
+          <input type="text" id="hsVoucher" required placeholder="e.g. 1 Day / Code 849" class="w-full p-2.5 border rounded-xl text-sm outline-none">
         </div>
 
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="text-xs font-semibold text-gray-500">Amount (₱)</label>
-            <input type="number" step="1" id="hsAmount" required placeholder="500" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+            <input type="number" step="1" id="hsAmount" required placeholder="200" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
           </div>
           <div>
             <label class="text-xs font-semibold text-gray-500">Status</label>
@@ -62,12 +40,12 @@
           </div>
         </div>
 
-        <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save Hotspot Entry</button>
+        <button type="submit" class="w-full bg-cyan-600 text-white font-bold py-3 rounded-xl hover:bg-cyan-700 transition">Save Voucher Log</button>
       </form>
     </div>
 
     <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-      <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Hotspot & Monthly Subscriptions</h3>
+      <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">Hotspot Voucher Logs</h3>
       <div id="hotspotList" class="space-y-2 text-sm">
         <p class="text-gray-400 text-center">Loading records...</p>
       </div>
@@ -77,17 +55,6 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     const currentUser = localStorage.getItem("household_hub_user") || "";
-
-    function togglePlanType() {
-      const type = document.getElementById('hsType').value;
-      if (type === 'Monthly') {
-        document.getElementById('voucherFields').classList.add('hidden');
-        document.getElementById('monthlyFields').classList.remove('hidden');
-      } else {
-        document.getElementById('voucherFields').classList.remove('hidden');
-        document.getElementById('monthlyFields').classList.add('hidden');
-      }
-    }
 
     async function fetchHotspot() {
       try {
@@ -101,27 +68,21 @@
 
     function renderHotspot(data) {
       const container = document.getElementById('hotspotList');
-      if (!data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No hotspot records yet.</p>'; return; }
-      container.innerHTML = data.map(h => {
-        const type = h.type || 'Voucher';
-        const isMonthly = type === 'Monthly';
-        const details = isMonthly ? `📅 Monthly (${h.duedate ? 'Due: ' + h.duedate : ''})` : (h.vouchercodeforduration || 'Voucher');
-
-        return `
-          <div class="p-3 bg-cyan-50/60 rounded-xl border border-cyan-100 flex justify-between items-center">
-            <div>
-              <div class="font-bold text-gray-800">${h.customerdevicename} <span class="text-[10px] bg-cyan-200 text-cyan-900 px-1.5 py-0.5 rounded font-bold">${type}</span></div>
-              <div class="text-xs text-gray-500">${details} • Logged by: ${h.collectedloggedby}</div>
-            </div>
-            <div class="text-right">
-              <div class="font-bold text-cyan-900">₱${parseFloat(h.amount || 0).toFixed(2)}</div>
-              ${h.status === 'Utang' 
-                ? `<button onclick="markHotspotPaid('${h.customerdevicename}')" class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold mt-1">Mark Paid</button>`
-                : `<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Paid</span>`}
-            </div>
+      if (!data.length) { container.innerHTML = '<p class="text-gray-400 text-center">No hotspot voucher logs yet.</p>'; return; }
+      container.innerHTML = data.map(h => `
+        <div class="p-3 bg-cyan-50/60 rounded-xl border border-cyan-100 flex justify-between items-center">
+          <div>
+            <div class="font-bold text-gray-800">${h.customerdevicename} <span class="text-[10px] bg-cyan-200 text-cyan-900 px-1.5 py-0.5 rounded font-bold">Voucher</span></div>
+            <div class="text-xs text-gray-500">${h.vouchercodeforduration || ''} • Logged by: ${h.collectedloggedby}</div>
           </div>
-        `;
-      }).join('');
+          <div class="text-right">
+            <div class="font-bold text-cyan-900">₱${parseFloat(h.amount || 0).toFixed(2)}</div>
+            ${h.status === 'Utang' 
+              ? `<button onclick="markHotspotPaid('\${h.customerdevicename}')" class="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold mt-1">Mark Paid</button>`
+              : `<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Paid</span>`}
+          </div>
+        </div>
+      `).join('');
     }
 
     async function markHotspotPaid(cust) {
@@ -137,27 +98,24 @@
 
     document.getElementById('hotspotForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const type = document.getElementById('hsType').value;
       await fetch(API_URL, {
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addHotspotLog",
-          type: type,
+          type: "Voucher",
           customer: document.getElementById('hsCustomer').value,
-          voucher: type === 'Monthly' ? document.getElementById('hsTargetMonth').value : document.getElementById('hsVoucher').value,
-          dueDate: document.getElementById('hsDueDate').value,
+          voucher: document.getElementById('hsVoucher').value,
           amount: document.getElementById('hsAmount').value,
           status: document.getElementById('hsStatus').value,
           collectedBy: currentUser,
-          notes: type === 'Monthly' ? `Monthly Sub: ${document.getElementById('hsTargetMonth').value}` : "",
+          notes: "Voucher Sale",
           actor: currentUser
         })
       });
-      alert("Hotspot entry saved successfully!");
+      alert("Voucher log saved successfully!");
       document.getElementById('hotspotForm').reset();
-      togglePlanType();
       setTimeout(fetchHotspot, 1500);
     });
 
