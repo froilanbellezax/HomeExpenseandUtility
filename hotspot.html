@@ -90,8 +90,25 @@
       }
     }
 
+    // Helper para hanapin ang value kahit bahagyang iba ang normalized header name
+    function pickField(obj, candidates, fallback = "") {
+      for (const key of candidates) {
+        if (obj[key] !== undefined && obj[key] !== null && String(obj[key]).trim() !== "") {
+          return String(obj[key]).trim();
+        }
+      }
+      const objKeys = Object.keys(obj);
+      for (const prefix of candidates) {
+        const matchKey = objKeys.find(k => k.startsWith(prefix));
+        if (matchKey && obj[matchKey] !== undefined && obj[matchKey] !== null && String(obj[matchKey]).trim() !== "") {
+          return String(obj[matchKey]).trim();
+        }
+      }
+      return fallback;
+    }
+
     function parseLogDate(item) {
-      const raw = item.date || item.voucherdate || item.timestamp || "";
+      const raw = pickField(item, ["date", "voucherdate", "timestamp"], "");
       const cleaned = String(raw).replace(/'/g, "").trim();
       const parsed = new Date(cleaned);
       if (!isNaN(parsed.getTime())) {
@@ -117,6 +134,9 @@
         const json = await res.json();
         if (json.status === "success") {
           allHotspotLogs = json.data.hotspot || [];
+          if (allHotspotLogs.length > 0) {
+            console.log("Sample hotspot row keys:", allHotspotLogs[0]);
+          }
           renderVoucherLogs();
         }
       } catch (e) {
@@ -135,14 +155,22 @@
 
       const enriched = allHotspotLogs.map(item => {
         const dt = parseLogDate(item);
-        const statusStr = String(item.status || 'Paid').trim();
+        const statusStr = pickField(item, ["status"], "Paid");
         const isUtang = statusStr.toLowerCase() === 'utang' || statusStr.toLowerCase() === 'unpaid';
+        const customer = pickField(item, ["customer", "customerdevice", "name"], "Customer");
+        const voucher = pickField(item, ["voucher", "vouchercode", "code"], "");
+        const type = pickField(item, ["type"], "Voucher");
+        const loggedBy = pickField(item, ["collectedlogged", "collectedby", "loggedby", "actor"], "System");
+
         return {
           ...item,
           _dateObj: dt,
           _displayDate: formatDisplayDate(dt),
           _isUtang: isUtang,
-          _statusLabel: isUtang ? 'Utang' : 'Paid'
+          _customer: customer,
+          _voucher: voucher,
+          _type: type,
+          _loggedBy: loggedBy
         };
       });
 
@@ -158,8 +186,8 @@
           return a._dateObj - b._dateObj;
         }
         if (sortMode === 'name') {
-          const nameA = String(a.customer || a.customerdevice || '').toLowerCase();
-          const nameB = String(b.customer || b.customerdevice || '').toLowerCase();
+          const nameA = a._customer.toLowerCase();
+          const nameB = b._customer.toLowerCase();
           if (nameA !== nameB) return nameA.localeCompare(nameB);
           return b._dateObj - a._dateObj;
         }
@@ -167,22 +195,19 @@
       });
 
       container.innerHTML = enriched.map(item => {
-        const amt = parseFloat(item.amount || 0);
-        const customer = item.customer || item.customerdevice || 'Customer';
-        const voucher = item.voucher || item.vouchercode || '';
-        const type = item.type || 'Voucher';
-        const loggedBy = item.collectedlogged || item.collectedby || item.loggedby || 'System';
-        const safeCustomer = String(customer).replace(/'/g, "\\'");
+        const amt = parseFloat(pickField(item, ["amount"], "0")) || 0;
+        const safeCustomer = item._customer.replace(/'/g, "\\'");
+        const metaLine = [item._voucher, `Logged by: ${item._loggedBy}`].filter(Boolean).join(" • ");
 
         return `
           <div class="p-3 ${item._isUtang ? 'bg-rose-50/60 border-rose-200' : 'bg-cyan-50/40 border-cyan-100'} rounded-xl border flex justify-between items-center gap-2">
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-1.5">
-                <span class="font-bold text-gray-900">${customer}</span>
-                <span class="text-[10px] bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded font-semibold">${type}</span>
+                <span class="font-bold text-gray-900">${item._customer}</span>
+                <span class="text-[10px] bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded font-semibold">${item._type}</span>
                 <span class="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded font-semibold">📅 ${item._displayDate}</span>
               </div>
-              <div class="text-xs text-gray-500 mt-0.5 truncate">${voucher} • Logged by: ${loggedBy}</div>
+              <div class="text-xs text-gray-500 mt-0.5 truncate">${metaLine}</div>
             </div>
             <div class="text-right shrink-0 space-y-1">
               <div class="font-extrabold ${item._isUtang ? 'text-rose-700' : 'text-emerald-700'} text-sm">₱${amt.toFixed(2)}</div>
