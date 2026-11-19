@@ -316,6 +316,18 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     const currentUser = localStorage.getItem("household_hub_user") || "";
+    const sessionToken = localStorage.getItem("household_hub_token") || "";
+
+    if (!currentUser || !sessionToken) {
+      window.location.href = "index.html";
+    }
+
+    function handleUnauthorized() {
+      localStorage.removeItem("household_hub_user");
+      localStorage.removeItem("household_hub_token");
+      window.location.href = "index.html";
+    }
+
     const isAdminUser = currentUser.toLowerCase() === 'froilan' || currentUser.toLowerCase() === 'admin';
 
     let rawLoansCache = [];
@@ -625,8 +637,14 @@
 
     async function fetchLoansData() {
       try {
-        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
+
+        if (json.status === "unauthorized") {
+          handleUnauthorized();
+          return;
+        }
+
         if (json.status === "success") {
           populateProfileDropdowns(json.data.profiles || []);
           rawLoansCache = json.data.loans || [];
@@ -695,12 +713,10 @@
       let dueThisMonth = 0;
       let totalRemaining = 0;
 
-      // OVERALL SUMMARY VARIABLES (Kasama na ang Paid/Fully Paid)
       let grandTotalObligation = 0;
       let grandTotalPaid = 0;
       let grandTotalRemaining = 0;
 
-      // 1. RENDER CREDIT CARDS WITH SURCHARGE & EXACT PAYMENT BADGES
       const ccSection = document.getElementById('ccTrackerSection');
       const ccList = document.getElementById('ccList');
       if (cards && cards.length > 0) {
@@ -717,8 +733,8 @@
           const isPartial = paidAmt > 0 && !isPaid;
           const bMonth = String(c.billingmonth || '').replace(/'/g, '');
           const datePaid = String(c.datepaid || '').replace(/'/g, '');
+          const safeCardLabel = `${c.cardname || ''} - ${c.cardholder || ''}`.replace(/'/g, "\\'");
 
-          // Idagdag sa overall summary ang credit cards
           grandTotalObligation += amt;
           grandTotalPaid += paidAmt;
           grandTotalRemaining += Math.max(0, amt - paidAmt);
@@ -767,7 +783,7 @@
               </div>
               ${surchargeHTML}
               ${paymentLogHTML}
-              ${!isPaid ? `<button onclick="payCard('${c.id}', ${remAmt}, '${c.cardname} - ${c.cardholder}')" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-1.5 rounded-lg transition">💵 Record Payment (₱${formatMoney(remAmt)} left)</button>` : ''}
+              ${!isPaid ? `<button onclick="payCard('${c.id}', ${remAmt}, '${safeCardLabel}')" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-1.5 rounded-lg transition">💵 Record Payment (₱${formatMoney(remAmt)} left)</button>` : ''}
             </div>
           `;
         }).join('');
@@ -775,7 +791,6 @@
         ccSection.classList.add('hidden');
       }
 
-      // 2. GROUP BNPL / PAYLATER ACCOUNTS & RENDER LOANS
       const bnplGroups = {};
 
       if (!loans || !loans.length) {
@@ -789,8 +804,6 @@
         return;
       }
 
-      // --- AUTOMATIC SORTING LOGIC ---
-      // Inuuna ang Active, tapos naka-sort base sa Due Day (pinakamalapit sa unahan, e.g. 8th, 15th, 27th)
       const sortedLoans = [...loans].sort((a, b) => {
         const remA = Math.max(0, (parseInt(a.totalmonths) || 1) - (parseInt(a.monthspaid) || 0));
         const remB = Math.max(0, (parseInt(b.totalmonths) || 1) - (parseInt(b.monthspaid) || 0));
@@ -827,7 +840,6 @@
         const payer = l.actualpayer || '';
         const dueDay = l.dueday || '15th';
 
-        // CALCULATE FOR OVERALL SUMMARY (Kasama ang paid at fully paid)
         const itemTotalObligation = monthly * totalM;
         const itemTotalPaid = monthly * paidM;
         const itemRemaining = monthly * remM;
@@ -925,6 +937,7 @@
         bnplList.innerHTML = groupKeys.map(k => {
           const g = bnplGroups[k];
           const idsJson = JSON.stringify(g.ids).replace(/"/g, '&quot;');
+          const safeGroupLabel = `${g.provider} - ${g.holder}`.replace(/'/g, "\\'");
           return `
             <div class="p-3 bg-purple-50 rounded-xl border border-purple-200 space-y-2">
               <div class="flex justify-between items-start">
@@ -935,7 +948,7 @@
                 </div>
                 <div class="text-right font-extrabold text-purple-900 text-base">₱${formatMoney(g.totalDue)}</div>
               </div>
-              <button onclick="payBnplGroup(${idsJson}, '${g.provider} - ${g.holder}')" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-1.5 rounded-lg text-[11px] transition">✅ Pay All ${g.provider} Dues (₱${formatMoney(g.totalDue)})</button>
+              <button onclick="payBnplGroup(${idsJson}, '${safeGroupLabel}')" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-1.5 rounded-lg text-[11px] transition">✅ Pay All ${g.provider} Dues (₱${formatMoney(g.totalDue)})</button>
             </div>
           `;
         }).join('');
@@ -943,7 +956,6 @@
         bnplCard.classList.add('hidden');
       }
 
-      // UPDATE SUMMARY VALUES (Lahat kasama: Active, Paid, at Fully Paid)
       document.getElementById('loanDueThisMonth').innerText = `₱${formatMoney(dueThisMonth)}`;
       document.getElementById('loanTotalRemaining').innerText = `₱${formatMoney(totalRemaining)}`;
       document.getElementById('sumTotal').innerText = `₱${formatMoney(grandTotalObligation)}`;
@@ -956,7 +968,12 @@
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "payLoanMonth", id: id, actor: currentUser })
+        body: JSON.stringify({
+          action: "payLoanMonth",
+          token: sessionToken,
+          id: id,
+          actor: currentUser
+        })
       });
       alert("Marked as paid!");
       setTimeout(fetchLoansData, 1500);
@@ -968,7 +985,13 @@
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "payConsolidatedBnpl", ids: ids, groupLabel: label, actor: currentUser })
+        body: JSON.stringify({
+          action: "payConsolidatedBnpl",
+          token: sessionToken,
+          ids: ids,
+          groupLabel: label,
+          actor: currentUser
+        })
       });
       alert("All consolidated BNPL dues marked as paid!");
       setTimeout(fetchLoansData, 1500);
@@ -989,6 +1012,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "payCreditCard",
+          token: sessionToken,
           id: id,
           amountPaid: amtPaid,
           actor: currentUser
@@ -1022,6 +1046,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addLoan",
+          token: sessionToken,
           loanProvider: finalProvider,
           itemDesc: document.getElementById('loanItemDesc').value.trim(),
           holder: document.getElementById('loanHolder').value,
@@ -1061,6 +1086,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addCreditCardDue",
+          token: sessionToken,
           cardName: cardName,
           cardHolder: cardHolder,
           amount: document.getElementById('ccAmount').value,
@@ -1084,6 +1110,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "enrollCard",
+          token: sessionToken,
           cardName: document.getElementById('enrollCardName').value.trim(),
           cardHolder: document.getElementById('enrollCardHolder').value,
           dueDay: document.getElementById('enrollCardDueDay').value.trim(),
