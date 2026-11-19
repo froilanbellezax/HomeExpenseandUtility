@@ -69,12 +69,29 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
-    const currentUser = localStorage.getItem("household_hub_user") || "Froilan";
+    const currentUser = localStorage.getItem("household_hub_user") || "";
+    const sessionToken = localStorage.getItem("household_hub_token") || "";
+
+    if (!currentUser || !sessionToken) {
+      window.location.href = "index.html";
+    }
+
+    function handleUnauthorized() {
+      localStorage.removeItem("household_hub_user");
+      localStorage.removeItem("household_hub_token");
+      window.location.href = "index.html";
+    }
 
     async function fetchLoads() {
       try {
-        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
+
+        if (json.status === "unauthorized") {
+          handleUnauthorized();
+          return;
+        }
+
         if (json.status === "success") {
           renderLoads(json.data.loads || []);
         }
@@ -96,6 +113,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "updateLoadStatus",
+          token: sessionToken,
           id: id,
           actor: currentUser
         })
@@ -167,6 +185,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addLoadLog",
+          token: sessionToken,
           name: document.getElementById('loadName').value.trim(),
           mobile: document.getElementById('loadMobile').value.trim(),
           loadType: document.getElementById('loadType').value,
