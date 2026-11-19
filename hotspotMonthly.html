@@ -97,6 +97,17 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     const currentUser = localStorage.getItem("household_hub_user") || "";
+    const sessionToken = localStorage.getItem("household_hub_token") || "";
+
+    if (!currentUser || !sessionToken) {
+      window.location.href = "index.html";
+    }
+
+    function handleUnauthorized() {
+      localStorage.removeItem("household_hub_user");
+      localStorage.removeItem("household_hub_token");
+      window.location.href = "index.html";
+    }
 
     const monthsList = [
       "January 2026", "February 2026", "March 2026", "April 2026", 
@@ -129,8 +140,14 @@
 
     async function fetchMatrixData() {
       try {
-        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
+
+        if (json.status === "unauthorized") {
+          handleUnauthorized();
+          return;
+        }
+
         if (json.status === "success") {
           const students = (json.data.hotspotStudents || []).map(s => ({ ...s, _cat: 'Students' }));
           const adults = (json.data.hotspotAdults || []).map(a => ({ ...a, _cat: 'Adults' }));
@@ -197,12 +214,10 @@
         }
       });
 
-      // I-sort ang mga pangalan nang alphabetical (A-Z, case-insensitive)
       const sortedNames = Object.keys(usersMap).sort((a, b) => 
         a.localeCompare(b, undefined, { sensitivity: 'base' })
       );
 
-      // Populate datalist nang naka-sort din
       const datalist = document.getElementById('existingSubscribers');
       datalist.innerHTML = sortedNames.map(n => `<option value="${n}">`).join('');
 
@@ -245,6 +260,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addMonthlyHotspotMember",
+          token: sessionToken,
           targetTable: document.getElementById('mthTable').value,
           name: document.getElementById('mthName').value.trim(),
           dueDate: document.getElementById('mthDue').value,
