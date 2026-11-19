@@ -91,7 +91,6 @@
     }
 
     function parseLogDate(item) {
-      // Unahin ang explicit date field kung mayroon, kung wala ay gamitin ang timestamp
       const raw = item.date || item.voucherdate || item.timestamp || "";
       const cleaned = String(raw).replace(/'/g, "").trim();
       const parsed = new Date(cleaned);
@@ -159,8 +158,8 @@
           return a._dateObj - b._dateObj;
         }
         if (sortMode === 'name') {
-          const nameA = String(a.customer || '').toLowerCase();
-          const nameB = String(b.customer || '').toLowerCase();
+          const nameA = String(a.customer || a.customerdevice || '').toLowerCase();
+          const nameB = String(b.customer || b.customerdevice || '').toLowerCase();
           if (nameA !== nameB) return nameA.localeCompare(nameB);
           return b._dateObj - a._dateObj;
         }
@@ -169,10 +168,10 @@
 
       container.innerHTML = enriched.map(item => {
         const amt = parseFloat(item.amount || 0);
-        const customer = item.customer || 'Customer';
-        const voucher = item.voucher || '';
+        const customer = item.customer || item.customerdevice || 'Customer';
+        const voucher = item.voucher || item.vouchercode || '';
         const type = item.type || 'Voucher';
-        const loggedBy = item.collectedby || item.loggedby || 'System';
+        const loggedBy = item.collectedlogged || item.collectedby || item.loggedby || 'System';
         const safeCustomer = String(customer).replace(/'/g, "\\'");
 
         return `
