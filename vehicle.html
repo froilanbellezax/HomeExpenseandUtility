@@ -64,11 +64,28 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     const currentUser = localStorage.getItem("household_hub_user") || "";
+    const sessionToken = localStorage.getItem("household_hub_token") || "";
+
+    if (!currentUser || !sessionToken) {
+      window.location.href = "index.html";
+    }
+
+    function handleUnauthorized() {
+      localStorage.removeItem("household_hub_user");
+      localStorage.removeItem("household_hub_token");
+      window.location.href = "index.html";
+    }
 
     async function fetchVehicle() {
       try {
-        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
+
+        if (json.status === "unauthorized") {
+          handleUnauthorized();
+          return;
+        }
+
         if (json.status === "success") {
           renderVehicle(json.data.vehicle || []);
         }
@@ -99,7 +116,19 @@
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "addVehicleLog", date: new Date().toISOString().split('T')[0], vehicle: document.getElementById('vehName').value, serviceType: document.getElementById('vehService').value, odometer: document.getElementById('vehOdo').value, nextDue: document.getElementById('vehNext').value, cost: document.getElementById('vehCost').value, loggedBy: currentUser, notes: document.getElementById('vehNotes').value, actor: currentUser })
+        body: JSON.stringify({
+          action: "addVehicleLog",
+          token: sessionToken,
+          date: new Date().toISOString().split('T')[0],
+          vehicle: document.getElementById('vehName').value,
+          serviceType: document.getElementById('vehService').value,
+          odometer: document.getElementById('vehOdo').value,
+          nextDue: document.getElementById('vehNext').value,
+          cost: document.getElementById('vehCost').value,
+          loggedBy: currentUser,
+          notes: document.getElementById('vehNotes').value,
+          actor: currentUser
+        })
       });
       alert("Vehicle log saved!");
       document.getElementById('vehicleForm').reset();
