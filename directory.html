@@ -72,12 +72,30 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     const currentUser = localStorage.getItem("household_hub_user") || "";
+    const sessionToken = localStorage.getItem("household_hub_token") || "";
+
+    if (!currentUser || !sessionToken) {
+      window.location.href = "index.html";
+    }
+
     document.getElementById('profName').value = currentUser;
+
+    function handleUnauthorized() {
+      localStorage.removeItem("household_hub_user");
+      localStorage.removeItem("household_hub_token");
+      window.location.href = "index.html";
+    }
 
     async function fetchDirectory() {
       try {
-        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
+
+        if (json.status === "unauthorized") {
+          handleUnauthorized();
+          return;
+        }
+
         if (json.status === "success") {
           renderProfiles(json.data.profiles || []);
         }
@@ -109,7 +127,20 @@
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "saveProfile", name: currentUser, pin: document.getElementById('profPin').value, phone1: document.getElementById('profPhone1').value, phone2: document.getElementById('profPhone2').value, email1: document.getElementById('profEmail1').value, email2: document.getElementById('profEmail2').value, bloodType: document.getElementById('profBlood').value, heightWeight: document.getElementById('profHW').value, meds: document.getElementById('profMeds').value, actor: currentUser })
+        body: JSON.stringify({
+          action: "saveProfile",
+          token: sessionToken,
+          name: currentUser,
+          pin: document.getElementById('profPin').value,
+          phone1: document.getElementById('profPhone1').value,
+          phone2: document.getElementById('profPhone2').value,
+          email1: document.getElementById('profEmail1').value,
+          email2: document.getElementById('profEmail2').value,
+          bloodType: document.getElementById('profBlood').value,
+          heightWeight: document.getElementById('profHW').value,
+          meds: document.getElementById('profMeds').value,
+          actor: currentUser
+        })
       });
       alert("Profile saved!");
       setTimeout(fetchDirectory, 1500);
