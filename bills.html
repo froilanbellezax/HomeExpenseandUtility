@@ -93,16 +93,33 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     const currentUser = localStorage.getItem("household_hub_user") || "";
+    const sessionToken = localStorage.getItem("household_hub_token") || "";
+
+    if (!currentUser || !sessionToken) {
+      window.location.href = "index.html";
+    }
+
+    function handleUnauthorized() {
+      localStorage.removeItem("household_hub_user");
+      localStorage.removeItem("household_hub_token");
+      window.location.href = "index.html";
+    }
 
     async function fetchBillsData() {
       try {
-        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
+
+        if (json.status === "unauthorized") {
+          handleUnauthorized();
+          return;
+        }
+
         if (json.status === "success") {
           const profiles = json.data.profiles || [];
           const select = document.querySelector('.loan-profile-select');
           if (select) {
-            select.innerHTML = profiles.map(p => `<option value="${p.name}">${p.name}</option>`).join('');
+            select.innerHTML = profiles.map(p => `<option value="${p.name}" ${p.name === currentUser ? 'selected' : ''}>${p.name}</option>`).join('');
           }
           renderBills(json.data.recurring || []);
           renderEvents(json.data.events || []);
@@ -135,6 +152,7 @@
       container.innerHTML = sortedBills.map(b => {
         const cleanDue = String(b.duedatedayofmonth || '').replace(/'/g, '');
         const isPaid = String(b.status || '').toLowerCase() === 'paid';
+        const safeBillName = String(b.billname || '').replace(/'/g, "\\'");
         return `
           <div class="p-3 ${isPaid ? 'bg-gray-50 border-gray-200' : 'bg-indigo-50/50 border-indigo-100'} rounded-xl border flex justify-between items-center">
             <div>
@@ -145,7 +163,7 @@
               <div class="font-bold text-indigo-900">₱${parseFloat(b.amount || 0).toFixed(2)}</div>
               ${isPaid 
                 ? `<span class="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Paid</span>`
-                : `<button onclick="payBill('${b.billname}', ${b.amount})" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Mark Paid</button>`}
+                : `<button onclick="payBill('${safeBillName}', ${b.amount})" class="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-bold">Mark Paid</button>`}
             </div>
           </div>
         `;
@@ -214,7 +232,7 @@
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "updateBillStatus", billName: billName, amount: amount, status: "Paid", actor: currentUser })
+        body: JSON.stringify({ action: "updateBillStatus", token: sessionToken, billName: billName, amount: amount, status: "Paid", actor: currentUser })
       });
       alert("Bill updated!");
       setTimeout(fetchBillsData, 1500);
@@ -228,6 +246,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addRecurringBill",
+          token: sessionToken,
           billName: document.getElementById('billName').value,
           amount: document.getElementById('billAmount').value,
           dueDate: document.getElementById('billDueDate').value,
@@ -249,6 +268,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addImportantEvent",
+          token: sessionToken,
           eventName: document.getElementById('eventName').value,
           date: document.getElementById('eventDate').value,
           category: document.getElementById('eventCategory').value,
