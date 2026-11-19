@@ -52,11 +52,28 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     const currentUser = localStorage.getItem("household_hub_user") || "";
+    const sessionToken = localStorage.getItem("household_hub_token") || "";
+
+    if (!currentUser || !sessionToken) {
+      window.location.href = "index.html";
+    }
+
+    function handleUnauthorized() {
+      localStorage.removeItem("household_hub_user");
+      localStorage.removeItem("household_hub_token");
+      window.location.href = "index.html";
+    }
 
     async function fetchDebts() {
       try {
-        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
+
+        if (json.status === "unauthorized") {
+          handleUnauthorized();
+          return;
+        }
+
         if (json.status === "success") {
           renderDebts(json.data.debts || []);
         }
@@ -74,6 +91,8 @@
         const notes = d.reasonnotes || d.notes || 'No details';
         const amt = parseFloat(d.amount || 0).toFixed(2);
         const isSettled = String(d.status) === 'Settled';
+        const safePerson = String(personName).replace(/'/g, "\\'");
+        const safeNotes = String(notes).replace(/'/g, "\\'");
 
         return `
           <div class="p-3 bg-purple-50/60 rounded-xl border border-purple-100 flex justify-between items-center">
@@ -84,7 +103,7 @@
             <div class="text-right">
               <div class="font-bold text-purple-900">₱${amt}</div>
               ${!isSettled 
-                ? `<button onclick="markDebtSettled('${personName}', '${notes}')" class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">Mark Settled</button>`
+                ? `<button onclick="markDebtSettled('${safePerson}', '${safeNotes}')" class="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold">Mark Settled</button>`
                 : `<span class="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">Settled</span>`}
             </div>
           </div>
@@ -97,7 +116,13 @@
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "updateDebtStatus", person: person, notes: notes, actor: currentUser })
+        body: JSON.stringify({
+          action: "updateDebtStatus",
+          token: sessionToken,
+          person: person,
+          notes: notes,
+          actor: currentUser
+        })
       });
       alert("Marked as settled!");
       setTimeout(fetchDebts, 1500);
@@ -111,6 +136,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addDebt",
+          token: sessionToken,
           person: document.getElementById('debtPerson').value,
           direction: document.getElementById('debtDir').value,
           amount: document.getElementById('debtAmount').value,
