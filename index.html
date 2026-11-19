@@ -283,7 +283,11 @@
 
       if (bills) {
         bills.forEach(b => {
-          if (String(b.status || '').toLowerCase() !== 'paid') {
+          const isPaid = String(b.status || '').toLowerCase() === 'paid';
+          const lastPaidBill = String(b.lastpaidmonth || '').replace(/'/g, '').trim();
+          const isPaidThisMonth = isPaid || lastPaidBill.startsWith(currMonth);
+
+          if (!isPaidThisMonth) {
             const dueDay = parseInt(String(b.duedatedayofmonth || '').replace(/\D/g, '')) || 99;
             combined.push({ 
               name: b.billname, 
@@ -298,7 +302,13 @@
       if (loans) {
         loans.forEach(l => {
           const remM = Math.max(0, (parseInt(l.totalmonths) || 1) - (parseInt(l.monthspaid) || 0));
-          if (remM > 0 && String(l.lastpaidmonth) !== currMonth && l.status !== 'Pending Approval') {
+          const startM = String(l.startmonth || currMonth).replace(/'/g, '').trim();
+          const lastPaid = String(l.lastpaidmonth || '').replace(/'/g, '').trim();
+
+          const isStarted = !startM || currMonth >= startM;
+          const isPaidThisMonth = lastPaid.startsWith(currMonth) || remM === 0;
+
+          if (remM > 0 && isStarted && !isPaidThisMonth && l.status !== 'Pending Approval') {
             const dueDay = parseInt(String(l.dueday || '1').replace(/\D/g, '')) || 15;
             combined.push({ 
               name: `${l.loanprovider} (${l.itemdescription || ''})`, 
