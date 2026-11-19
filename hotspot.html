@@ -76,8 +76,19 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
-    const currentUser = localStorage.getItem("household_hub_user") || "System";
+    const currentUser = localStorage.getItem("household_hub_user") || "";
+    const sessionToken = localStorage.getItem("household_hub_token") || "";
     let allHotspotLogs = [];
+
+    if (!currentUser || !sessionToken) {
+      window.location.href = "index.html";
+    }
+
+    function handleUnauthorized() {
+      localStorage.removeItem("household_hub_user");
+      localStorage.removeItem("household_hub_token");
+      window.location.href = "index.html";
+    }
 
     function setDefaultDate() {
       const dateInput = document.getElementById('voucherDate');
@@ -130,13 +141,16 @@
 
     async function fetchHotspotData() {
       try {
-        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
+
+        if (json.status === "unauthorized") {
+          handleUnauthorized();
+          return;
+        }
+
         if (json.status === "success") {
           allHotspotLogs = json.data.hotspot || [];
-          if (allHotspotLogs.length > 0) {
-            console.log("Sample hotspot row keys:", allHotspotLogs[0]);
-          }
           renderVoucherLogs();
         }
       } catch (e) {
@@ -228,6 +242,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "updateHotspotStatus",
+          token: sessionToken,
           customer: customerName,
           actor: currentUser
         })
@@ -246,6 +261,7 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "addHotspotLog",
+          token: sessionToken,
           type: "Voucher",
           date: chosenDate,
           customer: document.getElementById('customerName').value.trim(),
