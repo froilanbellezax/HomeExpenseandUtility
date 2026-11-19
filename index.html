@@ -156,11 +156,23 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     let currentUser = localStorage.getItem("household_hub_user") || "";
+    let sessionToken = localStorage.getItem("household_hub_token") || "";
     const ADMIN_USER = "Froilan"; 
 
+    function forceLoginScreen() {
+      currentUser = "";
+      sessionToken = "";
+      localStorage.removeItem("household_hub_user");
+      localStorage.removeItem("household_hub_token");
+      document.getElementById('activeUserName').innerText = "Not Logged In";
+      document.getElementById('summaryUserName').innerText = "---";
+      document.getElementById('adminNavBtn').classList.add('hidden');
+      document.getElementById('loginOverlay').classList.remove('hidden');
+    }
+
     function checkAuth() {
-      if (!currentUser) {
-        document.getElementById('loginOverlay').classList.remove('hidden');
+      if (!currentUser || !sessionToken) {
+        forceLoginScreen();
       } else {
         document.getElementById('loginOverlay').classList.add('hidden');
         document.getElementById('activeUserName').innerText = currentUser;
@@ -174,8 +186,15 @@
 
     function logout() {
       if (confirm("Log out of your profile?")) {
-        localStorage.removeItem("household_hub_user");
-        location.reload();
+        if (sessionToken) {
+          fetch(API_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "logoutUser", token: sessionToken })
+          }).catch(() => {});
+        }
+        forceLoginScreen();
       }
     }
 
@@ -196,9 +215,11 @@
         });
         const json = await res.json();
 
-        if (json.status === "success") {
+        if (json.status === "success" && json.token) {
           currentUser = json.user || name;
+          sessionToken = json.token;
           localStorage.setItem("household_hub_user", currentUser);
+          localStorage.setItem("household_hub_token", sessionToken);
           checkAuth();
         } else {
           alert(json.message || "Invalid Name or PIN!");
@@ -213,10 +234,16 @@
     });
 
     async function fetchDashboardData() {
-      if (!currentUser) return;
+      if (!currentUser || !sessionToken) return;
       try {
-        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
+
+        if (json.status === "unauthorized") {
+          forceLoginScreen();
+          return;
+        }
+
         if (json.status === "success") {
           renderDashboardSummary(json.data.debts || []);
           renderDashboardUpcoming(json.data.recurring || [], json.data.loans || []);
