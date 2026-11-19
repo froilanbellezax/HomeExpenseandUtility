@@ -40,11 +40,28 @@
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     const currentUser = localStorage.getItem("household_hub_user") || "";
+    const sessionToken = localStorage.getItem("household_hub_token") || "";
+
+    if (!currentUser || !sessionToken) {
+      window.location.href = "index.html";
+    }
+
+    function handleUnauthorized() {
+      localStorage.removeItem("household_hub_user");
+      localStorage.removeItem("household_hub_token");
+      window.location.href = "index.html";
+    }
 
     async function fetchGrocery() {
       try {
-        const res = await fetch(`${API_URL}?user=${encodeURIComponent(currentUser)}`);
+        const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
+
+        if (json.status === "unauthorized") {
+          handleUnauthorized();
+          return;
+        }
+
         if (json.status === "success") {
           renderGrocery(json.data.grocery || []);
         }
@@ -73,7 +90,13 @@
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "updateGroceryStatus", id: id, status: newStatus, actor: currentUser })
+        body: JSON.stringify({
+          action: "updateGroceryStatus",
+          token: sessionToken,
+          id: id,
+          status: newStatus,
+          actor: currentUser
+        })
       });
       setTimeout(fetchGrocery, 1500);
     }
@@ -84,7 +107,14 @@
         method: "POST",
         mode: "no-cors",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "addGrocery", item: document.getElementById('grocItem').value, quantity: document.getElementById('grocQty').value, requestedBy: currentUser, actor: currentUser })
+        body: JSON.stringify({
+          action: "addGrocery",
+          token: sessionToken,
+          item: document.getElementById('grocItem').value,
+          quantity: document.getElementById('grocQty').value,
+          requestedBy: currentUser,
+          actor: currentUser
+        })
       });
       alert("Added to grocery list!");
       document.getElementById('groceryForm').reset();
