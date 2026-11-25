@@ -3,442 +3,1210 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BelPan House Hub</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2563eb">
+  <title>Loans, BNPL & Credit Cards - BelPan House Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col relative">
-
-  <!-- LOGIN OVERLAY MODAL -->
-  <div id="loginOverlay" class="fixed inset-0 bg-blue-900/95 z-[100] flex items-center justify-center p-4 hidden">
-    <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 text-center">
-      <div class="text-4xl">🔐</div>
-      <div>
-        <h2 class="text-xl font-bold text-gray-800">BelPan House Hub</h2>
-        <p class="text-xs text-gray-500 mt-1">Please log in to access your personal dashboard</p>
-      </div>
-      <form id="loginForm" class="space-y-3 text-left">
-        <div>
-          <label class="text-xs font-semibold text-gray-500">Your Full Name</label>
-          <input type="text" id="loginName" required placeholder="e.g. Froilan" class="w-full p-3 border rounded-xl text-sm outline-none font-semibold">
-        </div>
-        <div>
-          <label class="text-xs font-semibold text-gray-500">PIN / Passcode</label>
-          <input type="password" id="loginPin" placeholder="Default PIN: 1234" class="w-full p-3 border rounded-xl text-sm outline-none font-semibold">
-        </div>
-        <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl hover:bg-blue-700 transition shadow-lg">Log In</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- Header -->
-  <header class="bg-blue-600 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
-    <div>
-      <h1 class="text-lg font-bold">🏠 BelPan House Hub</h1>
-      <div class="flex items-center gap-1.5 text-[11px] text-blue-100 mt-0.5">
-        <span>Account:</span>
-        <span id="activeUserName" class="bg-blue-800 text-white px-2 py-0.5 rounded font-bold border border-blue-400">Not Logged In</span>
-        <button onclick="logout()" class="text-[10px] bg-red-500/80 hover:bg-red-600 px-1.5 py-0.5 rounded font-bold">Logout</button>
-      </div>
-    </div>
-    <div class="flex items-center gap-1.5">
-      <button onclick="location.href='directory.html'" class="bg-teal-700 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold">🎴 Contacts</button>
-      <button onclick="location.href='adminLogs.html'" id="adminNavBtn" class="bg-purple-700 text-white px-2.5 py-1.5 rounded-xl text-xs font-semibold hidden">🛡️</button>
-    </div>
+  <header class="bg-indigo-600 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
+    <h1 class="text-lg font-bold">🏦 Loans, BNPL & Cards</h1>
+    <button onclick="location.href='index.html'" class="bg-indigo-800 hover:bg-indigo-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">⬅️ Menu</button>
   </header>
 
-  <!-- USER SUMMARY BANNER -->
-  <div id="userSummaryCard" class="px-4 mb-3">
-    <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-3.5 rounded-2xl shadow-md border border-blue-700">
-      <div class="flex justify-between items-center border-b border-blue-700/50 pb-2 mb-2">
-        <span class="text-xs font-bold text-blue-200">👤 Private View: <span id="summaryUserName" class="text-white">---</span></span>
-        <span class="text-[10px] bg-blue-800 text-blue-200 px-2 py-0.5 rounded-full">Personal Balance</span>
-      </div>
-      <div class="grid grid-cols-2 gap-2 text-xs">
-        <div class="bg-blue-800/40 p-2 rounded-xl border border-blue-700/30">
-          <span class="text-[10px] text-green-300 block font-semibold">Sisingilin Mo:</span>
-          <span id="userReceivable" class="font-bold text-green-400 text-sm">₱0.00</span>
+  <main class="px-4 flex-1 space-y-4">
+    <!-- OVERALL SUMMARY CARD -->
+    <div class="bg-gradient-to-r from-indigo-900 to-blue-900 text-white p-4 rounded-2xl shadow-md border border-indigo-700">
+      <div class="text-xs font-bold text-indigo-200 uppercase mb-2">📊 Overall Loans & BNPL Summary (Including Paid)</div>
+      <div class="grid grid-cols-3 gap-2 text-center">
+        <div class="bg-indigo-800/50 p-2.5 rounded-xl border border-indigo-700/40">
+          <span class="text-[10px] text-gray-300 block font-semibold">Total Obligation</span>
+          <span id="sumTotal" class="font-bold text-white text-xs">₱0.00</span>
         </div>
-        <div class="bg-blue-800/40 p-2 rounded-xl border border-blue-700/30">
-          <span class="text-[10px] text-red-300 block font-semibold">Utang Mo:</span>
-          <span id="userPayable" class="font-bold text-red-400 text-sm">₱0.00</span>
+        <div class="bg-indigo-800/50 p-2.5 rounded-xl border border-indigo-700/40">
+          <span class="text-[10px] text-green-300 block font-semibold">Total Paid</span>
+          <span id="sumPaid" class="font-bold text-green-400 text-xs">₱0.00</span>
+        </div>
+        <div class="bg-indigo-800/50 p-2.5 rounded-xl border border-indigo-700/40">
+          <span class="text-[10px] text-amber-300 block font-semibold">Remaining Balance</span>
+          <span id="sumRemaining" class="font-bold text-amber-400 text-xs">₱0.00</span>
         </div>
       </div>
     </div>
-  </div>
 
-  <main class="px-4 flex-1 space-y-4">
-    <!-- DASHBOARD MENU TILES -->
-    <section class="space-y-4">
+    <!-- TOP SUMMARY BANNER WITH ADMIN/PERSONAL VIEW TOGGLE -->
+    <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-4 rounded-2xl shadow-md border border-indigo-700 space-y-2.5">
+      <div class="flex justify-between items-center gap-2">
+        <span class="text-xs font-bold text-indigo-200 uppercase">📅 This Month's Dues</span>
+        <span id="currentMonthBadge" class="text-[10px] bg-indigo-700 px-2 py-0.5 rounded-full font-bold">---</span>
+      </div>
+
+      <div class="flex justify-between items-center bg-white/10 px-2.5 py-1.5 rounded-xl border border-white/10">
+        <span id="viewModeBadge" class="text-[11px] font-bold text-cyan-300">👤 Personal View</span>
+        <div id="adminViewToggle" class="hidden flex bg-slate-950/60 p-0.5 rounded-lg text-[10px] font-bold">
+          <button id="btnViewAll" onclick="setAdminScope('all')" class="px-2 py-0.5 rounded-md bg-indigo-600 text-white transition">👑 Overall Family</button>
+          <button id="btnViewMine" onclick="setAdminScope('mine')" class="px-2 py-0.5 rounded-md text-gray-300 hover:text-white transition">👤 Mine Only</button>
+        </div>
+      </div>
+
       <div class="grid grid-cols-2 gap-3">
-        <button onclick="location.href='loans.html'" class="col-span-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-4 rounded-2xl shadow-md flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <span class="text-3xl">🏦</span>
-            <div class="text-left">
-              <span class="font-bold text-sm block">Loans & Installments</span>
-              <span class="text-[11px] text-indigo-100 block">Track monthly dues & remaining months</span>
+        <div class="bg-white/10 p-2.5 rounded-xl">
+          <span class="text-[10px] text-amber-300 block font-semibold">Unpaid Due This Month:</span>
+          <span id="loanDueThisMonth" class="text-lg font-extrabold text-amber-400">₱0.00</span>
+        </div>
+        <div class="bg-white/10 p-2.5 rounded-xl">
+          <span class="text-[10px] text-indigo-200 block font-semibold">Installment Rem. Bal:</span>
+          <span id="loanTotalRemaining" class="text-lg font-extrabold text-white">₱0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROVIDER / APP MONTHLY TOTAL CHECKER (LOANS & BNPL) -->
+    <div id="providerMonthlyCard" class="bg-white p-4 rounded-2xl shadow-sm border-2 border-indigo-200 space-y-2.5 hidden">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-indigo-950 text-xs uppercase">📱 Monthly Total per App / Provider</h3>
+        <span class="text-[10px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-bold">App Bill Check</span>
+      </div>
+      <p class="text-[10px] text-gray-500">Compare Unpaid / Total this month against your actual app bill. Pay individual items below.</p>
+      <div id="providerMonthlyList" class="space-y-2 text-xs"></div>
+    </div>
+
+    <!-- CONSOLIDATED BNPL SUMMARY -->
+    <div id="consolidatedBnplCard" class="bg-white p-4 rounded-2xl shadow-sm border-2 border-purple-200 space-y-2.5 hidden">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-purple-900 text-xs uppercase">🛍️ Consolidated BNPL / PayLater Dues</h3>
+        <span class="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-bold">Auto-Grouped</span>
+      </div>
+      <div id="consolidatedBnplList" class="space-y-2 text-xs"></div>
+    </div>
+
+    <!-- MAIN TAB SWITCHER -->
+    <div class="grid grid-cols-2 gap-2 bg-gray-200 p-1 rounded-xl text-xs font-bold">
+      <button id="tabBtnInstallment" onclick="switchFormTab('installment')" class="py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition">➕ Add BNPL / Loan</button>
+      <button id="tabBtnCard" onclick="switchFormTab('card')" class="py-2 rounded-lg text-gray-600 hover:text-gray-900 transition">💳 Credit Cards & Enroll</button>
+    </div>
+
+    <!-- FORM 1: ADD LOAN / BNPL INSTALLMENT + LIVE CALCULATOR -->
+    <div id="installmentFormBox" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="font-bold text-gray-700 text-xs uppercase">Add BNPL / Installment Plan</h2>
+        <span class="text-[10px] bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-bold">🧮 Auto-Calculator</span>
+      </div>
+      <form id="loanForm" class="space-y-3">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Plan Category</label>
+            <select id="planCategory" onchange="handlePlanCategoryChange()" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-purple-800">
+              <option value="BNPL">🛍️ BNPL / PayLater</option>
+              <option value="Loan">🏦 Cash / Regular Loan</option>
+            </select>
+          </div>
+          <div id="bnplProviderBox">
+            <label class="text-xs font-semibold text-gray-500">PayLater App</label>
+            <select id="bnplSelect" onchange="handleBnplPresetChange()" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+              <option value="TikTok PayLater">TikTok PayLater (15th)</option>
+              <option value="SPayLater">SPayLater (15th)</option>
+              <option value="LazPayLater">LazPayLater (16th)</option>
+              <option value="Salmon Credit Line">Salmon Credit Line (27th)</option>
+              <option value="Atome">Atome</option>
+              <option value="GCash GGives">GCash GGives</option>
+              <option value="Custom">Other / Custom...</option>
+            </select>
+          </div>
+          <div id="customProviderBox" class="hidden">
+            <label class="text-xs font-semibold text-gray-500">Provider / App Name</label>
+            <input type="text" id="loanProvider" placeholder="e.g. Maya Loan, SLoan" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold">
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Item / Description</label>
+          <input type="text" id="loanItemDesc" required placeholder="e.g. Insulation Foam, Wire, Phone" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Account Holder</label>
+            <select id="loanHolder" class="w-full p-2.5 border rounded-xl text-sm outline-none loan-profile-select"></select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Actual Payer</label>
+            <select id="loanPayer" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-indigo-700 loan-profile-select" onchange="checkCustomPayer()"></select>
+            <input type="text" id="loanCustomPayer" placeholder="Enter Payer Name" class="w-full p-2 border rounded-xl text-xs outline-none mt-1 hidden">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Principal / Cash (₱)</label>
+            <input type="number" step="0.01" id="loanPrincipal" oninput="calculateInstallmentPreview()" placeholder="Optional" class="w-full p-2.5 border rounded-xl text-sm outline-none font-semibold text-gray-700">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Monthly Due (₱)</label>
+            <input type="number" step="0.01" id="loanMonthly" oninput="calculateInstallmentPreview()" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-indigo-900">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Fixed Due Day</label>
+            <input type="text" id="loanDueDay" required value="15th" placeholder="e.g. 15th" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-indigo-900">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Start Month</label>
+            <select id="loanStartMonth" onchange="calculateInstallmentPreview()" class="w-full p-2.5 border rounded-xl text-xs outline-none font-semibold text-indigo-700"></select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Total Mos</label>
+            <input type="number" id="loanTotalMonths" oninput="calculateInstallmentPreview()" required value="3" min="1" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Paid Mos</label>
+            <input type="number" id="loanMonthsPaid" oninput="calculateInstallmentPreview()" value="0" min="0" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+          </div>
+        </div>
+
+        <!-- LIVE CALCULATOR PREVIEW BOX -->
+        <div class="bg-slate-900 text-white p-3 rounded-xl border border-indigo-500/40 space-y-2">
+          <div class="flex justify-between items-center border-b border-white/10 pb-1">
+            <span class="text-[10px] font-bold text-indigo-300 uppercase">🧮 Live Installment Calculator</span>
+            <span id="calcEndMonth" class="text-[10px] text-cyan-300 font-semibold">Ends: ---</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="bg-white/5 p-1.5 rounded-lg">
+              <span class="text-[9px] text-gray-400 block">Total Payable</span>
+              <span id="calcTotalPayable" class="text-xs font-extrabold text-white">₱0.00</span>
+            </div>
+            <div class="bg-white/5 p-1.5 rounded-lg">
+              <span class="text-[9px] text-emerald-300 block">Already Paid</span>
+              <span id="calcAlreadyPaid" class="text-xs font-extrabold text-emerald-400">₱0.00</span>
+            </div>
+            <div class="bg-white/5 p-1.5 rounded-lg">
+              <span class="text-[9px] text-amber-300 block">Rem. Balance</span>
+              <span id="calcRemainingBal" class="text-xs font-extrabold text-amber-400">₱0.00</span>
             </div>
           </div>
-          <span class="text-lg">➡️</span>
-        </button>
+          <div class="grid grid-cols-3 gap-2 text-center pt-1 border-t border-white/10">
+            <div class="bg-rose-500/10 border border-rose-500/20 p-1.5 rounded-lg">
+              <span class="text-[9px] text-rose-300 block">Total Interest</span>
+              <span id="calcTotalInterest" class="text-xs font-extrabold text-rose-400">₱0.00</span>
+            </div>
+            <div class="bg-rose-500/10 border border-rose-500/20 p-1.5 rounded-lg">
+              <span class="text-[9px] text-rose-300 block">Interest / Mo</span>
+              <span id="calcMonthlyInterest" class="text-xs font-extrabold text-rose-400">₱0.00</span>
+            </div>
+            <div class="bg-indigo-500/15 border border-indigo-400/20 p-1.5 rounded-lg">
+              <span class="text-[9px] text-indigo-200 block">Add-on Rate</span>
+              <span id="calcInterestRate" class="text-xs font-extrabold text-indigo-300">—</span>
+            </div>
+          </div>
+        </div>
 
-        <button onclick="location.href='expenses.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">💰</span>
-          <span class="font-bold text-gray-800 text-sm">Daily Expenses</span>
-        </button>
-        <button onclick="location.href='bills.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">📃</span>
-          <span class="font-bold text-gray-800 text-sm">Bills & Utilities</span>
-        </button>
-        <button onclick="location.href='grocery.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">🛒</span>
-          <span class="font-bold text-gray-800 text-sm">Grocery List</span>
-        </button>
-        <button onclick="location.href='lista.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">📋</span>
-          <span class="font-bold text-gray-800 text-sm">Lista Vault</span>
-        </button>
-        <button onclick="location.href='kkb.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">🍔</span>
-          <span class="font-bold text-gray-800 text-sm">KKB Splitter</span>
-        </button>
-        <button onclick="location.href='parcels.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">📦</span>
-          <span class="font-bold text-gray-800 text-sm">My Parcels</span>
-        </button>
+        <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition">Save Installment Plan</button>
+      </form>
+    </div>
 
-        <!-- HOTSPOT TILES -->
-        <button onclick="location.href='hotspot.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">🎫</span>
-          <span class="font-bold text-gray-800 text-sm">Hotspot Vouchers</span>
-        </button>
-        <button onclick="location.href='hotspotMonthly.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">📊</span>
-          <span class="font-bold text-gray-800 text-sm">Monthly Matrix</span>
-        </button>
-
-        <button onclick="location.href='meter.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">⚡</span>
-          <span class="font-bold text-gray-800 text-sm">Sub-Meter</span>
-        </button>
-        <button onclick="location.href='loads.html'" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">📱</span>
-          <span class="font-bold text-gray-800 text-sm">E-Load Logs</span>
-        </button>
-        <button onclick="location.href='vehicle.html'" class="col-span-2 bg-white p-4 rounded-2xl shadow-sm border border-gray-200 flex flex-col items-center justify-center text-center">
-          <span class="text-3xl mb-1">🛵</span>
-          <span class="font-bold text-gray-800 text-sm">Vehicle Care</span>
-        </button>
-      </div>
-
-      <!-- UPCOMING DUES & BILLS PREVIEW -->
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-2">
-        <h3 class="font-bold text-gray-700 text-xs uppercase">⏰ Upcoming Dues & Bills (Top 5)</h3>
-        <div id="dashUpcomingList" class="space-y-2 text-xs">
-          <p class="text-gray-400 text-center">Loading upcoming dues...</p>
+    <!-- FORM 2: CREDIT CARDS HUB (RECONCILE STATEMENT + ENROLL NEW CARD) -->
+    <div id="cardFormBox" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-3 hidden">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h2 class="font-bold text-rose-900 text-xs uppercase">💳 Credit Card Management</h2>
+        <div class="flex bg-rose-100 p-0.5 rounded-lg text-[10px] font-bold">
+          <button type="button" id="subTabStmtBtn" onclick="switchCcSubTab('stmt')" class="px-2 py-1 rounded-md bg-rose-600 text-white">📄 Statement / SOA</button>
+          <button type="button" id="subTabEnrollBtn" onclick="switchCcSubTab('enroll')" class="px-2 py-1 rounded-md text-rose-900">➕ Enroll Card</button>
         </div>
       </div>
 
-      <!-- IMPORTANT EVENTS PREVIEW (UPCOMING FROM TODAY, TOP 5) -->
-      <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-2">
-        <div class="flex justify-between items-center">
-          <h3 class="font-bold text-pink-700 text-xs uppercase">🎉 Upcoming Family Events (Top 5)</h3>
-          <button onclick="location.href='bills.html'" class="text-[10px] text-pink-600 font-semibold">View All ➡️</button>
+      <!-- SUB-FORM A: RECONCILE / ADD MONTHLY STATEMENT BILL -->
+      <form id="ccForm" class="space-y-3">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Select Enrolled Card</label>
+            <select id="ccCardDropdown" onchange="onEnrolledCardSelect()" class="w-full p-2.5 border rounded-xl text-xs outline-none font-bold text-rose-950"></select>
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Billing Month</label>
+            <select id="ccBillingMonth" onchange="updateSurchargePreview()" class="w-full p-2.5 border rounded-xl text-xs outline-none font-semibold"></select>
+          </div>
         </div>
-        <div id="dashEventsList" class="space-y-2 text-xs">
-          <p class="text-gray-400 text-center">Loading events...</p>
+
+        <div id="unenrolledCardInputs" class="grid grid-cols-2 gap-2 hidden bg-gray-50 p-2.5 rounded-xl border">
+          <div>
+            <label class="text-[11px] font-semibold text-gray-600">Card Name</label>
+            <input type="text" id="ccCustomName" oninput="updateSurchargePreview()" placeholder="e.g. BDO Gold" class="w-full p-2 border rounded-lg text-xs outline-none font-bold">
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-gray-600">Card Holder</label>
+            <select id="ccCustomHolder" onchange="updateSurchargePreview()" class="w-full p-2 border rounded-lg text-xs outline-none loan-profile-select"></select>
+          </div>
         </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Actual Statement Due (₱)</label>
+            <input type="number" step="0.01" id="ccAmount" oninput="updateSurchargePreview()" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-rose-700">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Due Day (Auto-Filled)</label>
+            <input type="text" id="ccDueDay" required value="8th" placeholder="e.g. 20th" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+          </div>
+        </div>
+
+        <!-- SURCHARGE / RECONCILIATION COMPARISON BOX -->
+        <div class="bg-slate-900 text-white p-3 rounded-xl border border-rose-500/40 space-y-1.5">
+          <div class="flex justify-between items-center border-b border-white/10 pb-1">
+            <span class="text-[10px] font-bold text-rose-300 uppercase">🔍 SOA vs. Tracked Expenses</span>
+            <span id="ccReconcileStatus" class="text-[10px] font-bold text-gray-400">Waiting for SOA amount...</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center pt-0.5">
+            <div class="bg-white/5 p-1.5 rounded-lg">
+              <span class="text-[9px] text-gray-400 block">Tracked Swipes</span>
+              <span id="ccPreviewTracked" class="text-xs font-extrabold text-cyan-300">₱0.00</span>
+            </div>
+            <div class="bg-white/5 p-1.5 rounded-lg">
+              <span class="text-[9px] text-gray-400 block">Actual SOA Bill</span>
+              <span id="ccPreviewActual" class="text-xs font-extrabold text-white">₱0.00</span>
+            </div>
+            <div class="bg-white/5 p-1.5 rounded-lg">
+              <span class="text-[9px] text-amber-300 block">Surcharges / Diff</span>
+              <span id="ccPreviewDiff" class="text-xs font-extrabold text-amber-400">₱0.00</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Notes (Optional)</label>
+          <input type="text" id="ccNotes" placeholder="e.g. Finance charge, Annual fee, Full payment" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+        </div>
+
+        <button type="submit" class="w-full bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 transition">Save / Reconcile Statement</button>
+      </form>
+
+      <!-- SUB-FORM B: ENROLL NEW CREDIT CARD -->
+      <form id="enrollCardForm" class="space-y-3 hidden">
+        <p class="text-[11px] text-gray-500 bg-rose-50 p-2 rounded-lg border border-rose-100">
+          I-enroll ang card dito para lumabas na siya sa dropdown ng <strong>Loans & Cards</strong> at <strong>Daily Expenses</strong> kasama ang fixed due date nito.
+        </p>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Card Name</label>
+            <input type="text" id="enrollCardName" required placeholder="e.g. UB Rewards Visa" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Card Holder</label>
+            <select id="enrollCardHolder" class="w-full p-2.5 border rounded-xl text-sm outline-none loan-profile-select"></select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Fixed Due Day</label>
+            <input type="text" id="enrollCardDueDay" required placeholder="e.g. 8th" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+          </div>
+          <div>
+            <label class="text-xs font-semibold text-gray-500">Credit Limit (Optional)</label>
+            <input type="number" step="0.01" id="enrollCardLimit" placeholder="e.g. 30000" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-900 transition">💾 Enroll Card to System</button>
+      </form>
+    </div>
+
+    <!-- CREDIT CARDS TRACKER LIST -->
+    <div id="ccTrackerSection" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 hidden">
+      <h3 class="font-bold text-rose-800 text-xs uppercase mb-3">💳 Credit Card Statements</h3>
+      <div id="ccList" class="space-y-2.5 text-sm"></div>
+    </div>
+
+    <!-- INDIVIDUAL INSTALLMENT TRACKER & PROGRESS -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
+      <h3 class="font-semibold text-gray-700 text-xs uppercase mb-3">📋 Individual Item Breakdown</h3>
+      <div id="loansList" class="space-y-3 text-sm">
+        <p class="text-gray-400 text-center">Loading loans...</p>
       </div>
-    </section>
+    </div>
   </main>
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
-    let currentUser = localStorage.getItem("household_hub_user") || "";
-    let sessionToken = localStorage.getItem("household_hub_token") || "";
-    const ADMIN_USER = "Froilan"; 
+    const currentUser = localStorage.getItem("household_hub_user") || "";
+    const sessionToken = localStorage.getItem("household_hub_token") || "";
 
-    function forceLoginScreen() {
-      currentUser = "";
-      sessionToken = "";
+    if (!currentUser || !sessionToken) {
+      window.location.href = "index.html";
+    }
+
+    function handleUnauthorized() {
       localStorage.removeItem("household_hub_user");
       localStorage.removeItem("household_hub_token");
-      document.getElementById('activeUserName').innerText = "Not Logged In";
-      document.getElementById('summaryUserName').innerText = "---";
-      document.getElementById('adminNavBtn').classList.add('hidden');
-      document.getElementById('loginOverlay').classList.remove('hidden');
+      window.location.href = "index.html";
     }
 
-    function checkAuth() {
-      if (!currentUser || !sessionToken) {
-        forceLoginScreen();
+    const isAdminUser = currentUser.toLowerCase() === 'froilan' || currentUser.toLowerCase() === 'admin';
+
+    let rawLoansCache = [];
+    let rawCardsCache = [];
+    let enrolledCardsCache = [];
+    let adminScope = 'all';
+
+    function formatMoney(val) {
+      const num = parseFloat(val) || 0;
+      return num.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function switchCcSubTab(mode) {
+      const stmtForm = document.getElementById('ccForm');
+      const enrollForm = document.getElementById('enrollCardForm');
+      const btnStmt = document.getElementById('subTabStmtBtn');
+      const btnEnroll = document.getElementById('subTabEnrollBtn');
+
+      if (mode === 'stmt') {
+        stmtForm.classList.remove('hidden');
+        enrollForm.classList.add('hidden');
+        btnStmt.className = "px-2 py-1 rounded-md bg-rose-600 text-white";
+        btnEnroll.className = "px-2 py-1 rounded-md text-rose-900";
       } else {
-        document.getElementById('loginOverlay').classList.add('hidden');
-        document.getElementById('activeUserName').innerText = currentUser;
-        document.getElementById('summaryUserName').innerText = currentUser;
-        if (currentUser.toLowerCase() === ADMIN_USER.toLowerCase() || currentUser.toLowerCase().includes("admin")) {
-          document.getElementById('adminNavBtn').classList.remove('hidden');
-        }
-        fetchDashboardData();
+        stmtForm.classList.add('hidden');
+        enrollForm.classList.remove('hidden');
+        btnEnroll.className = "px-2 py-1 rounded-md bg-slate-800 text-white";
+        btnStmt.className = "px-2 py-1 rounded-md text-rose-900";
       }
     }
 
-    function logout() {
-      if (confirm("Log out of your profile?")) {
-        if (sessionToken) {
-          fetch(API_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ action: "logoutUser", token: sessionToken })
-          }).catch(() => {});
+    function populateEnrolledCardsDropdown() {
+      const dropdown = document.getElementById('ccCardDropdown');
+      const map = new Map();
+
+      map.set("UB Rewards Visa|Froilan", { cardName: "UB Rewards Visa", cardHolder: "Froilan", dueDay: "8th" });
+
+      enrolledCardsCache.forEach(c => {
+        if (c.cardname && c.cardholder) {
+          const key = `${String(c.cardname).trim()}|${String(c.cardholder).trim()}`;
+          map.set(key, {
+            cardName: String(c.cardname).trim(),
+            cardHolder: String(c.cardholder).trim(),
+            dueDay: String(c.dueday || "20th").trim()
+          });
         }
-        forceLoginScreen();
+      });
+
+      rawCardsCache.forEach(c => {
+        if (c.cardname && c.cardholder) {
+          const key = `${String(c.cardname).trim()}|${String(c.cardholder).trim()}`;
+          if (!map.has(key)) {
+            map.set(key, {
+              cardName: String(c.cardname).trim(),
+              cardHolder: String(c.cardholder).trim(),
+              dueDay: String(c.dueday || "20th").trim()
+            });
+          }
+        }
+      });
+
+      let html = '';
+      map.forEach((info, key) => {
+        html += `<option value="${key}" data-due="${info.dueDay}">${info.cardName} - ${info.cardHolder}</option>`;
+      });
+      html += `<option value="CUSTOM">➕ Other / Unenrolled Card...</option>`;
+      dropdown.innerHTML = html;
+      onEnrolledCardSelect();
+    }
+
+    function onEnrolledCardSelect() {
+      const dropdown = document.getElementById('ccCardDropdown');
+      const val = dropdown.value;
+      const customBox = document.getElementById('unenrolledCardInputs');
+      const dueInput = document.getElementById('ccDueDay');
+
+      if (val === 'CUSTOM') {
+        customBox.classList.remove('hidden');
+        document.getElementById('ccCustomName').required = true;
+      } else {
+        customBox.classList.add('hidden');
+        document.getElementById('ccCustomName').required = false;
+        const selectedOpt = dropdown.options[dropdown.selectedIndex];
+        if (selectedOpt && selectedOpt.dataset.due) {
+          dueInput.value = selectedOpt.dataset.due;
+        }
+      }
+      updateSurchargePreview();
+    }
+
+    function updateSurchargePreview() {
+      const dropdown = document.getElementById('ccCardDropdown');
+      const val = dropdown.value;
+      const bMonth = document.getElementById('ccBillingMonth').value;
+      const actualVal = parseFloat(document.getElementById('ccAmount').value) || 0;
+
+      let cardName = "";
+      let cardHolder = "";
+      if (val === 'CUSTOM') {
+        cardName = document.getElementById('ccCustomName').value.trim();
+        cardHolder = document.getElementById('ccCustomHolder').value;
+      } else if (val.includes('|')) {
+        [cardName, cardHolder] = val.split('|');
+      }
+
+      let tracked = 0;
+      const existing = rawCardsCache.find(c =>
+        String(c.cardname || '').trim().toLowerCase() === cardName.toLowerCase() &&
+        String(c.cardholder || '').trim().toLowerCase() === cardHolder.toLowerCase() &&
+        String(c.billingmonth || '').replace(/'/g, '').trim() === bMonth &&
+        String(c.status || '').toLowerCase() !== 'paid'
+      );
+
+      if (existing) {
+        tracked = parseFloat(existing.trackedamount) || parseFloat(existing.statementamount) || 0;
+      }
+
+      document.getElementById('ccPreviewTracked').innerText = `₱${formatMoney(tracked)}`;
+      document.getElementById('ccPreviewActual').innerText = `₱${formatMoney(actualVal)}`;
+
+      const diffEl = document.getElementById('ccPreviewDiff');
+      const statusEl = document.getElementById('ccReconcileStatus');
+
+      if (actualVal <= 0) {
+        diffEl.innerText = "₱0.00";
+        diffEl.className = "text-xs font-extrabold text-gray-400";
+        statusEl.innerText = tracked > 0 ? "Enter SOA to check surcharges" : "No tracked swipes yet";
+        statusEl.className = "text-[10px] font-bold text-gray-400";
+        return;
+      }
+
+      if (tracked === 0) {
+        diffEl.innerText = "—";
+        diffEl.className = "text-xs font-extrabold text-gray-300";
+        statusEl.innerText = "Direct SOA Entry";
+        statusEl.className = "text-[10px] font-bold text-cyan-300";
+        return;
+      }
+
+      const diff = actualVal - tracked;
+      if (Math.abs(diff) < 0.01) {
+        diffEl.innerText = "₱0.00";
+        diffEl.className = "text-xs font-extrabold text-emerald-400";
+        statusEl.innerText = "✅ Exact Match!";
+        statusEl.className = "text-[10px] font-bold text-emerald-400";
+      } else if (diff > 0) {
+        diffEl.innerText = `+₱${formatMoney(diff)}`;
+        diffEl.className = "text-xs font-extrabold text-rose-400";
+        statusEl.innerText = "⚠️ Surcharges / Unlogged!";
+        statusEl.className = "text-[10px] font-bold text-rose-400";
+      } else {
+        diffEl.innerText = `-₱${formatMoney(Math.abs(diff))}`;
+        diffEl.className = "text-xs font-extrabold text-amber-300";
+        statusEl.innerText = "💡 Less than tracked (Rebate/Refund?)";
+        statusEl.className = "text-[10px] font-bold text-amber-300";
       }
     }
 
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const submitBtn = e.target.querySelector('button[type="submit"]');
-      const name = document.getElementById('loginName').value.trim();
-      const pin = document.getElementById('loginPin').value.trim() || "1234";
+    function calculateInstallmentPreview() {
+      const principal = parseFloat(document.getElementById('loanPrincipal').value) || 0;
+      const monthly = parseFloat(document.getElementById('loanMonthly').value) || 0;
+      const totalMos = Math.max(1, parseInt(document.getElementById('loanTotalMonths').value) || 0);
+      const paidMos = Math.min(totalMos, Math.max(0, parseInt(document.getElementById('loanMonthsPaid').value) || 0));
+      const remMos = Math.max(0, totalMos - paidMos);
 
-      submitBtn.disabled = true;
-      submitBtn.innerText = "Verifying...";
+      const totalPayable = monthly * totalMos;
+      const alreadyPaid = monthly * paidMos;
+      const remainingBal = monthly * remMos;
 
-      try {
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "loginUser", name: name, pin: pin })
-        });
-        const json = await res.json();
+      let totalInterest = 0;
+      let monthlyInterest = 0;
+      let monthlyRatePct = 0;
 
-        if (json.status === "success" && json.token) {
-          currentUser = json.user || name;
-          sessionToken = json.token;
-          localStorage.setItem("household_hub_user", currentUser);
-          localStorage.setItem("household_hub_token", sessionToken);
-          checkAuth();
-        } else {
-          alert(json.message || "Invalid Name or PIN!");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Connection error while logging in. Try again.");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerText = "Log In";
+      if (principal > 0 && totalPayable > principal) {
+        totalInterest = totalPayable - principal;
+        monthlyInterest = totalInterest / totalMos;
+        monthlyRatePct = (monthlyInterest / principal) * 100;
       }
-    });
 
-    async function fetchDashboardData() {
-      if (!currentUser || !sessionToken) return;
+      document.getElementById('calcTotalPayable').innerText = `₱${formatMoney(totalPayable)}`;
+      document.getElementById('calcAlreadyPaid').innerText = `₱${formatMoney(alreadyPaid)}`;
+      document.getElementById('calcRemainingBal').innerText = `₱${formatMoney(remainingBal)}`;
+      document.getElementById('calcTotalInterest').innerText = `₱${formatMoney(totalInterest)}`;
+      document.getElementById('calcMonthlyInterest').innerText = `₱${formatMoney(monthlyInterest)}`;
+      document.getElementById('calcInterestRate').innerText = principal > 0
+        ? (totalInterest === 0 ? '0% (Zero)' : `${monthlyRatePct.toFixed(2)}%/mo`)
+        : '—';
+
+      const startVal = document.getElementById('loanStartMonth').value;
+      if (startVal && startVal.includes('-')) {
+        const [yr, mo] = startVal.split('-').map(Number);
+        const endDate = new Date(yr, (mo - 1) + (totalMos - 1), 1);
+        const endLabel = endDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        document.getElementById('calcEndMonth').innerText = `Ends: ${endLabel} (${remMos} mos left)`;
+      }
+    }
+
+    function setupViewIndicator() {
+      const badge = document.getElementById('viewModeBadge');
+      const toggleBox = document.getElementById('adminViewToggle');
+      if (isAdminUser) {
+        toggleBox.classList.remove('hidden');
+        badge.innerText = adminScope === 'all' ? '👑 Admin View (Overall)' : `👤 ${currentUser}'s Dues Only`;
+      } else {
+        toggleBox.classList.add('hidden');
+        badge.innerText = `👤 Personal View (${currentUser})`;
+      }
+    }
+
+    function setAdminScope(scope) {
+      adminScope = scope;
+      const btnAll = document.getElementById('btnViewAll');
+      const btnMine = document.getElementById('btnViewMine');
+      if (scope === 'all') {
+        btnAll.className = "px-2 py-0.5 rounded-md bg-indigo-600 text-white transition";
+        btnMine.className = "px-2 py-0.5 rounded-md text-gray-300 hover:text-white transition";
+      } else {
+        btnMine.className = "px-2 py-0.5 rounded-md bg-cyan-600 text-white transition";
+        btnAll.className = "px-2 py-0.5 rounded-md text-gray-300 hover:text-white transition";
+      }
+      setupViewIndicator();
+      applyScopeAndRender();
+    }
+
+    function applyScopeAndRender() {
+      if (isAdminUser && adminScope === 'mine') {
+        const u = currentUser.toLowerCase();
+        const myLoans = rawLoansCache.filter(l =>
+          String(l.accountholder || '').toLowerCase() === u ||
+          String(l.actualpayer || '').toLowerCase() === u
+        );
+        const myCards = rawCardsCache.filter(c =>
+          String(c.cardholder || '').toLowerCase() === u
+        );
+        renderAllDues(myLoans, myCards);
+      } else {
+        renderAllDues(rawLoansCache, rawCardsCache);
+      }
+    }
+
+    function getCurrentMonthStr() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
+    function getCurrentMonthLabel() {
+      return new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
+
+    function switchFormTab(tab) {
+      const instBox = document.getElementById('installmentFormBox');
+      const cardBox = document.getElementById('cardFormBox');
+      const btnInst = document.getElementById('tabBtnInstallment');
+      const btnCard = document.getElementById('tabBtnCard');
+
+      if (tab === 'installment') {
+        instBox.classList.remove('hidden');
+        cardBox.classList.add('hidden');
+        btnInst.className = "py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition";
+        btnCard.className = "py-2 rounded-lg text-gray-600 hover:text-gray-900 transition";
+      } else {
+        instBox.classList.add('hidden');
+        cardBox.classList.remove('hidden');
+        btnCard.className = "py-2 rounded-lg bg-white text-rose-700 shadow-sm transition";
+        btnInst.className = "py-2 rounded-lg text-gray-600 hover:text-gray-900 transition";
+        populateEnrolledCardsDropdown();
+      }
+    }
+
+    function handlePlanCategoryChange() {
+      const cat = document.getElementById('planCategory').value;
+      const bnplBox = document.getElementById('bnplProviderBox');
+      const customBox = document.getElementById('customProviderBox');
+      const dueInput = document.getElementById('loanDueDay');
+
+      if (cat === 'BNPL') {
+        bnplBox.classList.remove('hidden');
+        handleBnplPresetChange();
+      } else {
+        bnplBox.classList.add('hidden');
+        customBox.classList.remove('hidden');
+        document.getElementById('loanProvider').required = true;
+        dueInput.value = "";
+        dueInput.placeholder = "e.g. Every 9th";
+      }
+    }
+
+    function handleBnplPresetChange() {
+      const preset = document.getElementById('bnplSelect').value;
+      const customBox = document.getElementById('customProviderBox');
+      const dueInput = document.getElementById('loanDueDay');
+
+      if (preset === 'Custom') {
+        customBox.classList.remove('hidden');
+        document.getElementById('loanProvider').required = true;
+      } else {
+        customBox.classList.add('hidden');
+        document.getElementById('loanProvider').required = false;
+        if (preset === 'TikTok PayLater') dueInput.value = '15th';
+        else if (preset === 'SPayLater') dueInput.value = '15th';
+        else if (preset === 'LazPayLater') dueInput.value = '16th';
+        else if (preset === 'Salmon Credit Line') dueInput.value = '27th';
+      }
+    }
+
+    async function fetchLoansData() {
       try {
         const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
 
         if (json.status === "unauthorized") {
-          forceLoginScreen();
+          handleUnauthorized();
           return;
         }
 
         if (json.status === "success") {
-          renderDashboardSummary(json.data.debts || []);
-          renderDashboardUpcoming(json.data.recurring || [], json.data.loans || []);
-          renderDashboardEvents(json.data.events || []);
+          populateProfileDropdowns(json.data.profiles || []);
+          rawLoansCache = json.data.loans || [];
+          rawCardsCache = json.data.creditCards || [];
+          enrolledCardsCache = json.data.enrolledCards || [];
+          populateEnrolledCardsDropdown();
+          applyScopeAndRender();
+          calculateInstallmentPreview();
         }
-      } catch (e) { console.error(e); }
+      } catch (e) {
+        console.error("Failed to load loans:", e);
+      }
     }
 
-    function renderDashboardSummary(debts) {
-      let receivable = 0;
-      let payable = 0;
-      debts.forEach(d => {
-        const amt = parseFloat(d.amount) || 0;
-        const status = String(d.status || '');
-        const personName = String(d.borrowerperson || d.person || '');
-        const loggedUser = String(d.loggedby || '');
+    function populateProfileDropdowns(profiles) {
+      const loanSelects = document.querySelectorAll('.loan-profile-select');
+      let options = profiles.length 
+        ? profiles.map(p => `<option value="${p.name}">${p.name}</option>`).join('')
+        : `<option value="${currentUser}">${currentUser}</option>`;
+      const payerOptions = options + `<option value="Others">🌐 Others (Custom Name)</option>`;
 
-        if (status === 'Unpaid') {
-          if (loggedUser.toLowerCase() === currentUser.toLowerCase() && personName.toLowerCase() !== currentUser.toLowerCase()) {
-            receivable += amt;
-          } else if (personName.toLowerCase() === currentUser.toLowerCase() && loggedUser.toLowerCase() !== currentUser.toLowerCase()) {
-            payable += amt;
-          }
-        }
+      loanSelects.forEach(s => {
+        s.innerHTML = (s.id === 'loanPayer') ? payerOptions : options;
+        if (currentUser) s.value = currentUser;
       });
-      document.getElementById('userReceivable').innerText = `₱${receivable.toFixed(2)}`;
-      document.getElementById('userPayable').innerText = `₱${payable.toFixed(2)}`;
+
+      const monthSelects = [document.getElementById('loanStartMonth'), document.getElementById('ccBillingMonth')];
+      let optHtml = '';
+      const now = new Date();
+      for (let i = -12; i <= 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        const val = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const label = d.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+        optHtml += `<option value="${val}" ${i === 0 ? 'selected' : ''}>${label}</option>`;
+      }
+      monthSelects.forEach(sel => { if (sel) sel.innerHTML = optHtml; });
     }
 
-    function renderDashboardUpcoming(bills, loans) {
-      const container = document.getElementById('dashUpcomingList');
-      const today = new Date();
-      const todayDay = today.getDate();
-      const currMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
-      
-      let combined = [];
+    function checkCustomPayer() {
+      const sel = document.getElementById('loanPayer');
+      const customInput = document.getElementById('loanCustomPayer');
+      if (sel.value === 'Others') {
+        customInput.classList.remove('hidden');
+        customInput.required = true;
+      } else {
+        customInput.classList.add('hidden');
+        customInput.required = false;
+        customInput.value = '';
+      }
+    }
 
-      if (bills) {
-        bills.forEach(b => {
-          const isPaid = String(b.status || '').toLowerCase() === 'paid';
-          const lastPaidBill = String(b.lastpaidmonth || '').replace(/'/g, '').trim();
-          const isPaidThisMonth = isPaid || lastPaidBill.startsWith(currMonth);
+    function isBnplItem(providerName) {
+      const p = String(providerName || '').toLowerCase();
+      return p.startsWith('bnpl') || p.includes('paylater') || p.includes('atome') || p.includes('ggives') || p.includes('salmon');
+    }
 
-          if (!isPaidThisMonth) {
-            const dueDay = parseInt(String(b.duedatedayofmonth || '').replace(/\D/g, '')) || 99;
-            combined.push({ 
-              name: b.billname, 
-              amount: parseFloat(b.amount || 0), 
-              day: dueDay, 
-              type: 'Bill' 
-            });
+    function cleanProviderLabel(providerName) {
+      return String(providerName || '').replace(/^BNPL\s*-\s*/i, '').trim();
+    }
+
+    function renderAllDues(loans, cards) {
+      const container = document.getElementById('loansList');
+      const currMonth = getCurrentMonthStr();
+      document.getElementById('currentMonthBadge').innerText = getCurrentMonthLabel();
+
+      let dueThisMonth = 0;
+      let totalRemaining = 0;
+
+      let grandTotalObligation = 0;
+      let grandTotalPaid = 0;
+      let grandTotalRemaining = 0;
+
+      const ccSection = document.getElementById('ccTrackerSection');
+      const ccList = document.getElementById('ccList');
+      if (cards && cards.length > 0) {
+        ccSection.classList.remove('hidden');
+        ccList.innerHTML = cards.map(c => {
+          const amt = parseFloat(c.statementamount) || 0;
+          const paidAmt = parseFloat(c.amountpaid) || 0;
+          const remAmt = c.remainingbalance !== undefined && c.remainingbalance !== ""
+            ? parseFloat(c.remainingbalance)
+            : (String(c.status || '').toLowerCase() === 'paid' ? 0 : amt);
+          const tracked = parseFloat(c.trackedamount) || 0;
+          const surcharge = parseFloat(c.surcharges) || 0;
+          const isPaid = String(c.status || '').toLowerCase() === 'paid' || remAmt <= 0;
+          const isPartial = paidAmt > 0 && !isPaid;
+          const bMonth = String(c.billingmonth || '').replace(/'/g, '');
+          const datePaid = String(c.datepaid || '').replace(/'/g, '');
+          const safeCardLabel = `${c.cardname || ''} - ${c.cardholder || ''}`.replace(/'/g, "\\'");
+
+          grandTotalObligation += amt;
+          grandTotalPaid += paidAmt;
+          grandTotalRemaining += Math.max(0, amt - paidAmt);
+
+          if (!isPaid && bMonth === currMonth) {
+            dueThisMonth += remAmt;
           }
-        });
-      }
 
-      if (loans) {
-        loans.forEach(l => {
-          const remM = Math.max(0, (parseInt(l.totalmonths) || 1) - (parseInt(l.monthspaid) || 0));
-          const startM = String(l.startmonth || currMonth).replace(/'/g, '').trim();
-          const lastPaid = String(l.lastpaidmonth || '').replace(/'/g, '').trim();
-
-          const isStarted = !startM || currMonth >= startM;
-          const isPaidThisMonth = lastPaid.startsWith(currMonth) || remM === 0;
-
-          if (remM > 0 && isStarted && !isPaidThisMonth && l.status !== 'Pending Approval') {
-            const dueDay = parseInt(String(l.dueday || '1').replace(/\D/g, '')) || 15;
-            combined.push({ 
-              name: `${l.loanprovider} (${l.itemdescription || ''})`, 
-              amount: parseFloat(l.monthlydue || 0), 
-              day: dueDay, 
-              type: 'Loan' 
-            });
+          let surchargeHTML = '';
+          if (tracked > 0 && Math.abs(surcharge) >= 0.01) {
+            const sign = surcharge > 0 ? '+' : '-';
+            const badgeColor = surcharge > 0 ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300';
+            surchargeHTML = `
+              <div class="text-[10px] px-2 py-1 rounded-lg border ${badgeColor} font-semibold flex justify-between">
+                <span>Tracked Swipes: ₱${formatMoney(tracked)}</span>
+                <span>Surcharges/Diff: <strong>${sign}₱${formatMoney(Math.abs(surcharge))}</strong></span>
+              </div>
+            `;
           }
-        });
-      }
 
-      combined = combined.map(item => {
-        const diff = item.day - todayDay;
-        let urgencyRank = 3;
-        let badge = '';
-        let cardStyle = 'bg-gray-50 border-gray-100';
-        let subText = `Due every ${item.day}th`;
+          let paymentLogHTML = '';
+          if (paidAmt > 0) {
+            paymentLogHTML = `
+              <div class="text-[10px] bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-1 rounded-lg font-semibold flex justify-between">
+                <span>Paid: <strong>₱${formatMoney(paidAmt)}</strong> ${datePaid ? `(${datePaid})` : ''}</span>
+                <span>Rem. Bal: <strong>₱${formatMoney(remAmt)}</strong></span>
+              </div>
+            `;
+          }
 
-        if (diff < 0) {
-          urgencyRank = 1;
-          badge = `<span class="text-[9px] font-bold bg-red-600 text-white px-1.5 py-0.5 rounded uppercase animate-pulse">🚨 Past Due (${Math.abs(diff)}d ago)</span>`;
-          cardStyle = 'bg-red-50/80 border-red-200';
-        } else if (diff === 0) {
-          urgencyRank = 2;
-          badge = `<span class="text-[9px] font-bold bg-amber-500 text-white px-1.5 py-0.5 rounded uppercase">⚠️ Due Today</span>`;
-          cardStyle = 'bg-amber-50/80 border-amber-200';
-        } else if (diff <= 3) {
-          urgencyRank = 2;
-          badge = `<span class="text-[9px] font-bold bg-orange-500 text-white px-1.5 py-0.5 rounded uppercase">⏳ Near Due (${diff}d left)</span>`;
-          cardStyle = 'bg-orange-50/70 border-orange-200';
-        } else {
-          subText = `Due every ${item.day}th (in ${diff} days)`;
-        }
-
-        return { ...item, urgencyRank, diff, badge, cardStyle, subText };
-      });
-
-      combined.sort((a, b) => {
-        if (a.urgencyRank !== b.urgencyRank) return a.urgencyRank - b.urgencyRank;
-        return a.day - b.day;
-      });
-
-      const top5 = combined.slice(0, 5);
-      if (!top5.length) { 
-        container.innerHTML = '<p class="text-gray-400 text-center py-1">No upcoming dues! 🎉</p>'; 
-        return; 
-      }
-
-      container.innerHTML = top5.map(item => `
-        <div class="p-2.5 ${item.cardStyle} rounded-xl border flex justify-between items-center gap-2">
-          <div class="flex-1 min-w-0">
-            <div class="flex flex-wrap items-center gap-1 mb-0.5">
-              <span class="font-bold text-gray-800 truncate">${item.name}</span>
-              <span class="text-[9px] text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded font-semibold">${item.type}</span>
-              ${item.badge}
+          return `
+            <div class="p-3 rounded-xl border ${isPaid ? 'bg-gray-50 border-gray-200' : 'bg-rose-50/70 border-rose-200'} space-y-2">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-[10px] bg-rose-600 text-white px-2 py-0.5 rounded font-bold uppercase">💳 ${c.cardname}</span>
+                  <span class="text-xs font-bold text-gray-800 ml-1">(${c.cardholder})</span>
+                  <div class="text-[11px] text-gray-500 mt-1">Billing: <strong>${bMonth}</strong> • Due every <strong>${c.dueday}</strong></div>
+                  ${c.notes ? `<div class="text-[10px] text-gray-500 italic mt-0.5">"${c.notes}"</div>` : ''}
+                </div>
+                <div class="text-right">
+                  <div class="font-extrabold text-rose-800 text-base">₱${formatMoney(amt)}</div>
+                  <span class="text-[10px] font-bold ${isPaid ? 'text-green-600' : (isPartial ? 'text-amber-600' : 'text-rose-600')}">
+                    ${isPaid ? '✅ Fully Paid' : (isPartial ? '🌓 Partially Paid' : '⏳ Unpaid')}
+                  </span>
+                </div>
+              </div>
+              ${surchargeHTML}
+              ${paymentLogHTML}
+              ${!isPaid ? `<button onclick="payCard('${c.id}', ${remAmt}, '${safeCardLabel}')" class="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold py-1.5 rounded-lg transition">💵 Record Payment (₱${formatMoney(remAmt)} left)</button>` : ''}
             </div>
-            <div class="text-[10px] text-gray-500">${item.subText}</div>
-          </div>
-          <div class="text-right font-bold text-gray-900 whitespace-nowrap">₱${item.amount.toFixed(2)}</div>
-        </div>
-      `).join('');
-    }
-
-    function renderDashboardEvents(events) {
-      const container = document.getElementById('dashEventsList');
-      if (!events || !events.length) { 
-        container.innerHTML = '<p class="text-gray-400 text-center py-1">No upcoming events.</p>'; 
-        return; 
+          `;
+        }).join('');
+      } else {
+        ccSection.classList.add('hidden');
       }
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const currentYear = today.getFullYear();
+      const bnplGroups = {};
+      const providerMonthlyGroups = {};
 
-      const wrappedEvents = events
-        .map(ev => {
-          const cleanStr = String(ev.date || '').replace(/'/g, '').trim();
-          let monthIdx, dayNum;
-
-          if (/^\d{1,2}-\d{1,2}$/.test(cleanStr)) {
-            const [m, d] = cleanStr.split('-').map(Number);
-            monthIdx = m - 1;
-            dayNum = d;
-          } else {
-            const parsed = new Date(cleanStr);
-            if (isNaN(parsed.getTime())) return null;
-            monthIdx = parsed.getMonth();
-            dayNum = parsed.getDate();
-          }
-
-          let nextOccurrence = new Date(currentYear, monthIdx, dayNum);
-          nextOccurrence.setHours(0, 0, 0, 0);
-
-          if (nextOccurrence < today) {
-            nextOccurrence.setFullYear(currentYear + 1);
-          }
-
-          return {
-            ...ev,
-            nextDate: nextOccurrence
-          };
-        })
-        .filter(ev => ev !== null)
-        .sort((a, b) => a.nextDate - b.nextDate);
-
-      if (!wrappedEvents.length) {
-        container.innerHTML = '<p class="text-gray-400 text-center py-1">No upcoming events.</p>';
+      if (!loans || !loans.length) {
+        container.innerHTML = '<p class="text-gray-400 text-center">No active installment plans found.</p>';
+        document.getElementById('consolidatedBnplCard').classList.add('hidden');
+        document.getElementById('providerMonthlyCard').classList.add('hidden');
+        document.getElementById('loanDueThisMonth').innerText = `₱${formatMoney(dueThisMonth)}`;
+        document.getElementById('loanTotalRemaining').innerText = "₱0.00";
+        document.getElementById('sumTotal').innerText = `₱${formatMoney(grandTotalObligation)}`;
+        document.getElementById('sumPaid').innerText = `₱${formatMoney(grandTotalPaid)}`;
+        document.getElementById('sumRemaining').innerText = `₱${formatMoney(grandTotalRemaining)}`;
         return;
       }
 
-      container.innerHTML = wrappedEvents.slice(0, 5).map(ev => {
-        const cleanDate = ev.nextDate.toLocaleDateString('en-US', { 
-          month: 'short', 
-          day: 'numeric', 
-          year: 'numeric' 
-        });
+      const sortedLoans = [...loans].sort((a, b) => {
+        const remA = Math.max(0, (parseInt(a.totalmonths) || 1) - (parseInt(a.monthspaid) || 0));
+        const remB = Math.max(0, (parseInt(b.totalmonths) || 1) - (parseInt(b.monthspaid) || 0));
+        
+        const isCompletedA = remA === 0 || String(a.status || '').toLowerCase() === 'completed';
+        const isCompletedB = remB === 0 || String(b.status || '').toLowerCase() === 'completed';
+
+        if (!isCompletedA && isCompletedB) return -1;
+        if (isCompletedA && !isCompletedB) return 1;
+
+        const dayA = parseInt(String(a.dueday || '').replace(/\D/g, '')) || 99;
+        const dayB = parseInt(String(b.dueday || '').replace(/\D/g, '')) || 99;
+        return dayA - dayB;
+      });
+
+      container.innerHTML = sortedLoans.map(l => {
+        const monthly = parseFloat(l.monthlydue) || 0;
+        const totalM = parseInt(l.totalmonths) || 1;
+        const paidM = parseInt(l.monthspaid) || 0;
+        const remM = Math.max(0, totalM - paidM);
+        const remBalance = remM * monthly;
+        const progressPct = Math.min(100, Math.round((paidM / totalM) * 100));
+        const startM = String(l.startmonth || currMonth).replace(/'/g, '').trim();
+        const lastPaid = String(l.lastpaidmonth || '').replace(/'/g, '').trim();
+        
+        const isStarted = !startM || currMonth >= startM;
+        const isPaidThisMonth = lastPaid.startsWith(currMonth) || remM === 0;
+        const loanStatus = l.status || 'Active';
+        const rawProvider = l.loanprovider || 'Loan';
+        const isBnpl = isBnplItem(rawProvider);
+        const provider = cleanProviderLabel(rawProvider);
+        const desc = l.itemdescription || '';
+        const holder = l.accountholder || '';
+        const payer = l.actualpayer || '';
+        const dueDay = l.dueday || '15th';
+
+        const itemTotalObligation = monthly * totalM;
+        const itemTotalPaid = monthly * paidM;
+        const itemRemaining = monthly * remM;
+
+        if (loanStatus !== 'Pending Approval') {
+          grandTotalObligation += itemTotalObligation;
+          grandTotalPaid += itemTotalPaid;
+          grandTotalRemaining += itemRemaining;
+        }
+
+        const isHolder = holder.toLowerCase() === currentUser.toLowerCase();
+        const isPayer = payer.toLowerCase() === currentUser.toLowerCase();
+
+        if (remM > 0) {
+          totalRemaining += remBalance;
+          if (isStarted && loanStatus !== 'Pending Approval') {
+            const pKey = `${provider.toLowerCase()}_${holder.toLowerCase()}`;
+            if (!providerMonthlyGroups[pKey]) {
+              providerMonthlyGroups[pKey] = {
+                provider,
+                holder,
+                dueDay,
+                isBnpl,
+                unpaidTotal: 0,
+                paidTotal: 0,
+                items: []
+              };
+            }
+            providerMonthlyGroups[pKey].items.push({
+              desc: desc || provider,
+              amount: monthly,
+              paid: isPaidThisMonth
+            });
+
+            if (isPaidThisMonth) {
+              providerMonthlyGroups[pKey].paidTotal += monthly;
+            } else {
+              providerMonthlyGroups[pKey].unpaidTotal += monthly;
+              dueThisMonth += monthly;
+
+              if (isBnpl) {
+                const groupKey = `${provider.toLowerCase()}_${holder.toLowerCase()}_${String(dueDay).toLowerCase()}`;
+                if (!bnplGroups[groupKey]) {
+                  bnplGroups[groupKey] = {
+                    provider,
+                    holder,
+                    dueDay,
+                    totalDue: 0,
+                    items: [],
+                    ids: []
+                  };
+                }
+                bnplGroups[groupKey].totalDue += monthly;
+                bnplGroups[groupKey].items.push(`${desc} (₱${formatMoney(monthly)})`);
+                bnplGroups[groupKey].ids.push(String(l.id));
+              }
+            }
+          }
+        }
+
+        let actionButtonHTML = '';
+        if (remM > 0) {
+          if (!isStarted) {
+            actionButtonHTML = `<div class="text-center text-xs bg-amber-50 text-amber-800 py-1.5 rounded-xl font-bold border border-amber-200">⏳ Upcoming (Starts on ${startM})</div>`;
+          } else if (isPaidThisMonth) {
+            actionButtonHTML = `<div class="text-center text-xs bg-green-100 text-green-800 py-1.5 rounded-xl font-bold">✅ Paid for ${getCurrentMonthLabel()}</div>`;
+          } else {
+            if (isPayer || isHolder || isAdminUser) {
+              actionButtonHTML = `<button onclick="payLoanMonth('${l.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${getCurrentMonthLabel()} as Paid</button>`;
+            } else {
+              actionButtonHTML = `<div class="text-center text-xs bg-gray-100 text-gray-500 py-1.5 rounded-xl font-semibold">Viewing only</div>`;
+            }
+          }
+        }
+
+        const badgeBg = isBnpl ? 'bg-purple-600' : 'bg-indigo-600';
+        const cardBg = isBnpl ? 'bg-purple-50/50 border-purple-100' : 'bg-indigo-50/60 border-indigo-100';
 
         return `
-          <div class="p-2.5 bg-pink-50/60 rounded-xl border border-pink-100 flex justify-between items-center">
-            <div>
-              <div class="font-bold text-gray-800">${ev.eventname} <span class="text-[10px] text-pink-700 bg-pink-100 px-1.5 py-0.5 rounded">${ev.category || 'Event'}</span></div>
-              <div class="text-[10px] text-gray-500">${ev.notes || ''}</div>
+          <div class="p-3.5 ${cardBg} rounded-2xl border space-y-2.5">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-[10px] ${badgeBg} text-white px-2 py-0.5 rounded font-bold uppercase">${provider}</span>
+                  <span class="font-bold text-gray-900 text-sm">${desc || provider}</span>
+                </div>
+                <div class="text-[11px] text-gray-600 mt-1">
+                  Account: <strong>${holder}</strong> • Payer: <span class="bg-white border px-1.5 py-0.5 rounded font-bold">${payer}</span> • Due: <strong>${dueDay}</strong>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="font-extrabold text-indigo-700 text-base">₱${formatMoney(monthly)}<span class="text-[10px] font-normal text-gray-500">/mo</span></div>
+                <div class="text-[10px] font-bold ${remM === 0 ? 'text-green-600' : 'text-amber-600'}">
+                  ${remM === 0 ? '🎉 Fully Paid!' : `${remM} mos left (₱${formatMoney(remBalance)})`}
+                </div>
+              </div>
             </div>
-            <div class="text-xs font-bold text-pink-900 bg-white px-2 py-1 rounded-lg border border-pink-200 whitespace-nowrap">${cleanDate}</div>
+            <div>
+              <div class="flex justify-between text-[10px] font-semibold text-gray-500 mb-1">
+                <span>Paid: ${paidM} / ${totalM} months</span>
+                <span>${progressPct}%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div class="${badgeBg} h-2 rounded-full transition-all" style="width: ${progressPct}%"></div>
+              </div>
+            </div>
+            ${actionButtonHTML}
           </div>
         `;
       }).join('');
+
+      const provKeys = Object.keys(providerMonthlyGroups);
+      const provCard = document.getElementById('providerMonthlyCard');
+      const provList = document.getElementById('providerMonthlyList');
+
+      if (provKeys.length > 0) {
+        provCard.classList.remove('hidden');
+        provList.innerHTML = provKeys.map(k => {
+          const pg = providerMonthlyGroups[k];
+          const monthTotal = pg.unpaidTotal + pg.paidTotal;
+          const allPaid = pg.unpaidTotal <= 0.01;
+          const tagBadge = pg.isBnpl
+            ? `<span class="text-[9px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-bold">BNPL</span>`
+            : `<span class="text-[9px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">Loan</span>`;
+
+          const itemChips = pg.items.map(it =>
+            `<span class="${it.paid ? 'line-through text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-gray-700 bg-white border-gray-200'} border px-1.5 py-0.5 rounded text-[10px]">${it.desc}: ₱${formatMoney(it.amount)}${it.paid ? ' ✓' : ''}</span>`
+          ).join(' ');
+
+          return `
+            <div class="p-3 rounded-xl border ${allPaid ? 'bg-emerald-50/50 border-emerald-200' : 'bg-indigo-50/50 border-indigo-200'} space-y-1.5">
+              <div class="flex justify-between items-start gap-2">
+                <div>
+                  <div class="font-bold text-gray-900 text-xs flex flex-wrap items-center gap-1">
+                    <span>${pg.provider}</span>
+                    ${tagBadge}
+                    <span class="text-[10px] text-gray-500 font-semibold">(${pg.holder} • Due ${pg.dueDay})</span>
+                  </div>
+                  <div class="text-[10px] text-gray-500 mt-0.5">
+                    Month Total: <strong class="text-gray-800">₱${formatMoney(monthTotal)}</strong>
+                    ${pg.paidTotal > 0 ? ` • Paid: <strong class="text-emerald-700">₱${formatMoney(pg.paidTotal)}</strong>` : ''}
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="font-extrabold text-sm ${allPaid ? 'text-emerald-700' : 'text-amber-700'}">₱${formatMoney(pg.unpaidTotal)}</div>
+                  <div class="text-[9px] font-bold ${allPaid ? 'text-emerald-600' : 'text-amber-600'}">${allPaid ? '✅ Settled' : 'Unpaid App Bill'}</div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1 pt-1">${itemChips}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        provCard.classList.add('hidden');
+      }
+
+      const groupKeys = Object.keys(bnplGroups);
+      const bnplCard = document.getElementById('consolidatedBnplCard');
+      const bnplList = document.getElementById('consolidatedBnplList');
+
+      if (groupKeys.length > 0) {
+        bnplCard.classList.remove('hidden');
+        bnplList.innerHTML = groupKeys.map(k => {
+          const g = bnplGroups[k];
+          const idsJson = JSON.stringify(g.ids).replace(/"/g, '&quot;');
+          const safeGroupLabel = `${g.provider} - ${g.holder}`.replace(/'/g, "\\'");
+          return `
+            <div class="p-3 bg-purple-50 rounded-xl border border-purple-200 space-y-2">
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="font-bold text-purple-950 text-sm">${g.provider} <span class="text-[10px] bg-purple-200 text-purple-900 px-1.5 py-0.5 rounded">${g.holder}</span></div>
+                  <div class="text-[11px] text-purple-700 font-semibold">Fixed Due: Every ${g.dueDay} (${g.items.length} item${g.items.length > 1 ? 's' : ''})</div>
+                  <div class="text-[10px] text-gray-600 mt-1">${g.items.join(' • ')}</div>
+                </div>
+                <div class="text-right font-extrabold text-purple-900 text-base">₱${formatMoney(g.totalDue)}</div>
+              </div>
+              <button onclick="payBnplGroup(${idsJson}, '${safeGroupLabel}')" class="w-full bg-purple-700 hover:bg-purple-800 text-white font-bold py-1.5 rounded-lg text-[11px] transition">✅ Pay All ${g.provider} Dues (₱${formatMoney(g.totalDue)})</button>
+            </div>
+          `;
+        }).join('');
+      } else {
+        bnplCard.classList.add('hidden');
+      }
+
+      document.getElementById('loanDueThisMonth').innerText = `₱${formatMoney(dueThisMonth)}`;
+      document.getElementById('loanTotalRemaining').innerText = `₱${formatMoney(totalRemaining)}`;
+      document.getElementById('sumTotal').innerText = `₱${formatMoney(grandTotalObligation)}`;
+      document.getElementById('sumPaid').innerText = `₱${formatMoney(grandTotalPaid)}`;
+      document.getElementById('sumRemaining').innerText = `₱${formatMoney(grandTotalRemaining)}`;
     }
 
-    checkAuth();
+    async function payLoanMonth(id) {
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "payLoanMonth",
+          token: sessionToken,
+          id: id,
+          actor: currentUser
+        })
+      });
+      alert("Marked as paid!");
+      setTimeout(fetchLoansData, 1500);
+    }
+
+    async function payBnplGroup(ids, label) {
+      if (!confirm(`Mark all ${ids.length} items under ${label} as paid for ${getCurrentMonthLabel()}?`)) return;
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "payConsolidatedBnpl",
+          token: sessionToken,
+          ids: ids,
+          groupLabel: label,
+          actor: currentUser
+        })
+      });
+      alert("All consolidated BNPL dues marked as paid!");
+      setTimeout(fetchLoansData, 1500);
+    }
+
+    async function payCard(id, defaultAmount, cardLabel) {
+      const input = prompt(`Enter actual amount paid for ${cardLabel} (₱):`, defaultAmount);
+      if (input === null) return;
+      const amtPaid = parseFloat(input);
+      if (isNaN(amtPaid) || amtPaid <= 0) {
+        alert("Please enter a valid payment amount.");
+        return;
+      }
+
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "payCreditCard",
+          token: sessionToken,
+          id: id,
+          amountPaid: amtPaid,
+          actor: currentUser
+        })
+      });
+      alert(`Recorded ₱${formatMoney(amtPaid)} payment for ${cardLabel}!`);
+      setTimeout(fetchLoansData, 1500);
+    }
+
+    document.getElementById('loanForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const cat = document.getElementById('planCategory').value;
+      const bnplPreset = document.getElementById('bnplSelect').value;
+      const customProv = document.getElementById('loanProvider').value.trim();
+      
+      let finalProvider = "";
+      if (cat === 'BNPL') {
+        const baseName = bnplPreset === 'Custom' ? customProv : bnplPreset;
+        finalProvider = `BNPL - ${baseName}`;
+      } else {
+        finalProvider = customProv;
+      }
+
+      const payerSelect = document.getElementById('loanPayer').value;
+      const customPayer = document.getElementById('loanCustomPayer').value.trim();
+      const finalPayer = payerSelect === 'Others' ? customPayer : payerSelect;
+
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "addLoan",
+          token: sessionToken,
+          loanProvider: finalProvider,
+          itemDesc: document.getElementById('loanItemDesc').value.trim(),
+          holder: document.getElementById('loanHolder').value,
+          payer: finalPayer,
+          monthlyDue: document.getElementById('loanMonthly').value,
+          startMonth: document.getElementById('loanStartMonth').value,
+          dueDay: document.getElementById('loanDueDay').value.trim(),
+          totalMonths: document.getElementById('loanTotalMonths').value,
+          monthsPaid: document.getElementById('loanMonthsPaid').value,
+          currentMonthStr: getCurrentMonthStr(),
+          actor: currentUser
+        })
+      });
+      alert("Plan saved successfully!");
+      document.getElementById('loanForm').reset();
+      handlePlanCategoryChange();
+      calculateInstallmentPreview();
+      setTimeout(fetchLoansData, 1500);
+    });
+
+    document.getElementById('ccForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const dropdownVal = document.getElementById('ccCardDropdown').value;
+      let cardName = "";
+      let cardHolder = "";
+
+      if (dropdownVal === 'CUSTOM') {
+        cardName = document.getElementById('ccCustomName').value.trim();
+        cardHolder = document.getElementById('ccCustomHolder').value;
+      } else {
+        [cardName, cardHolder] = dropdownVal.split('|');
+      }
+
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "addCreditCardDue",
+          token: sessionToken,
+          cardName: cardName,
+          cardHolder: cardHolder,
+          amount: document.getElementById('ccAmount').value,
+          dueDay: document.getElementById('ccDueDay').value.trim(),
+          billingMonth: document.getElementById('ccBillingMonth').value,
+          notes: document.getElementById('ccNotes').value.trim(),
+          actor: currentUser
+        })
+      });
+      alert("Credit card statement saved & reconciled!");
+      document.getElementById('ccForm').reset();
+      onEnrolledCardSelect();
+      setTimeout(fetchLoansData, 1500);
+    });
+
+    document.getElementById('enrollCardForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "enrollCard",
+          token: sessionToken,
+          cardName: document.getElementById('enrollCardName').value.trim(),
+          cardHolder: document.getElementById('enrollCardHolder').value,
+          dueDay: document.getElementById('enrollCardDueDay').value.trim(),
+          creditLimit: document.getElementById('enrollCardLimit').value,
+          actor: currentUser
+        })
+      });
+      alert("Card enrolled! It will now appear in all dropdowns.");
+      document.getElementById('enrollCardForm').reset();
+      switchCcSubTab('stmt');
+      setTimeout(fetchLoansData, 1500);
+    });
+
+    setupViewIndicator();
+    handlePlanCategoryChange();
+    fetchLoansData();
   </script>
 </body>
 </html>
