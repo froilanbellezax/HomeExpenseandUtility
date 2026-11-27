@@ -302,10 +302,28 @@
       return String(providerName || '').replace(/^BNPL\s*-\s*/i, '').trim();
     }
 
+    function getNextDueDateObj(dueDay, targetYearMonth) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let year = today.getFullYear();
+      let month = today.getMonth();
+
+      if (targetYearMonth && /^\d{4}-\d{2}$/.test(targetYearMonth)) {
+        const [y, m] = targetYearMonth.split('-').map(Number);
+        year = y;
+        month = m - 1;
+      }
+
+      const maxDays = new Date(year, month + 1, 0).getDate();
+      const safeDay = Math.min(dueDay, maxDays);
+      return new Date(year, month, safeDay);
+    }
+
     function renderDashboardUpcoming(bills, loans, cards) {
       const container = document.getElementById('dashUpcomingList');
       const today = new Date();
-      const todayDay = today.getDate();
+      today.setHours(0, 0, 0, 0);
       const currMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
       
       let combined = [];
@@ -322,7 +340,8 @@
             combined.push({ 
               name: b.billname, 
               amount: parseFloat(b.amount || 0), 
-              day: dueDay, 
+              day: dueDay,
+              dueDateObj: getNextDueDateObj(dueDay, currMonth),
               type: 'Bill',
               targetUrl: `bills.html${b.id ? `?focus=${encodeURIComponent(b.id)}` : ''}`
             });
@@ -356,6 +375,7 @@
                   name: holder ? `${cleanProv} (${holder})` : cleanProv,
                   amount: 0,
                   day: dueDay,
+                  dueDateObj: getNextDueDateObj(dueDay, currMonth),
                   type: 'BNPL',
                   count: 0,
                   targetUrl: `loans.html?focusBnpl=${encodeURIComponent(gKey)}`
@@ -368,7 +388,8 @@
               combined.push({ 
                 name: desc ? `${cleanProv} - ${desc}` : cleanProv, 
                 amount: amt, 
-                day: dueDay, 
+                day: dueDay,
+                dueDateObj: getNextDueDateObj(dueDay, currMonth),
                 type: 'Loan',
                 targetUrl: `loans.html?focusLoan=${encodeURIComponent(l.id)}`
               });
@@ -384,7 +405,7 @@
         combined.push(group);
       });
 
-      // 3. Unpaid Credit Cards for Current Month
+      // 3. Unpaid Credit Cards (Explicit BillingMonth)
       if (cards) {
         cards.forEach(c => {
           const amt = parseFloat(c.statementamount) || 0;
@@ -394,12 +415,13 @@
           const isPaid = String(c.status || '').toLowerCase() === 'paid' || remAmt <= 0;
           const bMonth = String(c.billingmonth || '').replace(/'/g, '').trim();
 
-          if (!isPaid && bMonth === currMonth) {
+          if (!isPaid && bMonth) {
             const dueDay = parseInt(String(c.dueday || '20').replace(/\D/g, '')) || 20;
             combined.push({
               name: `${c.cardname} (${c.cardholder})`,
               amount: remAmt,
               day: dueDay,
+              dueDateObj: getNextDueDateObj(dueDay, bMonth),
               type: 'Card',
               targetUrl: `loans.html?focusCard=${encodeURIComponent(c.id)}`
             });
@@ -408,11 +430,12 @@
       }
 
       combined = combined.map(item => {
-        const diff = item.day - todayDay;
+        const diff = Math.round((item.dueDateObj - today) / (1000 * 60 * 60 * 24));
+        const formattedDate = item.dueDateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         let urgencyRank = 3;
         let badge = '';
         let cardStyle = 'bg-gray-50 border-gray-100 hover:border-indigo-300';
-        let subText = `Due every ${item.day}th`;
+        let subText = `Due ${formattedDate} (every ${item.day}th)`;
 
         if (diff < 0) {
           urgencyRank = 1;
@@ -427,7 +450,7 @@
           badge = `<span class="text-[9px] font-bold bg-orange-500 text-white px-1.5 py-0.5 rounded uppercase">⏳ Near Due (${diff}d left)</span>`;
           cardStyle = 'bg-orange-50/70 border-orange-200 hover:border-orange-400';
         } else {
-          subText = `Due every ${item.day}th (in ${diff} days)`;
+          subText = `Due ${formattedDate} • in ${diff} days`;
         }
 
         const typeColor = item.type === 'BNPL'
@@ -439,7 +462,7 @@
 
       combined.sort((a, b) => {
         if (a.urgencyRank !== b.urgencyRank) return a.urgencyRank - b.urgencyRank;
-        return a.day - b.day;
+        return a.diff - b.diff;
       });
 
       const top5 = combined.slice(0, 5);
