@@ -7,6 +7,30 @@
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans pb-10 max-w-md mx-auto min-h-screen flex flex-col relative">
+
+  <!-- DIRECT LOGIN OVERLAY MODAL (PREVENTS REDIRECT LOOPS) -->
+  <div id="loginOverlay" class="fixed inset-0 bg-indigo-950/95 z-[100] flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl space-y-4 text-center">
+      <div class="text-4xl">🔐</div>
+      <div>
+        <h2 class="text-xl font-bold text-gray-800">BelPan House Hub</h2>
+        <p class="text-xs text-gray-500 mt-1">Session expired or not logged in. Enter your details below:</p>
+      </div>
+      <form id="inlineLoginForm" class="space-y-3 text-left">
+        <div>
+          <label class="text-xs font-semibold text-gray-500">Your Full Name</label>
+          <input type="text" id="inlineLoginName" required placeholder="e.g. Froilan" class="w-full p-3 border rounded-xl text-sm outline-none font-semibold">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-gray-500">PIN / Passcode</label>
+          <input type="password" id="inlineLoginPin" placeholder="Default PIN: 1234" class="w-full p-3 border rounded-xl text-sm outline-none font-semibold">
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3.5 rounded-xl hover:bg-indigo-700 transition shadow-lg">Log In</button>
+      </form>
+      <button type="button" onclick="location.href='index.html'" class="text-xs text-indigo-600 font-semibold underline">⬅️ Back to Main Menu</button>
+    </div>
+  </div>
+
   <header class="bg-indigo-600 text-white p-4 shadow-md rounded-b-2xl mb-3 flex justify-between items-center sticky top-0 z-50">
     <h1 class="text-lg font-bold">🏦 Loans, BNPL & Cards</h1>
     <button onclick="location.href='index.html'" class="bg-indigo-800 hover:bg-indigo-900 text-white px-3 py-1.5 rounded-xl text-xs font-semibold">⬅️ Menu</button>
@@ -57,6 +81,16 @@
           <span id="loanTotalRemaining" class="text-lg font-extrabold text-white">₱0.00</span>
         </div>
       </div>
+    </div>
+
+    <!-- PROVIDER / APP MONTHLY TOTAL CHECKER (LOANS & BNPL) -->
+    <div id="providerMonthlyCard" class="bg-white p-4 rounded-2xl shadow-sm border-2 border-indigo-200 space-y-2.5 hidden">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-indigo-950 text-xs uppercase">📱 Monthly Total per App / Provider</h3>
+        <span class="text-[10px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full font-bold">App Bill Check</span>
+      </div>
+      <p class="text-[10px] text-gray-500">Compare Unpaid / Total this month against your actual app bill. Pay individual items below.</p>
+      <div id="providerMonthlyList" class="space-y-2 text-xs"></div>
     </div>
 
     <!-- CONSOLIDATED BNPL SUMMARY -->
@@ -315,20 +349,57 @@
 
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
-    const currentUser = localStorage.getItem("household_hub_user") || "";
-    const sessionToken = localStorage.getItem("household_hub_token") || "";
+    let currentUser = localStorage.getItem("household_hub_user") || "";
+    let sessionToken = localStorage.getItem("household_hub_token") || "";
 
-    if (!currentUser || !sessionToken) {
-      window.location.href = "index.html";
-    }
-
-    function handleUnauthorized() {
+    function showLoginOverlay() {
       localStorage.removeItem("household_hub_user");
       localStorage.removeItem("household_hub_token");
-      window.location.href = "index.html";
+      currentUser = "";
+      sessionToken = "";
+      document.getElementById('loginOverlay').classList.remove('hidden');
     }
 
-    const isAdminUser = currentUser.toLowerCase() === 'froilan' || currentUser.toLowerCase() === 'admin';
+    document.getElementById('inlineLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      const name = document.getElementById('inlineLoginName').value.trim();
+      const pin = document.getElementById('inlineLoginPin').value.trim() || "1234";
+
+      btn.disabled = true;
+      btn.innerText = "Verifying...";
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "loginUser", name: name, pin: pin })
+        });
+        const json = await res.json();
+
+        if (json.status === "success" && json.token) {
+          currentUser = json.user || name;
+          sessionToken = json.token;
+          localStorage.setItem("household_hub_user", currentUser);
+          localStorage.setItem("household_hub_token", sessionToken);
+          document.getElementById('loginOverlay').classList.add('hidden');
+          setupViewIndicator();
+          fetchLoansData();
+        } else {
+          alert(json.message || "Invalid Name or PIN!");
+        }
+      } catch (err) {
+        alert("Connection error while logging in. Try again.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Log In";
+      }
+    });
+
+    function getIsAdminUser() {
+      const u = currentUser.toLowerCase();
+      return u === 'froilan' || u === 'admin' || u.includes('admin');
+    }
 
     let rawLoansCache = [];
     let rawCardsCache = [];
@@ -531,7 +602,7 @@
     function setupViewIndicator() {
       const badge = document.getElementById('viewModeBadge');
       const toggleBox = document.getElementById('adminViewToggle');
-      if (isAdminUser) {
+      if (getIsAdminUser()) {
         toggleBox.classList.remove('hidden');
         badge.innerText = adminScope === 'all' ? '👑 Admin View (Overall)' : `👤 ${currentUser}'s Dues Only`;
       } else {
@@ -556,7 +627,7 @@
     }
 
     function applyScopeAndRender() {
-      if (isAdminUser && adminScope === 'mine') {
+      if (getIsAdminUser() && adminScope === 'mine') {
         const u = currentUser.toLowerCase();
         const myLoans = rawLoansCache.filter(l =>
           String(l.accountholder || '').toLowerCase() === u ||
@@ -636,12 +707,17 @@
     }
 
     async function fetchLoansData() {
+      if (!currentUser || !sessionToken) {
+        showLoginOverlay();
+        return;
+      }
+
       try {
         const res = await fetch(`${API_URL}?token=${encodeURIComponent(sessionToken)}`);
         const json = await res.json();
 
         if (json.status === "unauthorized") {
-          handleUnauthorized();
+          showLoginOverlay();
           return;
         }
 
@@ -792,10 +868,12 @@
       }
 
       const bnplGroups = {};
+      const providerMonthlyGroups = {};
 
       if (!loans || !loans.length) {
         container.innerHTML = '<p class="text-gray-400 text-center">No active installment plans found.</p>';
         document.getElementById('consolidatedBnplCard').classList.add('hidden');
+        document.getElementById('providerMonthlyCard').classList.add('hidden');
         document.getElementById('loanDueThisMonth').innerText = `₱${formatMoney(dueThisMonth)}`;
         document.getElementById('loanTotalRemaining').innerText = "₱0.00";
         document.getElementById('sumTotal').innerText = `₱${formatMoney(grandTotalObligation)}`;
@@ -826,11 +904,11 @@
         const remM = Math.max(0, totalM - paidM);
         const remBalance = remM * monthly;
         const progressPct = Math.min(100, Math.round((paidM / totalM) * 100));
-        const startM = String(l.startmonth || currMonth).replace(/'/g, '');
-        const lastPaid = String(l.lastpaidmonth || '').replace(/'/g, '');
+        const startM = String(l.startmonth || currMonth).replace(/'/g, '').trim();
+        const lastPaid = String(l.lastpaidmonth || '').replace(/'/g, '').trim();
         
         const isStarted = !startM || currMonth >= startM;
-        const isPaidThisMonth = lastPaid === currMonth || remM === 0;
+        const isPaidThisMonth = lastPaid.startsWith(currMonth) || remM === 0;
         const loanStatus = l.status || 'Active';
         const rawProvider = l.loanprovider || 'Loan';
         const isBnpl = isBnplItem(rawProvider);
@@ -855,24 +933,47 @@
 
         if (remM > 0) {
           totalRemaining += remBalance;
-          if (isStarted && !isPaidThisMonth && loanStatus !== 'Pending Approval') {
-            dueThisMonth += monthly;
+          if (isStarted && loanStatus !== 'Pending Approval') {
+            const pKey = `${provider.toLowerCase()}_${holder.toLowerCase()}`;
+            if (!providerMonthlyGroups[pKey]) {
+              providerMonthlyGroups[pKey] = {
+                provider,
+                holder,
+                dueDay,
+                isBnpl,
+                unpaidTotal: 0,
+                paidTotal: 0,
+                items: []
+              };
+            }
+            providerMonthlyGroups[pKey].items.push({
+              desc: desc || provider,
+              amount: monthly,
+              paid: isPaidThisMonth
+            });
 
-            if (isBnpl) {
-              const groupKey = `${provider.toLowerCase()}_${holder.toLowerCase()}_${String(dueDay).toLowerCase()}`;
-              if (!bnplGroups[groupKey]) {
-                bnplGroups[groupKey] = {
-                  provider,
-                  holder,
-                  dueDay,
-                  totalDue: 0,
-                  items: [],
-                  ids: []
-                };
+            if (isPaidThisMonth) {
+              providerMonthlyGroups[pKey].paidTotal += monthly;
+            } else {
+              providerMonthlyGroups[pKey].unpaidTotal += monthly;
+              dueThisMonth += monthly;
+
+              if (isBnpl) {
+                const groupKey = `${provider.toLowerCase()}_${holder.toLowerCase()}_${String(dueDay).toLowerCase()}`;
+                if (!bnplGroups[groupKey]) {
+                  bnplGroups[groupKey] = {
+                    provider,
+                    holder,
+                    dueDay,
+                    totalDue: 0,
+                    items: [],
+                    ids: []
+                  };
+                }
+                bnplGroups[groupKey].totalDue += monthly;
+                bnplGroups[groupKey].items.push(`${desc} (₱${formatMoney(monthly)})`);
+                bnplGroups[groupKey].ids.push(String(l.id));
               }
-              bnplGroups[groupKey].totalDue += monthly;
-              bnplGroups[groupKey].items.push(`${desc} (₱${formatMoney(monthly)})`);
-              bnplGroups[groupKey].ids.push(String(l.id));
             }
           }
         }
@@ -884,7 +985,7 @@
           } else if (isPaidThisMonth) {
             actionButtonHTML = `<div class="text-center text-xs bg-green-100 text-green-800 py-1.5 rounded-xl font-bold">✅ Paid for ${getCurrentMonthLabel()}</div>`;
           } else {
-            if (isPayer || isHolder || isAdminUser) {
+            if (isPayer || isHolder || getIsAdminUser()) {
               actionButtonHTML = `<button onclick="payLoanMonth('${l.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${getCurrentMonthLabel()} as Paid</button>`;
             } else {
               actionButtonHTML = `<div class="text-center text-xs bg-gray-100 text-gray-500 py-1.5 rounded-xl font-semibold">Viewing only</div>`;
@@ -927,6 +1028,51 @@
           </div>
         `;
       }).join('');
+
+      const provKeys = Object.keys(providerMonthlyGroups);
+      const provCard = document.getElementById('providerMonthlyCard');
+      const provList = document.getElementById('providerMonthlyList');
+
+      if (provKeys.length > 0) {
+        provCard.classList.remove('hidden');
+        provList.innerHTML = provKeys.map(k => {
+          const pg = providerMonthlyGroups[k];
+          const monthTotal = pg.unpaidTotal + pg.paidTotal;
+          const allPaid = pg.unpaidTotal <= 0.01;
+          const tagBadge = pg.isBnpl
+            ? `<span class="text-[9px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded font-bold">BNPL</span>`
+            : `<span class="text-[9px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">Loan</span>`;
+
+          const itemChips = pg.items.map(it =>
+            `<span class="${it.paid ? 'line-through text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-gray-700 bg-white border-gray-200'} border px-1.5 py-0.5 rounded text-[10px]">${it.desc}: ₱${formatMoney(it.amount)}${it.paid ? ' ✓' : ''}</span>`
+          ).join(' ');
+
+          return `
+            <div class="p-3 rounded-xl border ${allPaid ? 'bg-emerald-50/50 border-emerald-200' : 'bg-indigo-50/50 border-indigo-200'} space-y-1.5">
+              <div class="flex justify-between items-start gap-2">
+                <div>
+                  <div class="font-bold text-gray-900 text-xs flex flex-wrap items-center gap-1">
+                    <span>${pg.provider}</span>
+                    ${tagBadge}
+                    <span class="text-[10px] text-gray-500 font-semibold">(${pg.holder} • Due ${pg.dueDay})</span>
+                  </div>
+                  <div class="text-[10px] text-gray-500 mt-0.5">
+                    Month Total: <strong class="text-gray-800">₱${formatMoney(monthTotal)}</strong>
+                    ${pg.paidTotal > 0 ? ` • Paid: <strong class="text-emerald-700">₱${formatMoney(pg.paidTotal)}</strong>` : ''}
+                  </div>
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="font-extrabold text-sm ${allPaid ? 'text-emerald-700' : 'text-amber-700'}">₱${formatMoney(pg.unpaidTotal)}</div>
+                  <div class="text-[9px] font-bold ${allPaid ? 'text-emerald-600' : 'text-amber-600'}">${allPaid ? '✅ Settled' : 'Unpaid App Bill'}</div>
+                </div>
+              </div>
+              <div class="flex flex-wrap gap-1 pt-1">${itemChips}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        provCard.classList.add('hidden');
+      }
 
       const groupKeys = Object.keys(bnplGroups);
       const bnplCard = document.getElementById('consolidatedBnplCard');
