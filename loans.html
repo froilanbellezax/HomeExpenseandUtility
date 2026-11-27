@@ -351,6 +351,7 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     let currentUser = localStorage.getItem("household_hub_user") || "";
     let sessionToken = localStorage.getItem("household_hub_token") || "";
+    let hasHandledDeepLink = false;
 
     function showLoginOverlay() {
       localStorage.removeItem("household_hub_user");
@@ -627,7 +628,7 @@
     }
 
     function applyScopeAndRender() {
-      if (getIsAdminUser() && adminScope === 'mine') {
+      if (isAdminScopeMine()) {
         const u = currentUser.toLowerCase();
         const myLoans = rawLoansCache.filter(l =>
           String(l.accountholder || '').toLowerCase() === u ||
@@ -640,6 +641,10 @@
       } else {
         renderAllDues(rawLoansCache, rawCardsCache);
       }
+    }
+
+    function isAdminScopeMine() {
+      return getIsAdminUser() && adminScope === 'mine';
     }
 
     function getCurrentMonthStr() {
@@ -706,6 +711,28 @@
       }
     }
 
+    function handleDeepLinkScroll() {
+      if (hasHandledDeepLink) return;
+      const params = new URLSearchParams(window.location.search);
+      const focusLoan = params.get('focusLoan');
+      const focusBnpl = params.get('focusBnpl');
+      const focusCard = params.get('focusCard');
+
+      let targetEl = null;
+      if (focusLoan) targetEl = document.getElementById(`loan-card-${focusLoan}`);
+      else if (focusBnpl) targetEl = document.getElementById(`bnpl-group-${focusBnpl}`);
+      else if (focusCard) targetEl = document.getElementById(`cc-card-${focusCard}`);
+
+      if (targetEl) {
+        hasHandledDeepLink = true;
+        setTimeout(() => {
+          targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          targetEl.classList.add('ring-4', 'ring-amber-400', 'transition');
+          setTimeout(() => targetEl.classList.remove('ring-4', 'ring-amber-400'), 3200);
+        }, 250);
+      }
+    }
+
     async function fetchLoansData() {
       if (!currentUser || !sessionToken) {
         showLoginOverlay();
@@ -729,6 +756,7 @@
           populateEnrolledCardsDropdown();
           applyScopeAndRender();
           calculateInstallmentPreview();
+          handleDeepLinkScroll();
         }
       } catch (e) {
         console.error("Failed to load loans:", e);
@@ -842,7 +870,7 @@
           }
 
           return `
-            <div class="p-3 rounded-xl border ${isPaid ? 'bg-gray-50 border-gray-200' : 'bg-rose-50/70 border-rose-200'} space-y-2">
+            <div id="cc-card-${c.id}" class="p-3 rounded-xl border ${isPaid ? 'bg-gray-50 border-gray-200' : 'bg-rose-50/70 border-rose-200'} space-y-2">
               <div class="flex justify-between items-start">
                 <div>
                   <span class="text-[10px] bg-rose-600 text-white px-2 py-0.5 rounded font-bold uppercase">💳 ${c.cardname}</span>
@@ -917,6 +945,7 @@
         const holder = l.accountholder || '';
         const payer = l.actualpayer || '';
         const dueDay = l.dueday || '15th';
+        const dueDayNum = parseInt(String(dueDay).replace(/\D/g, '')) || 15;
 
         const itemTotalObligation = monthly * totalM;
         const itemTotalPaid = monthly * paidM;
@@ -959,9 +988,10 @@
               dueThisMonth += monthly;
 
               if (isBnpl) {
-                const groupKey = `${provider.toLowerCase()}_${holder.toLowerCase()}_${String(dueDay).toLowerCase()}`;
+                const groupKey = `${provider.toLowerCase()}_${holder.toLowerCase()}_${dueDayNum}`;
                 if (!bnplGroups[groupKey]) {
                   bnplGroups[groupKey] = {
+                    groupKey,
                     provider,
                     holder,
                     dueDay,
@@ -978,6 +1008,8 @@
           }
         }
 
+        const safeLoanLabel = `${provider}${desc ? ' - ' + desc : ''}`.replace(/'/g, "\\'");
+
         let actionButtonHTML = '';
         if (remM > 0) {
           if (!isStarted) {
@@ -986,7 +1018,7 @@
             actionButtonHTML = `<div class="text-center text-xs bg-green-100 text-green-800 py-1.5 rounded-xl font-bold">✅ Paid for ${getCurrentMonthLabel()}</div>`;
           } else {
             if (isPayer || isHolder || getIsAdminUser()) {
-              actionButtonHTML = `<button onclick="payLoanMonth('${l.id}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${getCurrentMonthLabel()} as Paid</button>`;
+              actionButtonHTML = `<button onclick="payLoanMonth('${l.id}', ${monthly}, '${safeLoanLabel}', ${isBnpl})" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${getCurrentMonthLabel()} as Paid</button>`;
             } else {
               actionButtonHTML = `<div class="text-center text-xs bg-gray-100 text-gray-500 py-1.5 rounded-xl font-semibold">Viewing only</div>`;
             }
@@ -997,7 +1029,7 @@
         const cardBg = isBnpl ? 'bg-purple-50/50 border-purple-100' : 'bg-indigo-50/60 border-indigo-100';
 
         return `
-          <div class="p-3.5 ${cardBg} rounded-2xl border space-y-2.5">
+          <div id="loan-card-${l.id}" class="p-3.5 ${cardBg} rounded-2xl border space-y-2.5">
             <div class="flex justify-between items-start">
               <div>
                 <div class="flex flex-wrap items-center gap-1.5">
@@ -1085,7 +1117,7 @@
           const idsJson = JSON.stringify(g.ids).replace(/"/g, '&quot;');
           const safeGroupLabel = `${g.provider} - ${g.holder}`.replace(/'/g, "\\'");
           return `
-            <div class="p-3 bg-purple-50 rounded-xl border border-purple-200 space-y-2">
+            <div id="bnpl-group-${g.groupKey}" class="p-3 bg-purple-50 rounded-xl border border-purple-200 space-y-2">
               <div class="flex justify-between items-start">
                 <div>
                   <div class="font-bold text-purple-950 text-sm">${g.provider} <span class="text-[10px] bg-purple-200 text-purple-900 px-1.5 py-0.5 rounded">${g.holder}</span></div>
@@ -1109,7 +1141,23 @@
       document.getElementById('sumRemaining').innerText = `₱${formatMoney(grandTotalRemaining)}`;
     }
 
-    async function payLoanMonth(id) {
+    async function payLoanMonth(id, defaultMonthly, loanLabel, isBnpl) {
+      let actualPaid = parseFloat(defaultMonthly) || 0;
+
+      if (!isBnpl) {
+        const input = prompt(
+          `Enter actual amount paid for ${loanLabel} (₱):\n(Leave as ₱${formatMoney(actualPaid)} or enter lower amount if paid early with interest rebate)`,
+          actualPaid
+        );
+        if (input === null) return;
+        const parsed = parseFloat(input);
+        if (isNaN(parsed) || parsed <= 0) {
+          alert("Please enter a valid payment amount.");
+          return;
+        }
+        actualPaid = parsed;
+      }
+
       await fetch(API_URL, {
         method: "POST",
         mode: "no-cors",
@@ -1118,10 +1166,11 @@
           action: "payLoanMonth",
           token: sessionToken,
           id: id,
+          amountPaid: actualPaid,
           actor: currentUser
         })
       });
-      alert("Marked as paid!");
+      alert(`Marked ${loanLabel} as paid (₱${formatMoney(actualPaid)})!`);
       setTimeout(fetchLoansData, 1500);
     }
 
