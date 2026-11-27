@@ -139,9 +139,12 @@
         </button>
       </div>
 
-      <!-- UPCOMING DUES & BILLS PREVIEW -->
+      <!-- UPCOMING DUES & BILLS PREVIEW (CLICKABLE DEEP LINKS) -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-2">
-        <h3 class="font-bold text-gray-700 text-xs uppercase">⏰ Upcoming Dues & Bills (Top 5)</h3>
+        <div class="flex justify-between items-center">
+          <h3 class="font-bold text-gray-700 text-xs uppercase">⏰ Upcoming Dues & Bills (Top 5)</h3>
+          <span class="text-[10px] text-indigo-600 font-semibold">Tap item to pay 👆</span>
+        </div>
         <div id="dashUpcomingList" class="space-y-2 text-xs">
           <p class="text-gray-400 text-center">Loading upcoming dues...</p>
         </div>
@@ -170,6 +173,11 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwxJzrBW2rV2xQuxMQf-xdhlqP4xRVn1O4aZktGkuA8rEICsFQemGne2_0ecc3gh-V7/exec";
     let currentUser = localStorage.getItem("household_hub_user") || "";
     let sessionToken = localStorage.getItem("household_hub_token") || "";
+
+    function formatMoney(val) {
+      const num = parseFloat(val) || 0;
+      return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
 
     function forceLoginScreen() {
       currentUser = "";
@@ -254,7 +262,11 @@
 
         if (json.status === "success") {
           renderDashboardSummary(json.data.debts || []);
-          renderDashboardUpcoming(json.data.recurring || [], json.data.loans || []);
+          renderDashboardUpcoming(
+            json.data.recurring || [],
+            json.data.loans || [],
+            json.data.creditCards || []
+          );
           renderDashboardEvents(json.data.events || []);
         }
       } catch (e) { console.error(e); }
@@ -277,11 +289,20 @@
           }
         }
       });
-      document.getElementById('userReceivable').innerText = `₱${receivable.toFixed(2)}`;
-      document.getElementById('userPayable').innerText = `₱${payable.toFixed(2)}`;
+      document.getElementById('userReceivable').innerText = `₱${formatMoney(receivable)}`;
+      document.getElementById('userPayable').innerText = `₱${formatMoney(payable)}`;
     }
 
-    function renderDashboardUpcoming(bills, loans) {
+    function isBnplProvider(providerName) {
+      const p = String(providerName || '').toLowerCase();
+      return p.startsWith('bnpl') || p.includes('paylater') || p.includes('atome') || p.includes('ggives') || p.includes('salmon');
+    }
+
+    function cleanProviderName(providerName) {
+      return String(providerName || '').replace(/^BNPL\s*-\s*/i, '').trim();
+    }
+
+    function renderDashboardUpcoming(bills, loans, cards) {
       const container = document.getElementById('dashUpcomingList');
       const today = new Date();
       const todayDay = today.getDate();
@@ -289,6 +310,7 @@
       
       let combined = [];
 
+      // 1. Recurring Utility Bills
       if (bills) {
         bills.forEach(b => {
           const isPaid = String(b.status || '').toLowerCase() === 'paid';
@@ -301,12 +323,15 @@
               name: b.billname, 
               amount: parseFloat(b.amount || 0), 
               day: dueDay, 
-              type: 'Bill' 
+              type: 'Bill',
+              targetUrl: `bills.html${b.id ? `?focus=${encodeURIComponent(b.id)}` : ''}`
             });
           }
         });
       }
 
+      // 2. Loans & Consolidated BNPL
+      const bnplMap = {};
       if (loans) {
         loans.forEach(l => {
           const remM = Math.max(0, (parseInt(l.totalmonths) || 1) - (parseInt(l.monthspaid) || 0));
@@ -317,12 +342,66 @@
           const isPaidThisMonth = lastPaid.startsWith(currMonth) || remM === 0;
 
           if (remM > 0 && isStarted && !isPaidThisMonth && l.status !== 'Pending Approval') {
-            const dueDay = parseInt(String(l.dueday || '1').replace(/\D/g, '')) || 15;
-            combined.push({ 
-              name: `${l.loanprovider} (${l.itemdescription || ''})`, 
-              amount: parseFloat(l.monthlydue || 0), 
-              day: dueDay, 
-              type: 'Loan' 
+            const rawProvider = l.loanprovider || 'Loan';
+            const cleanProv = cleanProviderName(rawProvider);
+            const holder = String(l.accountholder || '').trim();
+            const dueDayStr = String(l.dueday || '15th').trim();
+            const dueDay = parseInt(dueDayStr.replace(/\D/g, '')) || 15;
+            const amt = parseFloat(l.monthlydue || 0);
+
+            if (isBnplProvider(rawProvider)) {
+              const gKey = `${cleanProv.toLowerCase()}_${holder.toLowerCase()}_${dueDay}`;
+              if (!bnplMap[gKey]) {
+                bnplMap[gKey] = {
+                  name: holder ? `${cleanProv} (${holder})` : cleanProv,
+                  amount: 0,
+                  day: dueDay,
+                  type: 'BNPL',
+                  count: 0,
+                  targetUrl: `loans.html?focusBnpl=${encodeURIComponent(gKey)}`
+                };
+              }
+              bnplMap[gKey].amount += amt;
+              bnplMap[gKey].count += 1;
+            } else {
+              const desc = String(l.itemdescription || '').trim();
+              combined.push({ 
+                name: desc ? `${cleanProv} - ${desc}` : cleanProv, 
+                amount: amt, 
+                day: dueDay, 
+                type: 'Loan',
+                targetUrl: `loans.html?focusLoan=${encodeURIComponent(l.id)}`
+              });
+            }
+          }
+        });
+      }
+
+      Object.values(bnplMap).forEach(group => {
+        if (group.count > 1) {
+          group.name = `${group.name} • ${group.count} items`;
+        }
+        combined.push(group);
+      });
+
+      // 3. Unpaid Credit Cards for Current Month
+      if (cards) {
+        cards.forEach(c => {
+          const amt = parseFloat(c.statementamount) || 0;
+          const remAmt = c.remainingbalance !== undefined && c.remainingbalance !== ""
+            ? parseFloat(c.remainingbalance)
+            : (String(c.status || '').toLowerCase() === 'paid' ? 0 : amt);
+          const isPaid = String(c.status || '').toLowerCase() === 'paid' || remAmt <= 0;
+          const bMonth = String(c.billingmonth || '').replace(/'/g, '').trim();
+
+          if (!isPaid && bMonth === currMonth) {
+            const dueDay = parseInt(String(c.dueday || '20').replace(/\D/g, '')) || 20;
+            combined.push({
+              name: `${c.cardname} (${c.cardholder})`,
+              amount: remAmt,
+              day: dueDay,
+              type: 'Card',
+              targetUrl: `loans.html?focusCard=${encodeURIComponent(c.id)}`
             });
           }
         });
@@ -332,26 +411,30 @@
         const diff = item.day - todayDay;
         let urgencyRank = 3;
         let badge = '';
-        let cardStyle = 'bg-gray-50 border-gray-100';
+        let cardStyle = 'bg-gray-50 border-gray-100 hover:border-indigo-300';
         let subText = `Due every ${item.day}th`;
 
         if (diff < 0) {
           urgencyRank = 1;
           badge = `<span class="text-[9px] font-bold bg-red-600 text-white px-1.5 py-0.5 rounded uppercase animate-pulse">🚨 Past Due (${Math.abs(diff)}d ago)</span>`;
-          cardStyle = 'bg-red-50/80 border-red-200';
+          cardStyle = 'bg-red-50/80 border-red-200 hover:border-red-400';
         } else if (diff === 0) {
           urgencyRank = 2;
           badge = `<span class="text-[9px] font-bold bg-amber-500 text-white px-1.5 py-0.5 rounded uppercase">⚠️ Due Today</span>`;
-          cardStyle = 'bg-amber-50/80 border-amber-200';
+          cardStyle = 'bg-amber-50/80 border-amber-200 hover:border-amber-400';
         } else if (diff <= 3) {
           urgencyRank = 2;
           badge = `<span class="text-[9px] font-bold bg-orange-500 text-white px-1.5 py-0.5 rounded uppercase">⏳ Near Due (${diff}d left)</span>`;
-          cardStyle = 'bg-orange-50/70 border-orange-200';
+          cardStyle = 'bg-orange-50/70 border-orange-200 hover:border-orange-400';
         } else {
           subText = `Due every ${item.day}th (in ${diff} days)`;
         }
 
-        return { ...item, urgencyRank, diff, badge, cardStyle, subText };
+        const typeColor = item.type === 'BNPL'
+          ? 'text-purple-700 bg-purple-100'
+          : (item.type === 'Card' ? 'text-rose-700 bg-rose-100' : (item.type === 'Loan' ? 'text-indigo-700 bg-indigo-100' : 'text-blue-700 bg-blue-100'));
+
+        return { ...item, urgencyRank, diff, badge, cardStyle, subText, typeColor };
       });
 
       combined.sort((a, b) => {
@@ -366,16 +449,19 @@
       }
 
       container.innerHTML = top5.map(item => `
-        <div class="p-2.5 ${item.cardStyle} rounded-xl border flex justify-between items-center gap-2">
+        <div onclick="location.href='${item.targetUrl}'" class="cursor-pointer p-2.5 ${item.cardStyle} rounded-xl border flex justify-between items-center gap-2 transition active:scale-[0.99]">
           <div class="flex-1 min-w-0">
             <div class="flex flex-wrap items-center gap-1 mb-0.5">
               <span class="font-bold text-gray-800 truncate">${item.name}</span>
-              <span class="text-[9px] text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded font-semibold">${item.type}</span>
+              <span class="text-[9px] ${item.typeColor} px-1.5 py-0.5 rounded font-semibold">${item.type}</span>
               ${item.badge}
             </div>
             <div class="text-[10px] text-gray-500">${item.subText}</div>
           </div>
-          <div class="text-right font-bold text-gray-900 whitespace-nowrap">₱${item.amount.toFixed(2)}</div>
+          <div class="flex items-center gap-1.5 whitespace-nowrap">
+            <span class="font-bold text-gray-900">₱${formatMoney(item.amount)}</span>
+            <span class="text-gray-400 text-[10px]">➡️</span>
+          </div>
         </div>
       `).join('');
     }
