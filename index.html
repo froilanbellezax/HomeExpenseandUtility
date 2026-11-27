@@ -302,7 +302,14 @@
       return String(providerName || '').replace(/^BNPL\s*-\s*/i, '').trim();
     }
 
-    function getNextDueDateObj(dueDay, targetYearMonth) {
+    function addMonthsYM(ymStr, offset) {
+      if (!ymStr || !/^\d{4}-\d{2}$/.test(ymStr)) return ymStr;
+      const [y, m] = ymStr.split('-').map(Number);
+      const d = new Date(y, (m - 1) + offset, 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function getDueDateObj(dueDay, targetYearMonth) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
@@ -325,31 +332,32 @@
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const currMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+      const nextMonth = addMonthsYM(currMonth, 1);
       
       let combined = [];
 
-      // 1. Recurring Utility Bills
+      // 1. Recurring Utility Bills (Rolls over to next month if already paid this month)
       if (bills) {
         bills.forEach(b => {
           const isPaid = String(b.status || '').toLowerCase() === 'paid';
           const lastPaidBill = String(b.lastpaidmonth || '').replace(/'/g, '').trim();
           const isPaidThisMonth = isPaid || lastPaidBill.startsWith(currMonth);
+          const dueDay = parseInt(String(b.duedatedayofmonth || '').replace(/\D/g, '')) || 28;
+          const targetMonth = isPaidThisMonth ? nextMonth : currMonth;
 
-          if (!isPaidThisMonth) {
-            const dueDay = parseInt(String(b.duedatedayofmonth || '').replace(/\D/g, '')) || 99;
-            combined.push({ 
-              name: b.billname, 
-              amount: parseFloat(b.amount || 0), 
-              day: dueDay,
-              dueDateObj: getNextDueDateObj(dueDay, currMonth),
-              type: 'Bill',
-              targetUrl: `bills.html${b.id ? `?focus=${encodeURIComponent(b.id)}` : ''}`
-            });
-          }
+          combined.push({ 
+            name: b.billname, 
+            amount: parseFloat(b.amount || 0), 
+            day: dueDay,
+            dueDateObj: getDueDateObj(dueDay, targetMonth),
+            type: 'Bill',
+            isNextCycle: isPaidThisMonth,
+            targetUrl: `bills.html${b.id ? `?focus=${encodeURIComponent(b.id)}` : ''}`
+          });
         });
       }
 
-      // 2. Loans & Consolidated BNPL
+      // 2. Loans & Consolidated BNPL (Shows next month's due if paid this month and remM > 0)
       const bnplMap = {};
       if (loans) {
         loans.forEach(l => {
@@ -357,10 +365,16 @@
           const startM = String(l.startmonth || currMonth).replace(/'/g, '').trim();
           const lastPaid = String(l.lastpaidmonth || '').replace(/'/g, '').trim();
 
-          const isStarted = !startM || currMonth >= startM;
-          const isPaidThisMonth = lastPaid.startsWith(currMonth) || remM === 0;
+          if (remM > 0 && l.status !== 'Pending Approval') {
+            const isPaidThisMonth = lastPaid.startsWith(currMonth);
+            let targetMonth = currMonth;
 
-          if (remM > 0 && isStarted && !isPaidThisMonth && l.status !== 'Pending Approval') {
+            if (startM && startM > currMonth) {
+              targetMonth = startM;
+            } else if (isPaidThisMonth) {
+              targetMonth = nextMonth;
+            }
+
             const rawProvider = l.loanprovider || 'Loan';
             const cleanProv = cleanProviderName(rawProvider);
             const holder = String(l.accountholder || '').trim();
@@ -369,16 +383,18 @@
             const amt = parseFloat(l.monthlydue || 0);
 
             if (isBnplProvider(rawProvider)) {
-              const gKey = `${cleanProv.toLowerCase()}_${holder.toLowerCase()}_${dueDay}`;
+              const gKey = `${cleanProv.toLowerCase()}_${holder.toLowerCase()}_${dueDay}_${targetMonth}`;
+              const focusKey = `${cleanProv.toLowerCase()}_${holder.toLowerCase()}_${dueDay}`;
               if (!bnplMap[gKey]) {
                 bnplMap[gKey] = {
                   name: holder ? `${cleanProv} (${holder})` : cleanProv,
                   amount: 0,
                   day: dueDay,
-                  dueDateObj: getNextDueDateObj(dueDay, currMonth),
+                  dueDateObj: getDueDateObj(dueDay, targetMonth),
                   type: 'BNPL',
+                  isNextCycle: targetMonth > currMonth,
                   count: 0,
-                  targetUrl: `loans.html?focusBnpl=${encodeURIComponent(gKey)}`
+                  targetUrl: `loans.html?focusBnpl=${encodeURIComponent(focusKey)}`
                 };
               }
               bnplMap[gKey].amount += amt;
@@ -389,8 +405,9 @@
                 name: desc ? `${cleanProv} - ${desc}` : cleanProv, 
                 amount: amt, 
                 day: dueDay,
-                dueDateObj: getNextDueDateObj(dueDay, currMonth),
+                dueDateObj: getDueDateObj(dueDay, targetMonth),
                 type: 'Loan',
+                isNextCycle: targetMonth > currMonth,
                 targetUrl: `loans.html?focusLoan=${encodeURIComponent(l.id)}`
               });
             }
@@ -405,7 +422,7 @@
         combined.push(group);
       });
 
-      // 3. Unpaid Credit Cards (Explicit BillingMonth)
+      // 3. Unpaid Credit Cards (Billing Month's due date is the following month: BillingMonth + 1)
       if (cards) {
         cards.forEach(c => {
           const amt = parseFloat(c.statementamount) || 0;
@@ -417,12 +434,16 @@
 
           if (!isPaid && bMonth) {
             const dueDay = parseInt(String(c.dueday || '20').replace(/\D/g, '')) || 20;
+            // Billing month (e.g., 2026-11) becomes due the following month (2026-12)
+            const actualDueMonth = addMonthsYM(bMonth, 1);
+
             combined.push({
               name: `${c.cardname} (${c.cardholder})`,
               amount: remAmt,
               day: dueDay,
-              dueDateObj: getNextDueDateObj(dueDay, bMonth),
+              dueDateObj: getDueDateObj(dueDay, actualDueMonth),
               type: 'Card',
+              isNextCycle: false,
               targetUrl: `loans.html?focusCard=${encodeURIComponent(c.id)}`
             });
           }
@@ -435,22 +456,24 @@
         let urgencyRank = 3;
         let badge = '';
         let cardStyle = 'bg-gray-50 border-gray-100 hover:border-indigo-300';
-        let subText = `Due ${formattedDate} (every ${item.day}th)`;
+        let subText = `Due ${formattedDate} • in ${diff} days`;
 
         if (diff < 0) {
           urgencyRank = 1;
           badge = `<span class="text-[9px] font-bold bg-red-600 text-white px-1.5 py-0.5 rounded uppercase animate-pulse">🚨 Past Due (${Math.abs(diff)}d ago)</span>`;
           cardStyle = 'bg-red-50/80 border-red-200 hover:border-red-400';
+          subText = `Due ${formattedDate} (every ${item.day}th)`;
         } else if (diff === 0) {
           urgencyRank = 2;
           badge = `<span class="text-[9px] font-bold bg-amber-500 text-white px-1.5 py-0.5 rounded uppercase">⚠️ Due Today</span>`;
           cardStyle = 'bg-amber-50/80 border-amber-200 hover:border-amber-400';
+          subText = `Due Today (${formattedDate})`;
         } else if (diff <= 3) {
           urgencyRank = 2;
           badge = `<span class="text-[9px] font-bold bg-orange-500 text-white px-1.5 py-0.5 rounded uppercase">⏳ Near Due (${diff}d left)</span>`;
           cardStyle = 'bg-orange-50/70 border-orange-200 hover:border-orange-400';
-        } else {
-          subText = `Due ${formattedDate} • in ${diff} days`;
+        } else if (item.isNextCycle) {
+          badge = `<span class="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Next Month</span>`;
         }
 
         const typeColor = item.type === 'BNPL'
