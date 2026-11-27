@@ -415,6 +415,20 @@
       });
     }
 
+    function addMonthsYM(ymStr, offset) {
+      if (!ymStr || !/^\d{4}-\d{2}$/.test(ymStr)) return ymStr;
+      const [y, m] = ymStr.split('-').map(Number);
+      const d = new Date(y, (m - 1) + offset, 1);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function formatYM(ymStr) {
+      if (!ymStr || !/^\d{4}-\d{2}$/.test(ymStr)) return ymStr;
+      const [y, m] = ymStr.split('-').map(Number);
+      const d = new Date(y, m - 1, 1);
+      return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
+
     function switchCcSubTab(mode) {
       const stmtForm = document.getElementById('ccForm');
       const enrollForm = document.getElementById('enrollCardForm');
@@ -836,6 +850,7 @@
           const isPaid = String(c.status || '').toLowerCase() === 'paid' || remAmt <= 0;
           const isPartial = paidAmt > 0 && !isPaid;
           const bMonth = String(c.billingmonth || '').replace(/'/g, '');
+          const dueMonthStr = formatYM(addMonthsYM(bMonth, 1));
           const datePaid = String(c.datepaid || '').replace(/'/g, '');
           const safeCardLabel = `${c.cardname || ''} - ${c.cardholder || ''}`.replace(/'/g, "\\'");
 
@@ -875,7 +890,7 @@
                 <div>
                   <span class="text-[10px] bg-rose-600 text-white px-2 py-0.5 rounded font-bold uppercase">💳 ${c.cardname}</span>
                   <span class="text-xs font-bold text-gray-800 ml-1">(${c.cardholder})</span>
-                  <div class="text-[11px] text-gray-500 mt-1">Billing: <strong>${bMonth}</strong> • Due every <strong>${c.dueday}</strong></div>
+                  <div class="text-[11px] text-gray-500 mt-1">Billing: <strong>${bMonth}</strong> • Due: <strong>${dueMonthStr} (${c.dueday})</strong></div>
                   ${c.notes ? `<div class="text-[10px] text-gray-500 italic mt-0.5">"${c.notes}"</div>` : ''}
                 </div>
                 <div class="text-right">
@@ -934,9 +949,10 @@
         const progressPct = Math.min(100, Math.round((paidM / totalM) * 100));
         const startM = String(l.startmonth || currMonth).replace(/'/g, '').trim();
         const lastPaid = String(l.lastpaidmonth || '').replace(/'/g, '').trim();
+        const lastPaidYM = lastPaid.slice(0, 7);
         
         const isStarted = !startM || currMonth >= startM;
-        const isPaidThisMonth = lastPaid.startsWith(currMonth) || remM === 0;
+        const isPaidUpToCurrent = (lastPaidYM && lastPaidYM >= currMonth) || remM === 0;
         const loanStatus = l.status || 'Active';
         const rawProvider = l.loanprovider || 'Loan';
         const isBnpl = isBnplItem(rawProvider);
@@ -978,10 +994,10 @@
             providerMonthlyGroups[pKey].items.push({
               desc: desc || provider,
               amount: monthly,
-              paid: isPaidThisMonth
+              paid: isPaidUpToCurrent
             });
 
-            if (isPaidThisMonth) {
+            if (isPaidUpToCurrent) {
               providerMonthlyGroups[pKey].paidTotal += monthly;
             } else {
               providerMonthlyGroups[pKey].unpaidTotal += monthly;
@@ -1009,16 +1025,40 @@
         }
 
         const safeLoanLabel = `${provider}${desc ? ' - ' + desc : ''}`.replace(/'/g, "\\'");
+        const canAct = isPayer || isHolder || getIsAdminUser();
+
+        // Compute the next target month to pay (supports paying current month OR advance paying next/upcoming months)
+        let targetPayYM = currMonth;
+        if (!isStarted && startM) {
+          targetPayYM = (lastPaidYM && lastPaidYM >= startM) ? addMonthsYM(lastPaidYM, 1) : startM;
+        } else if (lastPaidYM && lastPaidYM >= currMonth) {
+          targetPayYM = addMonthsYM(lastPaidYM, 1);
+        }
+        const targetPayLabel = formatYM(targetPayYM);
 
         let actionButtonHTML = '';
         if (remM > 0) {
           if (!isStarted) {
-            actionButtonHTML = `<div class="text-center text-xs bg-amber-50 text-amber-800 py-1.5 rounded-xl font-bold border border-amber-200">⏳ Upcoming (Starts on ${startM})</div>`;
-          } else if (isPaidThisMonth) {
-            actionButtonHTML = `<div class="text-center text-xs bg-green-100 text-green-800 py-1.5 rounded-xl font-bold">✅ Paid for ${getCurrentMonthLabel()}</div>`;
+            actionButtonHTML = `
+              <div class="space-y-1.5">
+                <div class="text-center text-xs bg-amber-50 text-amber-800 py-1.5 rounded-xl font-bold border border-amber-200">
+                  ⏳ Upcoming (Starts on ${formatYM(startM)})
+                </div>
+                ${canAct ? `<button onclick="payLoanMonth('${l.id}', ${monthly}, '${safeLoanLabel}', ${isBnpl}, '${targetPayYM}')" class="w-full bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">⏭️ Advance Pay for ${targetPayLabel}</button>` : ''}
+              </div>
+            `;
+          } else if (isPaidUpToCurrent) {
+            actionButtonHTML = `
+              <div class="space-y-1.5">
+                <div class="text-center text-xs bg-green-100 text-green-800 py-1.5 rounded-xl font-bold">
+                  ✅ Paid through ${formatYM(lastPaidYM || currMonth)}
+                </div>
+                ${canAct ? `<button onclick="payLoanMonth('${l.id}', ${monthly}, '${safeLoanLabel}', ${isBnpl}, '${targetPayYM}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">⏭️ Advance Pay for ${targetPayLabel}</button>` : ''}
+              </div>
+            `;
           } else {
-            if (isPayer || isHolder || getIsAdminUser()) {
-              actionButtonHTML = `<button onclick="payLoanMonth('${l.id}', ${monthly}, '${safeLoanLabel}', ${isBnpl})" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${getCurrentMonthLabel()} as Paid</button>`;
+            if (canAct) {
+              actionButtonHTML = `<button onclick="payLoanMonth('${l.id}', ${monthly}, '${safeLoanLabel}', ${isBnpl}, '${targetPayYM}')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded-xl transition shadow-sm">✅ Mark ${targetPayLabel} as Paid</button>`;
             } else {
               actionButtonHTML = `<div class="text-center text-xs bg-gray-100 text-gray-500 py-1.5 rounded-xl font-semibold">Viewing only</div>`;
             }
@@ -1141,12 +1181,13 @@
       document.getElementById('sumRemaining').innerText = `₱${formatMoney(grandTotalRemaining)}`;
     }
 
-    async function payLoanMonth(id, defaultMonthly, loanLabel, isBnpl) {
+    async function payLoanMonth(id, defaultMonthly, loanLabel, isBnpl, targetMonthYM) {
       let actualPaid = parseFloat(defaultMonthly) || 0;
+      const monthLabel = formatYM(targetMonthYM || getCurrentMonthStr());
 
       if (!isBnpl) {
         const input = prompt(
-          `Enter actual amount paid for ${loanLabel} (₱):\n(Leave as ₱${formatMoney(actualPaid)} or enter lower amount if paid early with interest rebate)`,
+          `Enter actual amount paid for ${loanLabel} (${monthLabel}) in ₱:\n(Leave as ₱${formatMoney(actualPaid)} or enter lower amount if paid early with interest rebate)`,
           actualPaid
         );
         if (input === null) return;
@@ -1156,6 +1197,8 @@
           return;
         }
         actualPaid = parsed;
+      } else {
+        if (!confirm(`Confirm payment of ₱${formatMoney(actualPaid)} for ${loanLabel} (${monthLabel})?`)) return;
       }
 
       await fetch(API_URL, {
@@ -1167,10 +1210,11 @@
           token: sessionToken,
           id: id,
           amountPaid: actualPaid,
+          targetMonth: targetMonthYM || getCurrentMonthStr(),
           actor: currentUser
         })
       });
-      alert(`Marked ${loanLabel} as paid (₱${formatMoney(actualPaid)})!`);
+      alert(`Marked ${loanLabel} as paid for ${monthLabel} (₱${formatMoney(actualPaid)})!`);
       setTimeout(fetchLoansData, 1500);
     }
 
