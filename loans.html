@@ -238,8 +238,18 @@
         </div>
       </div>
 
-      <!-- SUB-FORM A: RECONCILE / ADD MONTHLY STATEMENT BILL -->
+      <!-- SUB-FORM A: RECONCILE / ADD MONTHLY STATEMENT BILL / ADD LATE FEE ROLLOVER -->
       <form id="ccForm" class="space-y-3">
+        <!-- ENTRY MODE SELECTOR -->
+        <div class="bg-rose-50/80 p-2.5 rounded-xl border border-rose-200 space-y-1">
+          <label class="text-[11px] font-bold text-rose-950 block">📌 Entry Action</label>
+          <select id="ccEntryMode" onchange="updateSurchargePreview()" class="w-full p-2 border border-rose-300 rounded-lg text-xs outline-none font-bold text-rose-900 bg-white">
+            <option value="stmt">📄 New / Full Statement SOA (Replaces Month Bill)</option>
+            <option value="rollover">➕ Add Late Fee / Interest (Roll Over Existing Unpaid Bill)</option>
+          </select>
+          <p id="ccEntryModeHint" class="text-[10px] text-rose-700">Gamitin para i-input ang bagong monthly SOA amount.</p>
+        </div>
+
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="text-xs font-semibold text-gray-500">Select Enrolled Card</label>
@@ -264,7 +274,7 @@
 
         <div class="grid grid-cols-2 gap-2">
           <div>
-            <label class="text-xs font-semibold text-gray-500">Actual Statement Due (₱)</label>
+            <label id="ccAmountLabel" class="text-xs font-semibold text-gray-500">Actual Statement Due (₱)</label>
             <input type="number" step="0.01" id="ccAmount" oninput="updateSurchargePreview()" required placeholder="0.00" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-rose-700">
           </div>
           <div>
@@ -273,23 +283,23 @@
           </div>
         </div>
 
-        <!-- SURCHARGE / RECONCILIATION COMPARISON BOX -->
+        <!-- SURCHARGE / ROLLOVER PREVIEW BOX -->
         <div class="bg-slate-900 text-white p-3 rounded-xl border border-rose-500/40 space-y-1.5">
           <div class="flex justify-between items-center border-b border-white/10 pb-1">
-            <span class="text-[10px] font-bold text-rose-300 uppercase">🔍 SOA vs. Tracked Expenses</span>
-            <span id="ccReconcileStatus" class="text-[10px] font-bold text-gray-400">Waiting for SOA amount...</span>
+            <span id="ccPreviewHeader" class="text-[10px] font-bold text-rose-300 uppercase">🔍 SOA vs. Tracked Expenses</span>
+            <span id="ccReconcileStatus" class="text-[10px] font-bold text-gray-400">Waiting for amount...</span>
           </div>
           <div class="grid grid-cols-3 gap-2 text-center pt-0.5">
             <div class="bg-white/5 p-1.5 rounded-lg">
-              <span class="text-[9px] text-gray-400 block">Tracked Swipes</span>
+              <span id="ccCol1Label" class="text-[9px] text-gray-400 block">Tracked Swipes</span>
               <span id="ccPreviewTracked" class="text-xs font-extrabold text-cyan-300">₱0.00</span>
             </div>
             <div class="bg-white/5 p-1.5 rounded-lg">
-              <span class="text-[9px] text-gray-400 block">Actual SOA Bill</span>
+              <span id="ccCol2Label" class="text-[9px] text-gray-400 block">Actual SOA Bill</span>
               <span id="ccPreviewActual" class="text-xs font-extrabold text-white">₱0.00</span>
             </div>
             <div class="bg-white/5 p-1.5 rounded-lg">
-              <span class="text-[9px] text-amber-300 block">Surcharges / Diff</span>
+              <span id="ccCol3Label" class="text-[9px] text-amber-300 block">Surcharges / Diff</span>
               <span id="ccPreviewDiff" class="text-xs font-extrabold text-amber-400">₱0.00</span>
             </div>
           </div>
@@ -297,10 +307,10 @@
 
         <div>
           <label class="text-xs font-semibold text-gray-500">Notes (Optional)</label>
-          <input type="text" id="ccNotes" placeholder="e.g. Finance charge, Annual fee, Full payment" class="w-full p-2.5 border rounded-xl text-sm outline-none">
+          <input type="text" id="ccNotes" placeholder="e.g. Nov Late Fee, Finance charge" class="w-full p-2.5 border rounded-xl text-sm outline-none">
         </div>
 
-        <button type="submit" class="w-full bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 transition">Save / Reconcile Statement</button>
+        <button type="submit" id="ccSubmitBtn" class="w-full bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 transition">Save / Reconcile Statement</button>
       </form>
 
       <!-- SUB-FORM B: ENROLL NEW CREDIT CARD -->
@@ -508,10 +518,19 @@
     }
 
     function updateSurchargePreview() {
+      const mode = document.getElementById('ccEntryMode').value;
       const dropdown = document.getElementById('ccCardDropdown');
       const val = dropdown.value;
       const bMonth = document.getElementById('ccBillingMonth').value;
-      const actualVal = parseFloat(document.getElementById('ccAmount').value) || 0;
+      const inputAmt = parseFloat(document.getElementById('ccAmount').value) || 0;
+
+      const hintEl = document.getElementById('ccEntryModeHint');
+      const amtLabel = document.getElementById('ccAmountLabel');
+      const headerEl = document.getElementById('ccPreviewHeader');
+      const col1Label = document.getElementById('ccCol1Label');
+      const col2Label = document.getElementById('ccCol2Label');
+      const col3Label = document.getElementById('ccCol3Label');
+      const submitBtn = document.getElementById('ccSubmitBtn');
 
       let cardName = "";
       let cardHolder = "";
@@ -521,6 +540,57 @@
       } else if (val.includes('|')) {
         [cardName, cardHolder] = val.split('|');
       }
+
+      const diffEl = document.getElementById('ccPreviewDiff');
+      const statusEl = document.getElementById('ccReconcileStatus');
+
+      if (mode === 'rollover') {
+        hintEl.innerText = "Ilagay lang ang dagdag na Late Fee / Interest. Idadagdag ito sa existing unpaid balance at i-a-update ang billing cycle.";
+        amtLabel.innerText = "Late Fee / Interest to Add (₱)";
+        headerEl.innerText = "🔄 Roll-Over Unpaid Balance + Late Fee";
+        col1Label.innerText = "Existing Unpaid";
+        col2Label.innerText = "+ Late Fee";
+        col3Label.innerText = "New Running Bill";
+        submitBtn.innerText = "🔄 Add Late Fee & Roll Over Bill";
+
+        // Find the latest unpaid statement for this card (any billing month)
+        const unpaidList = rawCardsCache.filter(c =>
+          String(c.cardname || '').trim().toLowerCase() === cardName.toLowerCase() &&
+          String(c.cardholder || '').trim().toLowerCase() === cardHolder.toLowerCase() &&
+          String(c.status || '').toLowerCase() !== 'paid'
+        );
+        const existingUnpaid = unpaidList.length > 0 ? unpaidList[0] : null;
+        const prevUnpaidAmt = existingUnpaid
+          ? (existingUnpaid.remainingbalance !== undefined && existingUnpaid.remainingbalance !== ""
+              ? parseFloat(existingUnpaid.remainingbalance)
+              : parseFloat(existingUnpaid.statementamount) || 0)
+          : 0;
+        const newRunningTotal = prevUnpaidAmt + inputAmt;
+
+        document.getElementById('ccPreviewTracked').innerText = `₱${formatMoney(prevUnpaidAmt)}`;
+        document.getElementById('ccPreviewActual').innerText = `+₱${formatMoney(inputAmt)}`;
+        diffEl.innerText = `₱${formatMoney(newRunningTotal)}`;
+        diffEl.className = "text-xs font-extrabold text-amber-400";
+
+        if (!existingUnpaid) {
+          statusEl.innerText = "⚠️ No existing unpaid bill (will create new)";
+          statusEl.className = "text-[10px] font-bold text-amber-300";
+        } else {
+          const oldM = String(existingUnpaid.billingmonth || '').replace(/'/g, '').trim();
+          statusEl.innerText = `Rolling over from ${oldM} → ${bMonth}`;
+          statusEl.className = "text-[10px] font-bold text-emerald-400";
+        }
+        return;
+      }
+
+      // Standard Statement / SOA Reconciliation Mode
+      hintEl.innerText = "Gamitin para i-input ang bagong monthly SOA amount (papalit sa tracked swipes ng buwang ito).";
+      amtLabel.innerText = "Actual Statement Due (₱)";
+      headerEl.innerText = "🔍 SOA vs. Tracked Expenses";
+      col1Label.innerText = "Tracked Swipes";
+      col2Label.innerText = "Actual SOA Bill";
+      col3Label.innerText = "Surcharges / Diff";
+      submitBtn.innerText = "Save / Reconcile Statement";
 
       let tracked = 0;
       const existing = rawCardsCache.find(c =>
@@ -535,12 +605,9 @@
       }
 
       document.getElementById('ccPreviewTracked').innerText = `₱${formatMoney(tracked)}`;
-      document.getElementById('ccPreviewActual').innerText = `₱${formatMoney(actualVal)}`;
+      document.getElementById('ccPreviewActual').innerText = `₱${formatMoney(inputAmt)}`;
 
-      const diffEl = document.getElementById('ccPreviewDiff');
-      const statusEl = document.getElementById('ccReconcileStatus');
-
-      if (actualVal <= 0) {
+      if (inputAmt <= 0) {
         diffEl.innerText = "₱0.00";
         diffEl.className = "text-xs font-extrabold text-gray-400";
         statusEl.innerText = tracked > 0 ? "Enter SOA to check surcharges" : "No tracked swipes yet";
@@ -556,7 +623,7 @@
         return;
       }
 
-      const diff = actualVal - tracked;
+      const diff = inputAmt - tracked;
       if (Math.abs(diff) < 0.01) {
         diffEl.innerText = "₱0.00";
         diffEl.className = "text-xs font-extrabold text-emerald-400";
@@ -863,13 +930,13 @@
           }
 
           let surchargeHTML = '';
-          if (tracked > 0 && Math.abs(surcharge) >= 0.01) {
+          if (Math.abs(surcharge) >= 0.01) {
             const sign = surcharge > 0 ? '+' : '-';
             const badgeColor = surcharge > 0 ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300';
             surchargeHTML = `
               <div class="text-[10px] px-2 py-1 rounded-lg border ${badgeColor} font-semibold flex justify-between">
-                <span>Tracked Swipes: ₱${formatMoney(tracked)}</span>
-                <span>Surcharges/Diff: <strong>${sign}₱${formatMoney(Math.abs(surcharge))}</strong></span>
+                <span>${tracked > 0 ? `Base/Tracked: ₱${formatMoney(tracked)}` : 'Late Fees / Adjustments'}</span>
+                <span>Fees/Diff: <strong>${sign}₱${formatMoney(Math.abs(surcharge))}</strong></span>
               </div>
             `;
           }
@@ -1027,7 +1094,6 @@
         const safeLoanLabel = `${provider}${desc ? ' - ' + desc : ''}`.replace(/'/g, "\\'");
         const canAct = isPayer || isHolder || getIsAdminUser();
 
-        // Compute the next target month to pay (supports paying current month OR advance paying next/upcoming months)
         let targetPayYM = currMonth;
         if (!isStarted && startM) {
           targetPayYM = (lastPaidYM && lastPaidYM >= startM) ? addMonthsYM(lastPaidYM, 1) : startM;
@@ -1308,6 +1374,7 @@
 
     document.getElementById('ccForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      const entryMode = document.getElementById('ccEntryMode').value;
       const dropdownVal = document.getElementById('ccCardDropdown').value;
       let cardName = "";
       let cardHolder = "";
@@ -1326,6 +1393,7 @@
         body: JSON.stringify({
           action: "addCreditCardDue",
           token: sessionToken,
+          entryMode: entryMode,
           cardName: cardName,
           cardHolder: cardHolder,
           amount: document.getElementById('ccAmount').value,
@@ -1335,7 +1403,7 @@
           actor: currentUser
         })
       });
-      alert("Credit card statement saved & reconciled!");
+      alert(entryMode === 'rollover' ? "Late fee added & bill rolled over!" : "Credit card statement saved & reconciled!");
       document.getElementById('ccForm').reset();
       onEnrolledCardSelect();
       setTimeout(fetchLoansData, 1500);
