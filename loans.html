@@ -105,7 +105,7 @@
     <!-- MAIN TAB SWITCHER -->
     <div class="grid grid-cols-2 gap-2 bg-gray-200 p-1 rounded-xl text-xs font-bold">
       <button id="tabBtnInstallment" onclick="switchFormTab('installment')" class="py-2 rounded-lg bg-white text-indigo-700 shadow-sm transition">➕ Add BNPL / Loan</button>
-      <button id="tabBtnCard" onclick="switchFormTab('card')" class="py-2 rounded-lg text-gray-600 hover:text-gray-900 transition">💳 Credit Cards & Enroll</button>
+      <button id="tabBtnCard" onclick="switchFormTab('card')" class="py-2 rounded-lg text-gray-600 hover:text-gray-900 transition">💳 Credit Cards & Limits</button>
     </div>
 
     <!-- FORM 1: ADD LOAN / BNPL INSTALLMENT + LIVE CALCULATOR -->
@@ -228,13 +228,13 @@
       </form>
     </div>
 
-    <!-- FORM 2: CREDIT CARDS HUB (RECONCILE STATEMENT + ENROLL NEW CARD) -->
+    <!-- FORM 2: CREDIT CARDS HUB (RECONCILE STATEMENT + ENROLL & CL LIMITS) -->
     <div id="cardFormBox" class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-3 hidden">
       <div class="flex justify-between items-center border-b pb-2">
         <h2 class="font-bold text-rose-900 text-xs uppercase">💳 Credit Card Management</h2>
         <div class="flex bg-rose-100 p-0.5 rounded-lg text-[10px] font-bold">
           <button type="button" id="subTabStmtBtn" onclick="switchCcSubTab('stmt')" class="px-2 py-1 rounded-md bg-rose-600 text-white">📄 Statement / SOA</button>
-          <button type="button" id="subTabEnrollBtn" onclick="switchCcSubTab('enroll')" class="px-2 py-1 rounded-md text-rose-900">➕ Enroll Card</button>
+          <button type="button" id="subTabEnrollBtn" onclick="switchCcSubTab('enroll')" class="px-2 py-1 rounded-md text-rose-900">📈 Cards & Limits</button>
         </div>
       </div>
 
@@ -313,33 +313,46 @@
         <button type="submit" id="ccSubmitBtn" class="w-full bg-rose-600 text-white font-bold py-3 rounded-xl hover:bg-rose-700 transition">Save / Reconcile Statement</button>
       </form>
 
-      <!-- SUB-FORM B: ENROLL NEW CREDIT CARD -->
-      <form id="enrollCardForm" class="space-y-3 hidden">
-        <p class="text-[11px] text-gray-500 bg-rose-50 p-2 rounded-lg border border-rose-100">
-          I-enroll ang card dito para lumabas na siya sa dropdown ng <strong>Loans & Cards</strong> at <strong>Daily Expenses</strong> kasama ang fixed due date nito.
-        </p>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Card Name</label>
-            <input type="text" id="enrollCardName" required placeholder="e.g. UB Rewards Visa" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+      <!-- SUB-FORM B: ENROLL NEW CREDIT CARD & MANAGE CREDIT LIMITS -->
+      <div id="enrollCardSection" class="space-y-4 hidden">
+        <form id="enrollCardForm" class="space-y-3">
+          <p class="text-[11px] text-gray-500 bg-rose-50 p-2 rounded-lg border border-rose-100">
+            I-enroll ang card dito para lumabas siya sa dropdown ng <strong>Loans & Cards</strong> at <strong>Daily Expenses</strong> kasama ang fixed due date at credit limit.
+          </p>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Card / Credit Line Name</label>
+              <input type="text" id="enrollCardName" required placeholder="e.g. Salmon Credit Line" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Card Holder</label>
+              <select id="enrollCardHolder" class="w-full p-2.5 border rounded-xl text-sm outline-none loan-profile-select"></select>
+            </div>
           </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Card Holder</label>
-            <select id="enrollCardHolder" class="w-full p-2.5 border rounded-xl text-sm outline-none loan-profile-select"></select>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Fixed Due Day</label>
+              <input type="text" id="enrollCardDueDay" required placeholder="e.g. 27th" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
+            </div>
+            <div>
+              <label class="text-xs font-semibold text-gray-500">Initial Credit Limit (₱)</label>
+              <input type="number" step="0.01" id="enrollCardLimit" placeholder="e.g. 30000" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold text-indigo-900">
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-900 transition">💾 Enroll Card to System</button>
+        </form>
+
+        <!-- ENROLLED CARDS & CREDIT LIMIT INCREASE TRACKER -->
+        <div class="border-t pt-3 space-y-2">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-slate-800 text-xs uppercase">📈 Enrolled Cards & CL Increase Log</h3>
+            <span class="text-[10px] text-indigo-600 font-semibold">Auto-logged to AuditLogs</span>
+          </div>
+          <div id="enrolledCardsList" class="space-y-2 text-xs">
+            <p class="text-gray-400 text-center py-2">No enrolled cards yet.</p>
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Fixed Due Day</label>
-            <input type="text" id="enrollCardDueDay" required placeholder="e.g. 8th" class="w-full p-2.5 border rounded-xl text-sm outline-none font-bold">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-gray-500">Credit Limit (Optional)</label>
-            <input type="number" step="0.01" id="enrollCardLimit" placeholder="e.g. 30000" class="w-full p-2.5 border rounded-xl text-sm outline-none">
-          </div>
-        </div>
-        <button type="submit" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-900 transition">💾 Enroll Card to System</button>
-      </form>
+      </div>
     </div>
 
     <!-- CREDIT CARDS TRACKER LIST -->
@@ -441,21 +454,140 @@
 
     function switchCcSubTab(mode) {
       const stmtForm = document.getElementById('ccForm');
-      const enrollForm = document.getElementById('enrollCardForm');
+      const enrollSection = document.getElementById('enrollCardSection');
       const btnStmt = document.getElementById('subTabStmtBtn');
       const btnEnroll = document.getElementById('subTabEnrollBtn');
 
       if (mode === 'stmt') {
         stmtForm.classList.remove('hidden');
-        enrollForm.classList.add('hidden');
+        enrollSection.classList.add('hidden');
         btnStmt.className = "px-2 py-1 rounded-md bg-rose-600 text-white";
         btnEnroll.className = "px-2 py-1 rounded-md text-rose-900";
       } else {
         stmtForm.classList.add('hidden');
-        enrollForm.classList.remove('hidden');
+        enrollSection.classList.remove('hidden');
         btnEnroll.className = "px-2 py-1 rounded-md bg-slate-800 text-white";
         btnStmt.className = "px-2 py-1 rounded-md text-rose-900";
+        renderEnrolledCardsManager();
       }
+    }
+
+    function renderEnrolledCardsManager() {
+      const listEl = document.getElementById('enrolledCardsList');
+      if (!enrolledCardsCache || enrolledCardsCache.length === 0) {
+        listEl.innerHTML = '<p class="text-gray-400 text-center py-2">No enrolled cards in EnrolledCards sheet yet. Enroll one above!</p>';
+        return;
+      }
+
+      listEl.innerHTML = enrolledCardsCache.map(ec => {
+        const cName = String(ec.cardname || '').trim();
+        const cHolder = String(ec.cardholder || '').trim();
+        const dueDay = String(ec.dueday || '20th').trim();
+        const limit = parseFloat(ec.creditlimit) || 0;
+        const clHistory = String(ec.clhistory || '').trim();
+
+        // Compute current unpaid balance on this card to show utilized vs available CL
+        let unpaidBal = 0;
+        rawCardsCache.forEach(stmt => {
+          if (String(stmt.cardname || '').trim().toLowerCase() === cName.toLowerCase() &&
+              String(stmt.cardholder || '').trim().toLowerCase() === cHolder.toLowerCase() &&
+              String(stmt.status || '').toLowerCase() !== 'paid') {
+            const rem = stmt.remainingbalance !== undefined && stmt.remainingbalance !== ""
+              ? parseFloat(stmt.remainingbalance)
+              : parseFloat(stmt.statementamount) || 0;
+            unpaidBal += rem;
+          }
+        });
+
+        const availLimit = Math.max(0, limit - unpaidBal);
+        const utilPct = limit > 0 ? Math.min(100, Math.round((unpaidBal / limit) * 100)) : 0;
+        const safeLabel = `${cName} (${cHolder})`.replace(/'/g, "\\'");
+
+        const historyEntries = clHistory
+          ? clHistory.split('|').map(h => `<div class="text-[10px] text-slate-600 bg-white px-2 py-1 rounded border border-slate-200">📌 ${h.trim()}</div>`).join('')
+          : '';
+
+        return `
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <div class="flex justify-between items-start gap-2">
+              <div>
+                <div class="font-bold text-slate-900 text-xs">💳 ${cName} <span class="text-[10px] bg-slate-200 text-slate-800 px-1.5 py-0.5 rounded">${cHolder}</span></div>
+                <div class="text-[10px] text-gray-500 mt-0.5">Fixed Due Day: <strong>${dueDay}</strong></div>
+              </div>
+              <button type="button" onclick="adjustCardLimit('${ec.id}', ${limit}, '${safeLabel}')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold px-2.5 py-1.5 rounded-lg transition shadow-sm whitespace-nowrap">
+                📈 Adjust CL
+              </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-1.5 text-center bg-white p-2 rounded-lg border border-slate-200">
+              <div>
+                <span class="text-[9px] text-gray-400 block">Credit Limit</span>
+                <span class="font-extrabold text-slate-900 text-[11px]">${limit > 0 ? `₱${formatMoney(limit)}` : 'Not Set'}</span>
+              </div>
+              <div>
+                <span class="text-[9px] text-rose-400 block">Unpaid Used</span>
+                <span class="font-bold text-rose-700 text-[11px]">₱${formatMoney(unpaidBal)}</span>
+              </div>
+              <div>
+                <span class="text-[9px] text-emerald-500 block">Available CL</span>
+                <span class="font-bold text-emerald-700 text-[11px]">${limit > 0 ? `₱${formatMoney(availLimit)}` : '—'}</span>
+              </div>
+            </div>
+
+            ${limit > 0 ? `
+              <div>
+                <div class="flex justify-between text-[9px] text-gray-500 mb-0.5">
+                  <span>Utilization</span>
+                  <span>${utilPct}%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                  <div class="${utilPct >= 80 ? 'bg-rose-600' : (utilPct >= 50 ? 'bg-amber-500' : 'bg-emerald-500')} h-1.5 rounded-full" style="width: ${utilPct}%"></div>
+                </div>
+              </div>
+            ` : ''}
+
+            ${historyEntries ? `<div class="space-y-1 pt-1"><span class="text-[9px] font-bold text-slate-500 uppercase block">CL Adjustment History:</span>${historyEntries}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function adjustCardLimit(id, currentLimit, cardLabel) {
+      const newLimitStr = prompt(
+        `Adjust Credit Limit for ${cardLabel}\nCurrent Limit: ₱${formatMoney(currentLimit)}\n\nEnter new Credit Limit (₱):`,
+        currentLimit || ""
+      );
+      if (newLimitStr === null) return;
+      const newLimit = parseFloat(newLimitStr);
+      if (isNaN(newLimit) || newLimit < 0) {
+        alert("Please enter a valid credit limit amount.");
+        return;
+      }
+
+      const reason = prompt(
+        `Optional reason/note for this CL change (e.g., Auto-CLI, Bank request, Initial limit):`,
+        newLimit > currentLimit ? "Credit Limit Increase" : "Credit Limit Adjustment"
+      );
+      if (reason === null) return;
+
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "updateCardLimit",
+          token: sessionToken,
+          id: id,
+          newLimit: newLimit,
+          reason: reason.trim(),
+          actor: currentUser
+        })
+      });
+
+      const diff = newLimit - currentLimit;
+      const diffText = diff >= 0 ? `+₱${formatMoney(diff)}` : `-₱${formatMoney(Math.abs(diff))}`;
+      alert(`Updated ${cardLabel} limit to ₱${formatMoney(newLimit)} (${diffText}) and logged to history!`);
+      setTimeout(fetchLoansData, 1500);
     }
 
     function populateEnrolledCardsDropdown() {
@@ -553,7 +685,6 @@
         col3Label.innerText = "New Running Bill";
         submitBtn.innerText = "🔄 Add Late Fee & Roll Over Bill";
 
-        // Find the latest unpaid statement for this card (any billing month)
         const unpaidList = rawCardsCache.filter(c =>
           String(c.cardname || '').trim().toLowerCase() === cardName.toLowerCase() &&
           String(c.cardholder || '').trim().toLowerCase() === cardHolder.toLowerCase() &&
@@ -583,7 +714,6 @@
         return;
       }
 
-      // Standard Statement / SOA Reconciliation Mode
       hintEl.innerText = "Gamitin para i-input ang bagong monthly SOA amount (papalit sa tracked swipes ng buwang ito).";
       amtLabel.innerText = "Actual Statement Due (₱)";
       headerEl.innerText = "🔍 SOA vs. Tracked Expenses";
@@ -753,6 +883,7 @@
         btnCard.className = "py-2 rounded-lg bg-white text-rose-700 shadow-sm transition";
         btnInst.className = "py-2 rounded-lg text-gray-600 hover:text-gray-900 transition";
         populateEnrolledCardsDropdown();
+        renderEnrolledCardsManager();
       }
     }
 
@@ -835,6 +966,7 @@
           rawCardsCache = json.data.creditCards || [];
           enrolledCardsCache = json.data.enrolledCards || [];
           populateEnrolledCardsDropdown();
+          renderEnrolledCardsManager();
           applyScopeAndRender();
           calculateInstallmentPreview();
           handleDeepLinkScroll();
@@ -1427,7 +1559,6 @@
       });
       alert("Card enrolled! It will now appear in all dropdowns.");
       document.getElementById('enrollCardForm').reset();
-      switchCcSubTab('stmt');
       setTimeout(fetchLoansData, 1500);
     });
 
