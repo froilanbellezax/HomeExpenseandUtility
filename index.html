@@ -139,10 +139,10 @@
         </button>
       </div>
 
-      <!-- UPCOMING DUES & BILLS PREVIEW (CLICKABLE DEEP LINKS) -->
+      <!-- UPCOMING DUES & BILLS PREVIEW (CLICKABLE DEEP LINKS, TOP 10) -->
       <div class="bg-white p-4 rounded-2xl shadow-sm border border-gray-200 space-y-2">
         <div class="flex justify-between items-center">
-          <h3 class="font-bold text-gray-700 text-xs uppercase">⏰ Upcoming Dues & Bills (Top 5)</h3>
+          <h3 class="font-bold text-gray-700 text-xs uppercase">⏰ Upcoming Dues & Bills (Top 10)</h3>
           <span class="text-[10px] text-indigo-600 font-semibold">Tap item to pay 👆</span>
         </div>
         <div id="dashUpcomingList" class="space-y-2 text-xs">
@@ -490,13 +490,13 @@
         return a.diff - b.diff;
       });
 
-      const top5 = combined.slice(0, 5);
-      if (!top5.length) { 
+      const top10 = combined.slice(0, 10);
+      if (!top10.length) { 
         container.innerHTML = '<p class="text-gray-400 text-center py-1">No upcoming dues! 🎉</p>'; 
         return; 
       }
 
-      container.innerHTML = top5.map(item => `
+      container.innerHTML = top10.map(item => `
         <div onclick="location.href='${item.targetUrl}'" class="cursor-pointer p-2.5 ${item.cardStyle} rounded-xl border flex justify-between items-center gap-2 transition active:scale-[0.99]">
           <div class="flex-1 min-w-0">
             <div class="flex flex-wrap items-center gap-1 mb-0.5">
